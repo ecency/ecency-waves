@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF" />
+
+  <meta charset="UTF-8" />
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+  <meta name="description" content="A new Flutter project." />
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="waves" />
+  <link rel="apple-touch-icon" href="icons/Icon-192.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <title>waves</title>
+  <link rel="manifest" href="manifest.json" />
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    const serviceWorkerVersion = null;
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
+</head>
+
+<body>
+  <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+    integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+  <script src="https://bundle.run/buffer@6.0.3"></script>
+  <script>
+    window.addEventListener("load", function (ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function (engineInitializer) {
+          engineInitializer.initializeEngine().then(function (appRunner) {
+            appRunner.runApp();
+          });
+        },
+      });
+    });
+
+    var client = new dhive.Client([
+      "https://api.hive.blog",
+      "https://api.deathwings.me",
+      "https://hive-api.arcange.eu",
+      "https://hived.emre.sh",
+      "https://api.openhive.network",
+      "https://rpc.ausbit.dev",
+      "https://rpc.mahdiyari.info",
+      "https://hive-api.3speak.tv",
+      "https://anyx.io",
+      "https://techcoderx.com",
+      "https://api.hive.blue",
+      "https://api.c0ff33a.uk",
+      "https://api.pharesim.me",
+      "https://hived.privex.io",
+      "https://hive.roelandp.nl",
+    ]);
+
+    async function runThisJS(jsCode) {
+      try {
+        const response = await eval(jsCode);
+        return replyToNative({
+          data: response,
+          valid: true,
+          error: "",
+        });
+      } catch (e) {
+        return replyToNative({
+          data: null,
+          valid: false,
+          error: e.message,
+        });
+      }
+    }
+
+    function doWeHaveHiveKeychainExtension() {
+      const keychain = window.hive_keychain;
+      return new Promise((res) => {
+        const data = {
+          valid: true,
+          data: keychain !== null && keychain !== undefined,
+          error: "",
+        };
+        res(replyToNative(data));
+      });
+    }
+
+    function signInWithHiveKeychain(username, message) {
+      const keychain = window.hive_keychain;
+      return new Promise((res) => {
+        keychain.requestSignBuffer(
+          username,
+          message,
+          "Active",
+          (response) => {
+            console.log(`Response is ${JSON.stringify(response)}`);
+            const data = {
+              valid: response != null,
+              data: response,
+              error: "",
+            };
+            res(replyToNative(data));
+          }
+        );
+      });
+    }
+
+    function replyToNative(result) {
+      return JSON.stringify(result);
+    }
+  </script>
+</body>
+
+</html>
