@@ -40,7 +40,7 @@ class AuthButton extends StatelessWidget {
       );
     } else {
       return Text(
-        "Paste Posting Key",
+        authType == AuthType.postingKey ? "Paste Posting Key" : "Hive Signer",
         style: theme.textTheme.bodyMedium,
       );
     }

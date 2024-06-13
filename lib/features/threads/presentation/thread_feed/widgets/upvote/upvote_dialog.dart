@@ -12,9 +12,11 @@ import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
+import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_hive_signer_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/upvote_percentage_buttons.dart';
@@ -157,6 +159,8 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
               Navigator.pop(context);
               if (userData.isPostingKeyLogin) {
                 _postingKeyVoteTransaction(userData, context);
+              } else if (userData.isHiveSignerLogin) {
+                _hiveSignerTransaction(userData, context);
               } else {
                 _dialogForHiveTransaction(context);
               }
@@ -175,9 +179,21 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         permlink: widget.permlink,
         authdata: userData as UserAuthModel<PostingAuthModel>,
         onSuccess: () {},
-        showToast: (message) => context.showSnackBar(message));
+        showToast: (message) => widget.rootContext.showSnackBar(message));
     widget.rootContext.hideLoader();
-    Navigator.pop(context);
+    // Navigator.pop(context);
+  }
+
+  void _hiveSignerTransaction(
+      UserAuthModel userData, BuildContext context) async {
+    widget.rootContext.showLoader();
+    await SignTransactionHiveSignerController().initVoteProcess(weight * 10000,
+        author: widget.author,
+        permlink: widget.permlink,
+        authdata: userData as UserAuthModel<HiveSignerAuthModel>,
+        onSuccess: () {},
+        showToast: (message) => widget.rootContext.showSnackBar(message));
+    widget.rootContext.hideLoader();
   }
 
   Future<dynamic> _dialogForHiveTransaction(BuildContext context) {

@@ -1,6 +1,11 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/models/auth_decryption_token_response.dart';
 import 'package:waves/core/models/auth_redirection_response.dart';
+import 'package:waves/core/models/broadcast_model.dart';
 import 'package:waves/core/services/data_service/service.dart'
     if (dart.library.io) 'package:waves/core/services/data_service/mobile_service.dart'
     if (dart.library.html) 'package:waves/core/services/data_service/web_service.dart';
@@ -127,10 +132,11 @@ class ApiService {
     String? token,
   ) async {
     try {
-      String jsonString = await commentOnContentFromPlatform(
-          username, author, parentPermlink,permlink, comment, postingKey, authKey, token);
+      String jsonString = await commentOnContentFromPlatform(username, author,
+          parentPermlink, permlink, comment, postingKey, authKey, token);
       ActionSingleDataResponse<String> response =
-          ActionSingleDataResponse.fromJsonString(jsonString, null,ignoreFromJson: true);
+          ActionSingleDataResponse.fromJsonString(jsonString, null,
+              ignoreFromJson: true);
       return response;
     } catch (e) {
       return ActionSingleDataResponse(
@@ -151,11 +157,70 @@ class ApiService {
       String jsonString = await voteContentFromPlatform(
           username, author, permlink, weight, postingKey, authKey, token);
       ActionSingleDataResponse<String> response =
-          ActionSingleDataResponse.fromJsonString(jsonString, null,ignoreFromJson: true);
+          ActionSingleDataResponse.fromJsonString(jsonString, null,
+              ignoreFromJson: true);
       return response;
     } catch (e) {
       return ActionSingleDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(
+      String accessToken, BroadcastModel<T> args) async {
+    print(accessToken);
+    final url = Uri.parse('https://hivesigner.com/api/broadcast');
+    final headers = {
+      'Authorization': accessToken,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    final body = json.encode({
+      'operations': [
+        [
+          enumToString(args.type),
+          (args.data is VoteBroadCastModel
+              ? (args.data as VoteBroadCastModel).toJson()
+              : (args.data as CommentBroadCastModel).toJson())
+        ]
+      ]
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        Map decodedData = json.decode(response.body);
+        if (decodedData['error'] == null) {
+          return ActionSingleDataResponse(
+              data: null,
+              errorMessage: "",
+              status: ResponseStatus.success,
+              isSuccess: true);
+        } else {
+          return ActionSingleDataResponse(
+              data: null,
+              errorMessage: decodedData['error'],
+              status: ResponseStatus.failed,
+              isSuccess: false);
+        }
+      } else {
+        return ActionSingleDataResponse(
+            data: null,
+            errorMessage: LocaleText.somethingWentWrong,
+            status: ResponseStatus.failed,
+            isSuccess: false);
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          data: null,
+          errorMessage: e.toString(),
+          status: ResponseStatus.failed,
+          isSuccess: false);
     }
   }
 }

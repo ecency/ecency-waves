@@ -1,4 +1,5 @@
 import 'package:waves/core/models/action_response.dart';
+import 'package:waves/core/models/broadcast_model.dart';
 import 'package:waves/core/services/data_service/api_service.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
@@ -57,5 +58,15 @@ class ThreadRepository {
   ) async {
     return await _apiService.voteContent(
         username, author, permlink, weight, postingKey, authKey, token);
+  }
+
+  Future<ActionSingleDataResponse> voteUsingHiveSigner(
+      String token, BroadcastModel<VoteBroadCastModel> data) async {
+    return await _apiService.broadcastTransactionUsingHiveSigner(token, data);
+  }
+
+   Future<ActionSingleDataResponse> commentUsingHiveSigner(
+      String token, BroadcastModel<CommentBroadCastModel> data) async {
+    return await _apiService.broadcastTransactionUsingHiveSigner(token, data);
   }
 }

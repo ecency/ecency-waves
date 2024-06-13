@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/transactions/transaction_widget_view.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/features/auth/presentation/controller/hive_auth_controller.dart';
 
@@ -26,7 +27,7 @@ class _HiveAuthViewState extends State<HiveAuthView> {
       ishiveKeyChainMethod: widget.isHiveKeyChainLogin,
       showError: (error) => context.showSnackBar(error),
       onSuccess: (_) {
-        context.showSnackBar("Successfully logged in");
+        context.showSnackBar(LocaleText.successfullLoginMessage(widget.accountName));
         Navigator.pop(context);
         Navigator.pop(context);
       },

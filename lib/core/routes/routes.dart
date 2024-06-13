@@ -4,6 +4,7 @@ class Routes {
   static const String bookmarksView = 'bookmarks';
   static const String authView = 'auth';
   static const String hiveAuthView = 'hiveAuth';
+  static const String hiveSignView = 'hiveSign';
   static const String addCommentView = 'addCommentView';
   static const String hiveSignTransactionView = 'hiveSignTransactionView';
   static const String commentDetailView = 'commentDetailView';

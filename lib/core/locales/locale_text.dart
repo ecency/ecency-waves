@@ -38,4 +38,5 @@ class LocaleText {
   static String get smPostingLoginMessage => "sm_posting_login_message".tr();
   static String get smCommentPublishMessage => "sm_comment_publish_message".tr();
   static String get smVoteSuccessMessage => "sm_vote_success_message".tr();
+  static String get somethingWentWrong => "something_went_wrong".tr();
 }

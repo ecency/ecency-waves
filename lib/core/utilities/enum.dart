@@ -20,6 +20,8 @@ enum TransactionState {loading,qr,redirection}
 
 enum SignTransactionType {comment,vote}
 
+enum BroadCastType {vote,comment}
+
 String enumToString(Object o) => o.toString().split('.').last;
 
 T enumFromString<T>(String key, List<T> values, {T? defaultValue}) {

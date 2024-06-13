@@ -7,10 +7,12 @@ import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/act.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_hive_signer_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
 import 'package:waves/features/user/view/user_controller.dart';
@@ -38,7 +40,7 @@ class _AddCommentViewState extends State<AddCommentView> {
     final UserAuthModel userData = context.read<UserController>().userData!;
     return Scaffold(
       appBar: AppBar(
-        title:  Text(LocaleText.addAComment),
+        title: Text(LocaleText.addAComment),
       ),
       body: SafeArea(
           child: Padding(
@@ -48,7 +50,7 @@ class _AddCommentViewState extends State<AddCommentView> {
           expands: true,
           maxLines: null,
           minLines: null,
-          decoration:  InputDecoration(
+          decoration: InputDecoration(
               hintText: LocaleText.addYourReply, border: InputBorder.none),
         ),
       )),
@@ -73,8 +75,10 @@ class _AddCommentViewState extends State<AddCommentView> {
             context.showSnackBar(LocaleText.replyCannotBeEmpty);
           } else if (userData.isPostingKeyLogin) {
             _postingKeyCommentTransaction(comment, userData, context);
+          } else if (userData.isHiveSignerLogin) {
+            _hiveSignerCommentTransaction(comment, userData, context);
           } else {
-            _dialogForHiveTransaction(context, comment,userData);
+            _dialogForHiveTransaction(context, comment, userData);
           }
         },
         child: const Icon(Icons.reply),
@@ -88,7 +92,23 @@ class _AddCommentViewState extends State<AddCommentView> {
     await SignTransactionPostingKeyController().initCommentProcess(comment,
         author: widget.author,
         parentPermlink: widget.permlink,
-        authdata: userData as UserAuthModel<PostingAuthModel>,
+        authData: userData as UserAuthModel<PostingAuthModel>,
+        onSuccess: (generatedPermlink) {
+          Navigator.pop(context,
+              generateCommentModel(generatedPermlink, userData.accountName));
+        },
+        showToast: (message) => context.showSnackBar(message));
+    // ignore: use_build_context_synchronously
+    context.hideLoader();
+  }
+
+  void _hiveSignerCommentTransaction(String comment,
+      UserAuthModel<dynamic> userData, BuildContext context) async {
+    context.showLoader();
+    await SignTransactionHiveSignerController().initCommentProcess(comment,
+        parentAuthor: widget.author,
+        parentPermlink: widget.permlink,
+        authData: userData as UserAuthModel<HiveSignerAuthModel>,
         onSuccess: (generatedPermlink) {
           Navigator.pop(context,
               generateCommentModel(generatedPermlink, userData.accountName));

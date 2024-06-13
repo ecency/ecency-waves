@@ -46,6 +46,9 @@ class _AuthViewState extends State<AuthView> {
                     authType: AuthType.postingKey, onTap: onPostingLoginTap),
                 const Gap(15),
                 AuthButton(
+                    authType: AuthType.hiveSign, onTap: onHiveSignLoginTap),
+                const Gap(15),
+                AuthButton(
                   authType: AuthType.hiveKeyChain,
                   onTap: () => onHiveAuthLoginTap(AuthType.hiveKeyChain),
                 ),
@@ -79,6 +82,12 @@ class _AuthViewState extends State<AuthView> {
         });
       }
     }
+  }
+
+  void onHiveSignLoginTap() async {
+    context.platformPushNamed(
+      Routes.hiveSignView,
+    );
   }
 
   void onPostingLoginTap() async {

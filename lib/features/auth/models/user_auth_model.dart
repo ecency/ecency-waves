@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/models/hive_auth_model.dart';
+import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 
 class UserAuthModel<T> {
@@ -15,6 +16,7 @@ class UserAuthModel<T> {
   });
 
   bool get isPostingKeyLogin => authType == AuthType.postingKey;
+  bool get isHiveSignerLogin => authType == AuthType.hiveSign;
   bool get isHiveAuthLogin => authType == AuthType.hiveAuth;
   bool get isHiveKeychainLogin => authType == AuthType.hiveKeyChain;
 
@@ -74,6 +76,8 @@ class UserAuthModel<T> {
         return HiveAuthModel.fromJson(json) as T;
       case AuthType.hiveAuth:
         return HiveAuthModel.fromJson(json) as T;
+      case AuthType.hiveSign:
+        return HiveSignerAuthModel.fromJson(json) as T;
       default:
         throw Exception('Unknown authType: $authType');
     }
@@ -84,13 +88,14 @@ class UserAuthModel<T> {
       return auth.toJson();
     } else if (auth is HiveAuthModel) {
       return (auth as HiveAuthModel).toJson();
+    } else if (auth is HiveSignerAuthModel) {
+      return (auth as HiveSignerAuthModel).toJson();
     } else {
       throw Exception('Unknown auth type');
     }
   }
 
-  static List fromRawJsonList(String str) =>
-      json.decode(str);
+  static List fromRawJsonList(String str) => json.decode(str);
 
   static String toRawJsonList(List<UserAuthModel> accounts) {
     return json.encode(accounts.map((e) => e.toJson()).toList());

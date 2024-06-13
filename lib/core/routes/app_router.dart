@@ -4,6 +4,7 @@ import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/features/auth/presentation/view/auth_key_chain_view.dart';
 import 'package:waves/features/auth/presentation/view/auth_view.dart';
+import 'package:waves/features/auth/presentation/view/hive_signer_auth_view.dart';
 import 'package:waves/features/bookmarks/views/thread_bookmark/bookmark_view.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
@@ -59,6 +60,13 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: '/${Routes.hiveSignView}',
+        name: Routes.hiveSignView,
+        builder: (context, state) {
+          return const HiveSignerAuthView();
+        },
+      ),
+      GoRoute(
         path: '/${Routes.hiveAuthView}',
         name: Routes.hiveAuthView,
         builder: (context, state) {
@@ -72,7 +80,7 @@ class AppRouter {
           );
         },
       ),
-       GoRoute(
+      GoRoute(
         path: '/${Routes.commentDetailView}',
         name: Routes.commentDetailView,
         builder: (context, state) {
