@@ -66,7 +66,7 @@ class MainActivity: FlutterActivity() {
                 )
             } else if (call.method == "signInWithHiveKeychain" && username != null && message != null) {
                 webView?.evaluateJavascript(
-                    "doWeHaveHiveKeychainExtension('$id','$username','$message');",
+                    "signInWithHiveKeychain('$id','$username','$message');",
                     null
                 )
             } else if (call.method == "getRedirectUriData" && username != null) {
