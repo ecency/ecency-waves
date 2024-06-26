@@ -25,4 +25,6 @@ class ActiveVoteModel {
         rshares: json["rshares"],
         percent: json["percent"],
     );
+
+    
 }

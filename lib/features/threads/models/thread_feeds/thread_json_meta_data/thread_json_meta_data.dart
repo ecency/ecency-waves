@@ -35,6 +35,19 @@ class ThreadJsonMetadata {
         ),
       );
 
+  Map<String, dynamic> toJson() {
+    return {
+      'tags': tags,
+      'image': image,
+      'images': images,
+      'links': links,
+      'users': users,
+      'app': app,
+      'video': video?.toJson(),
+      'format': format,
+    };
+  }
+
   static List<String> _images(Map<String, dynamic>? json) {
     if (json?['image'] != null && json!['image'].isNotEmpty) {
       return asList(json, 'image').map((e) => e.toString()).toList();

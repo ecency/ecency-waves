@@ -6,17 +6,21 @@ import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_bookmark_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/repository/thread_local_repository.dart';
 import 'package:waves/features/threads/repository/thread_repository.dart';
 
 class ThreadFeedController extends ChangeNotifier
     implements ControllerInterface<ThreadFeedModel> {
   final ThreadRepository _repository = getIt<ThreadRepository>();
-  ThreadFeedType threadType = ThreadFeedType.all;
+  final ThreadLocalRepository _localRepository = getIt<ThreadLocalRepository>();
+  ThreadFeedType threadType = ThreadFeedType.ecency;
   final AccountPostType _postType = AccountPostType.posts;
   final BookmarkProvider bookmarkProvider =
       BookmarkProvider<ThreadBookmarkModel>(type: BookmarkType.thread);
   @override
   List<ThreadFeedModel> items = [];
+
+  List<ThreadFeedModel> newFeeds = [];
 
   @override
   ViewState viewState = ViewState.loading;
@@ -35,6 +39,7 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   void _loadSingleFeedType(ThreadFeedType type) async {
+    _loadLocalThreads(type);
     ActionSingleDataResponse<ThreadFeedModel> accountPostResponse =
         await _repository.getFirstAccountPost(gethreadName(), _postType, 1);
     if (accountPostResponse.isSuccess) {
@@ -43,18 +48,29 @@ class ThreadFeedController extends ChangeNotifier
               accountPostResponse.data!.permlink);
       if (response.isSuccess && response.data != null) {
         if (type == threadType) {
-          items = response.data!;
-          items = filterTopLevelComments(accountPostResponse.data!.permlink);
-          if (items.isEmpty) {
+          List<ThreadFeedModel> items = response.data!;
+          items = filterTopLevelComments(accountPostResponse.data!.permlink,
+              items: items);
+          if (items.isEmpty && viewState != ViewState.data) {
             viewState = ViewState.empty;
-          } else {
+          } else if (items.isNotEmpty) {
+            _localRepository.writeLocalThreads(items, type);
+            if (this.items.isEmpty) {
+              this.items = items;
+            } else if (this.items.first.idString != items.first.idString) {
+              newFeeds = [...items];
+              notifyListeners();
+            } else {
+              this.items = [...items];
+            }
+
             viewState = ViewState.data;
           }
         }
-      } else {
+      } else if (items.isEmpty) {
         viewState = ViewState.error;
       }
-    } else {
+    } else if (items.isEmpty) {
       viewState = ViewState.error;
     }
 
@@ -108,6 +124,22 @@ class ThreadFeedController extends ChangeNotifier
     return null;
   }
 
+  void _loadLocalThreads(ThreadFeedType type) {
+    List<ThreadFeedModel>? localThreads =
+        _localRepository.readLocalThreads(type);
+    if (localThreads != null && localThreads.isNotEmpty) {
+      items = [...localThreads];
+      viewState = ViewState.data;
+    }
+  }
+
+  void loadNewFeeds() {
+    items = [...newFeeds];
+    viewState = ViewState.data;
+    newFeeds = [];
+    notifyListeners();
+  }
+
   @override
   void loadNextPage() {
     // TODO: implement loadNextPage
@@ -133,6 +165,8 @@ class ThreadFeedController extends ChangeNotifier
 
   void onTapFilter(ThreadFeedType type) {
     if (threadType != type) {
+      items = [];
+      newFeeds = [];
       viewState = ViewState.loading;
       threadType = type;
       notifyListeners();

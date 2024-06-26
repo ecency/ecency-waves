@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/models/action_response.dart';
@@ -10,28 +9,30 @@ import 'package:waves/core/services/data_service/service.dart'
     if (dart.library.io) 'package:waves/core/services/data_service/mobile_service.dart'
     if (dart.library.html) 'package:waves/core/services/data_service/web_service.dart';
 import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/core/utilities/evaluate.dart';
 import 'package:waves/features/threads/models/post_detail/comment_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 
 class ApiService {
-  Future<String> getChainProps() async {
-    // var jsCode = "client.database.getChainProperties();";
-    var jsCode = "client.database.getDiscussions('hot');";
-    String responseJson = await runThisJS_(jsCode);
-    return responseJson;
-  }
-
   Future<ActionListDataResponse<ThreadFeedModel>> getComments(
       String accountName, String permlink) async {
     try {
-      String jsonString = await runThisJS_(
-          "client.hivemind.call('get_discussion', ['$accountName','$permlink']);");
-      return ActionListDataResponse<ThreadFeedModel>(
-          data: CommentModel.fromRawJson(jsonString),
-          status: ResponseStatus.success,
-          isSuccess: true,
-          errorMessage: "");
+      var url = Uri.parse(
+          'https://hivexplorer.com/api/get_discussion?author=$accountName&permlink=$permlink');
+
+      var response = await http.get(
+        url,
+      );
+
+      if (response.statusCode == 200) {
+        return ActionListDataResponse<ThreadFeedModel>(
+            data: CommentModel.fromRawJson(response.body),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionListDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
     } catch (e) {
       return ActionListDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());
@@ -46,16 +47,38 @@ class ApiService {
     String? lastPermlink,
   ) async {
     try {
-      String jsonString = await runThisJS_(
-          "client.hivemind.getAccountPosts({ account: '$accountName', sort: '${enumToString(type)}', start_author: ${Evaluate.stringOrNull(lastAuthor)}, start_permlink: ${Evaluate.stringOrNull(lastPermlink)}, limit: $limit });");
-      ActionListDataResponse<ThreadFeedModel> response =
-          ActionListDataResponse.fromJsonString(
-              jsonString, (item) => ThreadFeedModel.fromJson(item));
-      return response;
+      http.Response response = await _getAccountPosts(
+          type, accountName, lastAuthor, lastPermlink, limit);
+
+      if (response.statusCode == 200) {
+        return ActionListDataResponse<ThreadFeedModel>(
+            data: ThreadFeedModel.fromRawJson(response.body),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionListDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
     } catch (e) {
       return ActionListDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());
     }
+  }
+
+  Future<http.Response> _getAccountPosts(
+      AccountPostType type,
+      String accountName,
+      String? lastAuthor,
+      String? lastPermlink,
+      int limit) async {
+    var url = Uri.parse(
+        'https://hivexplorer.com/api/get_account_posts?sort=${enumToString(type)}&account=$accountName&limit=$limit&start_author=$lastAuthor&start_permlink=$lastPermlink');
+
+    var response = await http.get(
+      url,
+    );
+    return response;
   }
 
   Future<ActionSingleDataResponse<ThreadFeedModel>> getFirstAccountPost(
@@ -66,12 +89,19 @@ class ApiService {
     String? lastPermlink,
   ) async {
     try {
-      String jsonString = await runThisJS_(
-          "client.hivemind.getAccountPosts({ account: '$accountName', sort: '${enumToString(type)}', start_author: ${Evaluate.stringOrNull(lastAuthor)}, start_permlink: ${Evaluate.stringOrNull(lastPermlink)}, limit: $limit });");
-      ActionSingleDataResponse<ThreadFeedModel> response =
-          ActionSingleDataResponse.fromJsonString(
-              parseFromList: true, jsonString, ThreadFeedModel.fromJson);
-      return response;
+      http.Response response = await _getAccountPosts(
+          type, accountName, lastAuthor, lastPermlink, limit);
+
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<ThreadFeedModel>(
+            data: ThreadFeedModel.fromRawJson(response.body).first,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
     } catch (e) {
       return ActionSingleDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());
@@ -168,7 +198,6 @@ class ApiService {
 
   Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(
       String accessToken, BroadcastModel<T> args) async {
-    print(accessToken);
     final url = Uri.parse('https://hivesigner.com/api/broadcast');
     final headers = {
       'Authorization': accessToken,

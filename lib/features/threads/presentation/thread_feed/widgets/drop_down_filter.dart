@@ -29,6 +29,7 @@ class _DropDownFilterState extends State<DropDownFilter> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = context.read<ThreadFeedController>();
+    final List types = ThreadFeedType.values.sublist(1);
     String defaultTypeString =
         controller.gethreadName(type: controller.threadType);
     return AnimatedContainer(
@@ -57,7 +58,7 @@ class _DropDownFilterState extends State<DropDownFilter> {
             ),
             dropdownTriangleOptions:
                 const DropdownTriangleOptions(height: 5, width: 0),
-            dropdownList: ThreadFeedType.values
+            dropdownList: types
                 .map(
                   (e) => CoolDropdownItem<ThreadFeedType>(
                       isSelected: e == controller.threadType,
@@ -67,7 +68,7 @@ class _DropDownFilterState extends State<DropDownFilter> {
                 .toList(),
             onChange: (type) {
               widget.onChanged(type);
-              _animateToPage(ThreadFeedType.values
+              _animateToPage(types
                   .indexWhere((element) => element == type));
               setState(() {});
               _dropdownController.close();
@@ -96,12 +97,12 @@ class _DropDownFilterState extends State<DropDownFilter> {
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
                   children: List.generate(
-                    ThreadFeedType.values.length,
+                    types.length,
                     (index) => Padding(
                       padding: const EdgeInsets.only(right: 5.0),
                       child: Text(
                         controller.gethreadName(
-                            type: ThreadFeedType.values[index]),
+                            type: types[index]),
                         textAlign: TextAlign.right,
                       ),
                     ),

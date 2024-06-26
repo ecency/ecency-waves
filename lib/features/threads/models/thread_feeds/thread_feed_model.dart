@@ -176,6 +176,41 @@ class ThreadFeedModel extends Equatable {
         percentHBD: json["percent_hbd"],
       );
 
+  Map<String, dynamic> toJson() {
+    return {
+      'post_id': postId,
+      'author': author,
+      'permlink': permlink,
+      'category': category,
+      'title': title,
+      'body': body,
+      'json_metadata': jsonMetadata?.toJson(),
+      'created': created.toUtc().toIso8601String(),
+      'last_update': lastUpdate?.toIso8601String(),
+      'depth': depth,
+      'children': children,
+      'net_rshares': netRshares,
+      'last_payout': lastPayout?.toIso8601String(),
+      'cashout_time': cashoutTime?.toIso8601String(),
+      'total_payout_value': totalPayoutValue,
+      'curator_payout_value': curatorPayoutValue,
+      'pending_payout_value': pendingPayoutValue,
+      'promoted': promoted,
+      'replies': replies,
+      'body_length': bodyLength,
+      'author_reputation': authorReputation,
+      'active_votes': activeVotes?.map((vote) => vote.toJson()).toList(),
+      'parent_author': parentAuthor,
+      'parent_permlink': parentPermlink,
+      'url': url,
+      'root_title': rootTitle,
+      'beneficiaries':
+          beneficiaries?.map((beneficiary) => beneficiary.toJson()).toList(),
+      'max_accepted_payout': maxAcceptedPayout,
+      'percent_hbd': percentHBD,
+    };
+  }
+
   static ThreadJsonMetadata? parseJsonMetaData(dynamic data) {
     if (data != null) {
       if (data is String) {
@@ -233,6 +268,22 @@ class ThreadFeedModel extends Equatable {
         return 0;
       }
     });
+  }
+
+  static List<ThreadFeedModel> fromRawJson(String str) =>
+      ThreadFeedModel.parseThreads(json.decode(str));
+
+  static String toRawJson(List<ThreadFeedModel> threads) {
+    return json.encode(threads.map((e) => e.toJson()).toList());
+  }
+
+  static List<ThreadFeedModel> parseThreads(List? data) {
+    try {
+      if (data == null) return [];
+      return data.map((e) => ThreadFeedModel.fromJson(e)).toList();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   String get idString => postId.toString();
