@@ -6,8 +6,8 @@ import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
-import 'package:waves/features/user/presentation/controller/multi_account_switch_controller.dart';
-import 'package:waves/features/user/presentation/widgets/multi_account_dialog_item.dart';
+import 'package:waves/features/user/presentation/multi_account/controller/multi_account_switch_controller.dart';
+import 'package:waves/features/user/presentation/multi_account/widgets/multi_account_dialog_item.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class MultiAccountDialog extends StatelessWidget {

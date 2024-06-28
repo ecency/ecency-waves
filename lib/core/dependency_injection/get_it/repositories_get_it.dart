@@ -4,6 +4,7 @@ import 'package:waves/features/auth/repository/auth_repository.dart';
 import 'package:waves/features/threads/repository/thread_local_repository.dart';
 import 'package:waves/features/threads/repository/thread_repository.dart';
 import 'package:waves/features/user/repository/user_local_repository.dart';
+import 'package:waves/features/user/repository/user_repository.dart';
 
 class RepositoriesGetIt extends GetItFeature {
   @override
@@ -16,5 +17,7 @@ class RepositoriesGetIt extends GetItFeature {
         () => UserLocalRepository(localService: getIt.call()));
     getIt.registerFactory<ThreadLocalRepository>(
         () => ThreadLocalRepository(localService: getIt.call()));
+    getIt.registerFactory<UserRepository>(
+        () => UserRepository(apiService: getIt.call()));
   }
 }

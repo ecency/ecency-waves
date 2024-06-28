@@ -1,4 +1,3 @@
-import 'package:get_storage/get_storage.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/dependency_injection/get_it_feature_interface.dart';
 import 'package:waves/core/services/data_service/api_service.dart';

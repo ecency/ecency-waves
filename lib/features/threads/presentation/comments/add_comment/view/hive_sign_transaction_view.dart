@@ -29,9 +29,9 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       comment: widget.data.comment,
       weight: widget.data.weight,
       showError: (error) => context.showSnackBar(error),
-      onSuccess: (generatedPermlink) {
+      onSuccess: (data) {
         context.showSnackBar(LocaleText.smCommentPublishMessage);
-        Navigator.pop(context,generatedPermlink);
+        Navigator.pop(context,data);
       },
       authData: context.read<UserController>().userData!
           as UserAuthModel<HiveAuthModel>,

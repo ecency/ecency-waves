@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 import 'package:waves/core/utilities/save_convert.dart';
-import 'package:waves/features/threads/models/post_detail/post_detail_model.dart';
+import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/beneficiary_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 
@@ -296,6 +296,7 @@ class ThreadFeedModel extends Equatable {
         parentAuthor,
         parentPermlink,
         depth,
+        activeVotes,
         children,
         body,
         title

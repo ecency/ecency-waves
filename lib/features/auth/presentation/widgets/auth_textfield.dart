@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 
 class AuthTextField extends StatelessWidget {
-  const AuthTextField({super.key, required this.textEditingController});
+  const AuthTextField(
+      {super.key,
+      required this.textEditingController,
+      this.leading,
+      this.isPassword = false,
+      required this.hintText});
 
   final TextEditingController textEditingController;
+  final Widget? leading;
+  final bool isPassword;
+  final String hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -21,21 +29,23 @@ class AuthTextField extends StatelessWidget {
             padding: const EdgeInsets.only(
               left: 8.0,
             ),
-            child: ValueListenableBuilder(
-              valueListenable: textEditingController,
-              builder: (context, value, child) {
-                return UserProfileImage(
-                  key: ValueKey(textEditingController.text),
-                  verticalPadding: 4,
-                  fillColor: theme.colorScheme.tertiaryContainer,
-                  url: value.text,
-                  radius: 17,
-                );
-              },
-            ),
+            child: leading ??
+                ValueListenableBuilder(
+                  valueListenable: textEditingController,
+                  builder: (context, value, child) {
+                    return UserProfileImage(
+                      key: ValueKey(textEditingController.text),
+                      verticalPadding: 4,
+                      fillColor: theme.colorScheme.tertiaryContainer,
+                      url: value.text,
+                      radius: 17,
+                    );
+                  },
+                ),
           ),
           Expanded(
             child: TextField(
+                obscureText: isPassword,
                 controller: textEditingController,
                 autofocus: true,
                 decoration: InputDecoration(
@@ -48,7 +58,7 @@ class AuthTextField extends StatelessWidget {
                     focusedErrorBorder: border,
                     contentPadding:
                         const EdgeInsets.only(right: 15, top: 10, left: 15),
-                    hintText: "Enter your username",
+                    hintText: hintText,
                     filled: true,
                     isDense: true,
                     suffixIcon: _clearIcon())),

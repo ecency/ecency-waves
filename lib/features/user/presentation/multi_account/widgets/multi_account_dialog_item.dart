@@ -5,7 +5,7 @@ import 'package:waves/core/common/widgets/custom_list_tile.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
-import 'package:waves/features/user/presentation/controller/multi_account_switch_controller.dart';
+import 'package:waves/features/user/presentation/multi_account/controller/multi_account_switch_controller.dart';
 
 class MultiAccountDialogItem extends StatelessWidget {
   const MultiAccountDialogItem({
