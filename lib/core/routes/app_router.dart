@@ -41,14 +41,14 @@ class AppRouter {
           path: '/${Routes.addCommentView}',
           name: Routes.addCommentView,
           builder: (context, state) {
-            String accountName =
-                state.uri.queryParameters[RouteKeys.accountName]!;
-            String permlink = state.uri.queryParameters[RouteKeys.permlink]!;
-            String depth = state.uri.queryParameters[RouteKeys.depth]!;
+            String? accountName =
+                state.uri.queryParameters[RouteKeys.accountName];
+            String? permlink = state.uri.queryParameters[RouteKeys.permlink];
+            String? depth = state.uri.queryParameters[RouteKeys.depth];
             return AddCommentView(
               author: accountName,
               permlink: permlink,
-              depth: int.parse(depth),
+              depth: depth!= null ? int.tryParse(depth) : null,
             );
           }),
       GoRoute(

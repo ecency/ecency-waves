@@ -15,18 +15,21 @@ import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dar
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_hive_signer_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
+import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
+import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class AddCommentView extends StatefulWidget {
-  const AddCommentView(
-      {super.key,
-      required this.author,
-      required this.permlink,
-      required this.depth});
+  const AddCommentView({
+    super.key,
+    required this.author,
+    required this.permlink,
+    required this.depth,
+  });
 
-  final String author;
-  final String permlink;
-  final int depth;
+  final String? author;
+  final String? permlink;
+  final int? depth;
 
   @override
   State<AddCommentView> createState() => _AddCommentViewState();
@@ -35,6 +38,18 @@ class AddCommentView extends StatefulWidget {
 class _AddCommentViewState extends State<AddCommentView> {
   final TextEditingController commentTextEditingController =
       TextEditingController();
+  late final bool isRoot;
+
+  @override
+  void initState() {
+    if (widget.author == null && widget.permlink == null) {
+      isRoot = true;
+    } else {
+      isRoot = false;
+    }
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final UserAuthModel userData = context.read<UserController>().userData!;
@@ -57,22 +72,11 @@ class _AddCommentViewState extends State<AddCommentView> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           String comment = commentTextEditingController.text.trim();
-          // Navigator.pop(
-          //     context,
-          //     ThreadFeedModel(
-          //         postId: Act.generateRandomNumber(6),
-          //         parentAuthor: widget.author,
-          //         parentPermlink: widget.permlink,
-          //         author: userData.accountName,
-          //         permlink: Act.generatePermlink(userData.accountName),
-          //         category: "",
-          //         depth: widget.depth + 1,
-          //         title: '',
-          //         children: 0,
-          //         body: commentTextEditingController.text.trim(),
-          //         created: DateTime.now()));
           if (comment.isEmpty) {
             context.showSnackBar(LocaleText.replyCannotBeEmpty);
+          } else if (isRoot &&
+              context.read<ThreadFeedController>().rootThreadInfo == null) {
+            context.pop();
           } else if (userData.isPostingKeyLogin) {
             _postingKeyCommentTransaction(comment, userData, context);
           } else if (userData.isHiveSignerLogin) {
@@ -90,39 +94,40 @@ class _AddCommentViewState extends State<AddCommentView> {
       UserAuthModel<dynamic> userData, BuildContext context) async {
     context.showLoader();
     await SignTransactionPostingKeyController().initCommentProcess(comment,
-        author: widget.author,
-        parentPermlink: widget.permlink,
+        author: author(context),
+        parentPermlink: permlink(context),
         authData: userData as UserAuthModel<PostingAuthModel>,
         onSuccess: (generatedPermlink) {
-          Navigator.pop(context,
+          context.hideLoader();
+          context.pop(
               generateCommentModel(generatedPermlink, userData.accountName));
         },
+        onFailure: () => context.hideLoader(),
         showToast: (message) => context.showSnackBar(message));
-    // ignore: use_build_context_synchronously
-    context.hideLoader();
   }
 
   void _hiveSignerCommentTransaction(String comment,
       UserAuthModel<dynamic> userData, BuildContext context) async {
     context.showLoader();
     await SignTransactionHiveSignerController().initCommentProcess(comment,
-        parentAuthor: widget.author,
-        parentPermlink: widget.permlink,
+        parentAuthor: author(context),
+        parentPermlink: permlink(context),
         authData: userData as UserAuthModel<HiveSignerAuthModel>,
         onSuccess: (generatedPermlink) {
-          Navigator.pop(context,
+          context.hideLoader();
+          context.pop(
               generateCommentModel(generatedPermlink, userData.accountName));
         },
+        onFailure: () => context.hideLoader(),
         showToast: (message) => context.showSnackBar(message));
-    // ignore: use_build_context_synchronously
-    context.hideLoader();
   }
 
   Future<dynamic> _dialogForHiveTransaction(
       BuildContext context, String comment, UserAuthModel userData) {
     return showDialog(
+      useRootNavigator: true,
       context: context,
-      builder: (context) => TransactionDecisionDialog(
+      builder: (_) => TransactionDecisionDialog(
         onContinue: (authType) {
           _onTransactionDecision(comment, authType, context, userData);
         },
@@ -135,15 +140,14 @@ class _AddCommentViewState extends State<AddCommentView> {
     SignTransactionNavigationModel navigationData =
         SignTransactionNavigationModel(
             transactionType: SignTransactionType.comment,
-            author: widget.author,
-            permlink: widget.permlink,
+            author: author(context),
+            permlink: permlink(context),
             comment: comment,
             ishiveKeyChainMethod: authType == AuthType.hiveKeyChain);
     context
         .pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
         .then((generatedPermlink) {
-      Navigator.pop(
-        context,
+      context.pop(
         generateCommentModel(generatedPermlink, userData.accountName),
       );
     });
@@ -158,11 +162,27 @@ class _AddCommentViewState extends State<AddCommentView> {
           author: userName,
           permlink: permlink,
           category: "",
-          depth: widget.depth + 1,
+          depth: isRoot ? 1 : widget.depth! + 1,
           title: '',
           body: commentTextEditingController.text.trim(),
           created: DateTime.now());
     }
     return null;
+  }
+
+  String author(BuildContext context) {
+    return threadInfo(context).author;
+  }
+
+  String permlink(BuildContext context) {
+    return threadInfo(context).permlink;
+  }
+
+  ThreadInfo threadInfo(BuildContext context) {
+    if (isRoot) {
+      return context.read<ThreadFeedController>().rootThreadInfo!;
+    } else {
+      return ThreadInfo(author: widget.author!, permlink: widget.permlink!);
+    }
   }
 }

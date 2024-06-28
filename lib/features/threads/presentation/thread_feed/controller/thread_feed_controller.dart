@@ -8,6 +8,7 @@ import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
 import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_bookmark_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
 import 'package:waves/features/threads/repository/thread_local_repository.dart';
 import 'package:waves/features/threads/repository/thread_repository.dart';
 
@@ -22,7 +23,7 @@ class ThreadFeedController extends ChangeNotifier
       BookmarkProvider<ThreadBookmarkModel>(type: BookmarkType.thread);
   int currentPage = 0;
   bool isDataDisplayedFromServer = false;
-  List<_UserViewModel> pages = [];
+  List<ThreadInfo> pages = [];
   @override
   List<ThreadFeedModel> items = [];
 
@@ -53,7 +54,7 @@ class ThreadFeedController extends ChangeNotifier
       if (accountPostResponse.data != null &&
           accountPostResponse.data!.isNotEmpty) {
         pages = accountPostResponse.data!
-            .map((e) => _UserViewModel(author: e.author, permlink: e.permlink))
+            .map((e) => ThreadInfo(author: e.author, permlink: e.permlink))
             .toList();
         super.pageLimit = pages.length;
         ActionListDataResponse<ThreadFeedModel> response =
@@ -174,6 +175,17 @@ class ThreadFeedController extends ChangeNotifier
     notifyListeners();
   }
 
+  void refreshOnRootComment(ThreadFeedModel newComment) {
+    items = [newComment, ...items];
+    if (viewState == ViewState.empty) {
+      viewState = ViewState.data;
+    }
+    if (newFeeds.isNotEmpty) {
+      newFeeds = [newComment, ...newFeeds];
+    }
+    notifyListeners();
+  }
+
   void _updateVoteInItems(
       int feedIndex, ActiveVoteModel newVote, List<ThreadFeedModel> items) {
     ThreadFeedModel upvotedItem = items[feedIndex];
@@ -228,6 +240,13 @@ class ThreadFeedController extends ChangeNotifier
     return result;
   }
 
+  ThreadInfo? get rootThreadInfo {
+    if (pages.isNotEmpty) {
+      return pages.first;
+    }
+    return null;
+  }
+
   void onTapFilter(ThreadFeedType type) {
     if (threadType != type) {
       isDataDisplayedFromServer = false;
@@ -260,11 +279,4 @@ class ThreadFeedController extends ChangeNotifier
         return "All";
     }
   }
-}
-
-class _UserViewModel {
-  final String author;
-  final String permlink;
-
-  _UserViewModel({required this.author, required this.permlink});
 }
