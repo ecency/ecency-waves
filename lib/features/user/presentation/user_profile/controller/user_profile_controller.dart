@@ -28,19 +28,15 @@ class UserProfileController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Future<FollowCountModel> getFollowCount() async {
-  //   ActionSingleDataResponse<FollowCountModel> response =
-  //       await _userRepository.getFollowCount(accountName);
-  //   if (response.isSuccess) {
-  //     return response.data!;
-  //   } else {
-  //     return FollowCountModel(followerCount: 0, followingCount: 0);
-  //   }
-  // }
-
-  // Future<int> getUserReputation() async {
-  //   return await _userRepository.getUserReputation(accountName);
-  // }
+  Future<FollowCountModel> getFollowCount() async {
+    ActionSingleDataResponse<FollowCountModel> response =
+        await _userRepository.getFollowCount(accountName);
+    if (response.isSuccess) {
+      return response.data!;
+    } else {
+      return FollowCountModel(followerCount: 0, followingCount: 0);
+    }
+  }
 
   void refresh() {
     viewState = ViewState.loading;

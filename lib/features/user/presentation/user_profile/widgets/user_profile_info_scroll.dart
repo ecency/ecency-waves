@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:waves/core/utilities/act.dart';
 import 'package:waves/features/user/models/user_model.dart';
+import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_follow_info/user_profile_follow_info.dart';
 import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_info_scroll_template.dart';
 import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_info_scroll_tile.dart';
 
@@ -17,10 +18,10 @@ class UserProfileInfoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return UserProfileInfoScrollTemplate(
       children: [
-        // FollowInfo(
-        //   direction: Axis.horizontal,
-        //   accountName: data.name,
-        // ),
+        FollowInfo(
+          direction: Axis.horizontal,
+          accountName: data.name,
+        ),
         if (data.location != null && data.location!.isNotEmpty)
           UserProfileInfoScrollTile(
             icon: Icons.location_on,

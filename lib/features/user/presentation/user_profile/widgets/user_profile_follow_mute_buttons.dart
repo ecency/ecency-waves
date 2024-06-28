@@ -9,10 +9,9 @@ class UserProfileFollowMuteButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DuoTextButtons(
-        buttonHeight: buttonHeight,
-        buttonOneText: "Follow",
-        buttonTwoText: "Mute",
-        buttonOneOnTap: () {},
-        buttonTwoOnTap: () {});
+      buttonHeight: buttonHeight,
+      buttonOneText: "Follow",
+      buttonOneOnTap: () {},
+    );
   }
 }

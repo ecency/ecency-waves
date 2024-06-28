@@ -11,6 +11,7 @@ import 'package:waves/core/services/data_service/service.dart'
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/threads/models/post_detail/comment_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 
 class ApiService {
@@ -267,6 +268,32 @@ class ApiService {
       if (response.statusCode == 200) {
         return ActionSingleDataResponse<UserModel>(
             data: UserModel.fromJsonString(response.body).first,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<FollowCountModel>> getFollowCount(
+    String accountName,
+  ) async {
+    try {
+      var url = Uri.parse(
+          "https://hivexplorer.com/api/get_follow_count?account=$accountName");
+
+      http.Response response = await http.get(
+        url,
+      );
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<FollowCountModel>(
+            data: FollowCountModel.fromJsonString(response.body),
             status: ResponseStatus.success,
             isSuccess: true,
             errorMessage: "");
