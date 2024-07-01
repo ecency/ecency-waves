@@ -41,15 +41,15 @@ class InteractionTile extends StatelessWidget {
             ? MainAxisAlignment.start
             : MainAxisAlignment.spaceBetween,
         children: [
-          ThreadEarnings(
-            pendingPayoutvalue: item.pendingPayoutValue,
+          VoteIconButton(
+            item: item,
             iconColor: iconColor,
             iconGap: iconGap,
             textStyle: style(theme),
           ),
           gap(),
-          VoteIconButton(
-            item: item,
+          ThreadEarnings(
+            pendingPayoutvalue: item.pendingPayoutValue,
             iconColor: iconColor,
             iconGap: iconGap,
             textStyle: style(theme),

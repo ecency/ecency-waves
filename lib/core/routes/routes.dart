@@ -8,4 +8,5 @@ class Routes {
   static const String addCommentView = 'addCommentView';
   static const String hiveSignTransactionView = 'hiveSignTransactionView';
   static const String commentDetailView = 'commentDetailView';
+  static const String userProfileView = 'userProfile';
 }

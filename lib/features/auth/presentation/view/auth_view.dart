@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/extensions/ui.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
@@ -19,11 +21,13 @@ class AuthView extends StatefulWidget {
 
 class _AuthViewState extends State<AuthView> {
   final TextEditingController accountNameController = TextEditingController();
+  final TextEditingController postingKeyController = TextEditingController();
   final PostingAuthController postingAuthController = PostingAuthController();
 
   @override
   void dispose() {
     accountNameController.dispose();
+    postingAuthController.dispose();
     super.dispose();
   }
 
@@ -31,7 +35,7 @@ class _AuthViewState extends State<AuthView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Login"),
+        title:  Text(LocaleText.login.tr()),
       ),
       body: SafeArea(
         child: Padding(
@@ -40,7 +44,18 @@ class _AuthViewState extends State<AuthView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AuthTextField(textEditingController: accountNameController),
+                AuthTextField(
+                    hintText: LocaleText.username.tr(),
+                    textEditingController: accountNameController),
+                const Gap(15),
+                AuthTextField(
+                    hintText: LocaleText.postingKey.tr(),
+                    isPassword: true,
+                    leading: const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(Icons.key),
+                    ),
+                    textEditingController: postingKeyController),
                 const Gap(20),
                 AuthButton(
                     authType: AuthType.postingKey, onTap: onPostingLoginTap),
@@ -68,7 +83,7 @@ class _AuthViewState extends State<AuthView> {
   void onHiveAuthLoginTap(AuthType type) {
     String accountName = accountNameController.text.trim().toLowerCase();
     if (accountName.isEmpty) {
-      context.showSnackBar('Please enter the username');
+      context.showSnackBar(LocaleText.pleaseEnterTheUsername.tr());
     } else {
       if (type == AuthType.hiveKeyChain) {
         context.platformPushNamed(Routes.hiveAuthView, queryParameters: {
@@ -93,9 +108,12 @@ class _AuthViewState extends State<AuthView> {
   void onPostingLoginTap() async {
     String accountName = accountNameController.text.trim().toLowerCase();
     if (accountName.isEmpty) {
-      context.showSnackBar('Please enter the username');
+      context.showSnackBar(LocaleText.pleaseEnterTheUsername.tr());
+    }else if(postingKeyController.text.trim().isEmpty){
+      context.showSnackBar(LocaleText.pleaseEnterThePostingKey.tr());
     } else {
       await postingAuthController.validatePostingKey(
+        postingKey: postingKeyController.text.trim(),
         showLoader: () => context.showLoader(),
         hideLoader: () => context.hideLoader(),
         accountName,

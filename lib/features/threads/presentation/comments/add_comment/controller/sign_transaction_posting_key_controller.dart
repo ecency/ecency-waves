@@ -16,6 +16,7 @@ class SignTransactionPostingKeyController {
     required String parentPermlink,
     required UserAuthModel<PostingAuthModel> authData,
     required Function(String) onSuccess,
+    required VoidCallback onFailure,
     required Function(String) showToast,
   }) async {
     String generatedPermlink = Act.generatePermlink(authData.accountName);
@@ -34,6 +35,7 @@ class SignTransactionPostingKeyController {
       onSuccess(generatedPermlink);
     } else {
       showToast(LocaleText.emCommentDeclineMessage);
+      onFailure();
     }
   }
 

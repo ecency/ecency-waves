@@ -4,8 +4,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/coloured_button.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
@@ -16,6 +16,7 @@ import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
+import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_hive_signer_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
@@ -28,11 +29,13 @@ class UpvoteDialog extends StatefulWidget {
       {super.key,
       required this.author,
       required this.permlink,
-      required this.rootContext});
+      required this.rootContext,
+      required this.onSuccess});
 
   final String author;
   final String permlink;
   final BuildContext rootContext;
+  final Function(ActiveVoteModel) onSuccess;
 
   @override
   State<UpvoteDialog> createState() => _UpvoteDialogState();
@@ -178,10 +181,10 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         author: widget.author,
         permlink: widget.permlink,
         authdata: userData as UserAuthModel<PostingAuthModel>,
-        onSuccess: () {},
+        onSuccess: () =>
+            widget.onSuccess(generateVoteModel(widget.rootContext)),
         showToast: (message) => widget.rootContext.showSnackBar(message));
     widget.rootContext.hideLoader();
-    // Navigator.pop(context);
   }
 
   void _hiveSignerTransaction(
@@ -191,7 +194,8 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         author: widget.author,
         permlink: widget.permlink,
         authdata: userData as UserAuthModel<HiveSignerAuthModel>,
-        onSuccess: () {},
+        onSuccess: () =>
+            widget.onSuccess(generateVoteModel(widget.rootContext)),
         showToast: (message) => widget.rootContext.showSnackBar(message));
     widget.rootContext.hideLoader();
   }
@@ -216,8 +220,19 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
             permlink: widget.permlink,
             weight: weight * 10000,
             ishiveKeyChainMethod: authType == AuthType.hiveKeyChain);
-    context.platformPushNamed(Routes.hiveSignTransactionView,
-        extra: navigationData);
+    context
+        .pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
+        .then((value) {
+      if (value != null) {
+        widget.onSuccess(generateVoteModel(widget.rootContext));
+      }
+    });
+  }
+
+  ActiveVoteModel generateVoteModel(BuildContext context) {
+    return ActiveVoteModel(
+        weight: (weight * 10000).toInt(),
+        voter: context.read<UserController>().userName!);
   }
 
   Widget percentageButtons(double value) {

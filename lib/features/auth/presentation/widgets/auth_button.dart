@@ -1,4 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
 
 class AuthButton extends StatelessWidget {
@@ -29,20 +32,36 @@ class AuthButton extends StatelessWidget {
 
   Widget child(ThemeData theme) {
     if (authType == AuthType.hiveKeyChain) {
-      return Image.asset(
-        'assets/images/auth/hive_key_chain_button.png',
-        height: 30,
-      );
+      return _buttonChildren(
+          theme, 'assets/images/auth/hive-keychain-logo.png', "Keychain");
     } else if (authType == AuthType.hiveAuth) {
-      return Image.asset(
-        'assets/images/auth/hive_auth_button.png',
-        height: 30,
-      );
+      return _buttonChildren(
+          theme, 'assets/images/auth/hiveauth_icon.png', "Hiveauth");
+    } else if (authType == AuthType.hiveSign) {
+      return _buttonChildren(
+          theme, 'assets/images/auth/hive-signer-logo.png', "Hive Signer");
     } else {
       return Text(
-        authType == AuthType.postingKey ? "Paste Posting Key" : "Hive Signer",
+        LocaleText.loginWithPostingKey.tr(),
         style: theme.textTheme.bodyMedium,
       );
     }
+  }
+
+  Row _buttonChildren(ThemeData theme, String image, String text) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset(
+          image,
+          height: 30,
+        ),
+        const Gap(10),
+        Text(
+          text,
+          style: theme.textTheme.bodyMedium,
+        )
+      ],
+    );
   }
 }

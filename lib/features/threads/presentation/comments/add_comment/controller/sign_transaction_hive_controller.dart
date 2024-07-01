@@ -51,7 +51,7 @@ class SignTransactionHiveController extends HiveTransactionController {
       } else if (data.type == SocketType.signWait) {
         _onSocketSignWait(data);
       } else if (data.type == SocketType.signAck) {
-        onSuccess(_generatedPermlink);
+        onSuccess(transactionType == SignTransactionType.comment ? _generatedPermlink : true);
         showError(successMessage);
         resetListeners();
       } else if (data.type == SocketType.signNack ||

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
+import 'package:waves/core/routes/route_keys.dart';
+import 'package:waves/core/routes/routes.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 
 class ThreadUserInfoTile extends StatelessWidget {
@@ -19,6 +22,7 @@ class ThreadUserInfoTile extends StatelessWidget {
     return Row(
       children: [
         UserProfileImage(
+          onTap: () => _pushToUserProfile(context),
           url: item.author,
           verticalPadding: 0,
         ),
@@ -30,10 +34,13 @@ class ThreadUserInfoTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Expanded(
-                child: Text(
-                  item.author,
-                  style: theme.textTheme.bodyMedium!
-                      .copyWith(fontWeight: FontWeight.bold),
+                child: GestureDetector(
+                  onTap: () => _pushToUserProfile(context),
+                  child: Text(
+                    item.author,
+                    style: theme.textTheme.bodyMedium!
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const Gap(
@@ -52,5 +59,10 @@ class ThreadUserInfoTile extends StatelessWidget {
         )
       ],
     );
+  }
+
+  Future<Object?> _pushToUserProfile(BuildContext context) {
+    return context.pushNamed(Routes.userProfileView,
+        queryParameters: {RouteKeys.accountName: item.author});
   }
 }

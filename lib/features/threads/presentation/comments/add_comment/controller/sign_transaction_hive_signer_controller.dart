@@ -18,6 +18,7 @@ class SignTransactionHiveSignerController {
     required String parentPermlink,
     required UserAuthModel<HiveSignerAuthModel> authData,
     required Function(String) onSuccess,
+    required VoidCallback onFailure,
     required Function(String) showToast,
   }) async {
     String generatedPermlink = Act.generatePermlink(authData.accountName);
@@ -39,6 +40,7 @@ class SignTransactionHiveSignerController {
       onSuccess(generatedPermlink);
     } else {
       showToast(LocaleText.emCommentDeclineMessage);
+      onFailure();
     }
   }
 
