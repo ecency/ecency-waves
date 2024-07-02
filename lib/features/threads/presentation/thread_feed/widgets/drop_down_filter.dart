@@ -1,8 +1,10 @@
 import 'package:cool_dropdown/cool_dropdown.dart';
 import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 
 class DropDownFilter extends StatefulWidget {
@@ -16,11 +18,9 @@ class DropDownFilter extends StatefulWidget {
 
 class _DropDownFilterState extends State<DropDownFilter> {
   final DropdownController _dropdownController = DropdownController();
-  final PageController _pageController = PageController();
 
   @override
   void dispose() {
-    _pageController.dispose();
     _dropdownController.dispose();
     super.dispose();
   }
@@ -31,13 +31,11 @@ class _DropDownFilterState extends State<DropDownFilter> {
     final controller = context.read<ThreadFeedController>();
     final List types = ThreadFeedType.values.sublist(1);
     String defaultTypeString =
-        controller.gethreadName(type: controller.threadType);
+        Thread.gethreadName(type: controller.threadType);
     return AnimatedContainer(
-      margin: const EdgeInsets.only(right: 10),
       key: const ValueKey('dropdown'),
       duration: const Duration(milliseconds: 200),
       width: 150,
-      height: 30,
       child: Stack(
         children: [
           CoolDropdown<ThreadFeedType>(
@@ -62,15 +60,24 @@ class _DropDownFilterState extends State<DropDownFilter> {
                 .map(
                   (e) => CoolDropdownItem<ThreadFeedType>(
                       isSelected: e == controller.threadType,
-                      label: controller.gethreadName(type: e),
+                      selectedIcon: Padding(
+                        padding: const EdgeInsets.only(left: 10.0),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 12,
+                          backgroundImage:
+                              AssetImage(Thread.getThreadImage(type: e)),
+                        ),
+                      ),
+                      label: Thread.gethreadName(type: e),
                       value: e),
                 )
                 .toList(),
             onChange: (type) {
-              widget.onChanged(type);
-              _animateToPage(types
-                  .indexWhere((element) => element == type));
-              setState(() {});
+              if (controller.threadType != type) {
+                widget.onChanged(type);
+                setState(() {});
+              }
               _dropdownController.close();
             },
             resultOptions: ResultOptions(
@@ -88,25 +95,34 @@ class _DropDownFilterState extends State<DropDownFilter> {
             ),
           ),
           Positioned.fill(
-            top: 5,
-            left: 10,
+            top: 0,
+            left: 0,
+            right: 0,
             child: IgnorePointer(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 24.0),
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: List.generate(
-                    types.length,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(right: 5.0),
-                      child: Text(
-                        controller.gethreadName(
-                            type: types[index]),
-                        textAlign: TextAlign.right,
+              child: Container(
+                color: theme.cardColor,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 24.0),
+                  child: Padding(
+                        padding: const EdgeInsets.only(right: 5.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 15,
+                              backgroundColor: Colors.transparent,
+                              backgroundImage: AssetImage(Thread
+                                  .getThreadImage(type:controller.threadType)),
+                            ),
+                            const Gap(10),
+                            Text(
+                              Thread.gethreadName(type: controller.threadType),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
+                   
                 ),
               ),
             ),
@@ -116,8 +132,4 @@ class _DropDownFilterState extends State<DropDownFilter> {
     );
   }
 
-  void _animateToPage(int index) {
-    _pageController.animateToPage(index,
-        duration: const Duration(milliseconds: 150), curve: Curves.easeIn);
-  }
 }

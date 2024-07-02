@@ -256,20 +256,7 @@ class ThreadFeedModel extends Equatable {
     return validUrls.isNotEmpty ? validUrls : null;
   }
 
-  static void sortList(List<ThreadFeedModel> list, {bool isAscending = false}) {
-    list.sort((a, b) {
-      var bTime = isAscending ? a.created : b.created;
-      var aTime = isAscending ? b.created : a.created;
-      if (aTime.isAfter(bTime)) {
-        return -1;
-      } else if (bTime.isAfter(aTime)) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-  }
-
+  
   static List<ThreadFeedModel> fromRawJson(String str) =>
       ThreadFeedModel.parseThreads(json.decode(str));
 

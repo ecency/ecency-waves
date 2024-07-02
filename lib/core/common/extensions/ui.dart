@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/dialog/log_in_dialog.dart';
+import 'package:waves/features/user/view/user_controller.dart';
 
 extension UI on BuildContext {
   PageRouteBuilder fadePageRoute(Widget screen) {
@@ -68,11 +71,28 @@ extension UI on BuildContext {
       context: this,
       useRootNavigator: true,
       barrierDismissible: false,
-      builder: (context) =>  _loader(context, canPop),
+      builder: (context) => _loader(context, canPop),
     );
   }
 
   void hideLoader() {
     Navigator.of(this).pop();
+  }
+
+  void authenticatedAction({required VoidCallback action}) {
+    if (read<UserController>().isUserLoggedIn) {
+      action();
+    } else {
+      showLoginDialog();
+    }
+  }
+
+  void showLoginDialog() {
+    showDialog(
+      context: this,
+      builder: (_) {
+        return const LogInDialog();
+      },
+    );
   }
 }

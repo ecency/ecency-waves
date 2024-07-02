@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:waves/core/common/widgets/dialog/log_in_dialog.dart';
+import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/icon_with_text.dart';
 import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
@@ -39,7 +39,7 @@ class _VoteIconButtonState extends State<VoteIconButton> {
 
   @override
   void didChangeDependencies() {
-    var userController= Provider.of<UserController>(context);
+    var userController = Provider.of<UserController>(context);
     isVoted = isVotedByUser(context, userController);
     super.didChangeDependencies();
   }
@@ -60,7 +60,7 @@ class _VoteIconButtonState extends State<VoteIconButton> {
   }
 
   void _onTap(BuildContext rootContext) {
-    if (rootContext.read<UserController>().isUserLoggedIn) {
+    rootContext.authenticatedAction(action: () {
       if (!isVoted) {
         showModalBottomSheet(
           context: rootContext,
@@ -85,14 +85,7 @@ class _VoteIconButtonState extends State<VoteIconButton> {
           },
         );
       }
-    } else {
-      showDialog(
-        context: rootContext,
-        builder: (context) {
-          return const LogInDialog();
-        },
-      );
-    }
+    });
   }
 
   bool isVotedByUser(BuildContext context, UserController userController) {

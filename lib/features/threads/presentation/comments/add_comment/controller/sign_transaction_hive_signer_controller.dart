@@ -24,7 +24,7 @@ class SignTransactionHiveSignerController {
     String generatedPermlink = Act.generatePermlink(authData.accountName);
     ActionSingleDataResponse commentResponse =
         await _threadRepository.commentUsingHiveSigner(
-      authData.accountName,
+      authData.auth.token,
       BroadcastModel(
         type: BroadCastType.comment,
         data: CommentBroadCastModel(

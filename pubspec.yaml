@@ -91,6 +91,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/auth/
+    - assets/images/logo/
     - assets/translations/
 
   fonts:

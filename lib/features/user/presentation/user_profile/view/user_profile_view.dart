@@ -38,22 +38,24 @@ class UserProfileView extends StatelessWidget {
               ),
             ),
             backgroundColor: theme.colorScheme.tertiaryContainer,
-            body: Selector<UserProfileController, ViewState>(
-              selector: (_, provider) => provider.viewState,
-              builder: (context, value, child) {
-                if (value == ViewState.data) {
-                  return _dataState(theme);
-                } else if (value == ViewState.empty) {
-                  return const Emptystate(
-                      icon: Icons.hourglass_empty, text: 'No Data found');
-                } else if (value == ViewState.error) {
-                  return ErrorState(
-                      showRetryButton: true,
-                      onTapRetryButton: controller.refresh);
-                } else {
-                  return const LoadingState();
-                }
-              },
+            body: SafeArea(
+              child: Selector<UserProfileController, ViewState>(
+                selector: (_, provider) => provider.viewState,
+                builder: (context, value, child) {
+                  if (value == ViewState.data) {
+                    return _dataState(theme);
+                  } else if (value == ViewState.empty) {
+                    return const Emptystate(
+                        icon: Icons.hourglass_empty, text: 'No Data found');
+                  } else if (value == ViewState.error) {
+                    return ErrorState(
+                        showRetryButton: true,
+                        onTapRetryButton: controller.refresh);
+                  } else {
+                    return const LoadingState();
+                  }
+                },
+              ),
             ));
       },
     );
@@ -64,9 +66,9 @@ class UserProfileView extends StatelessWidget {
       selector: (_, provider) => provider.data!,
       builder: (context, data, chidld) {
         return UserProfileViewWidget(
-            accountName: accountName,
-            data: data,
-            );
+          accountName: accountName,
+          data: data,
+        );
       },
     );
   }

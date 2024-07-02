@@ -1,11 +1,12 @@
 import 'package:waves/core/services/local_service.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/settings/repository/settings_repository.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 
-class ThreadLocalRepository {
+class ThreadLocalRepository extends SettingsRepository{
   final LocalService _localService;
 
-  ThreadLocalRepository({required LocalService localService})
+  ThreadLocalRepository({required super.localService})
       : _localService = localService;
 
   List<ThreadFeedModel>? readLocalThreads(ThreadFeedType type){

@@ -10,7 +10,7 @@ class BookmarksView extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Bookmarks"),
       ),
-      body: const ThreadBookmarkWidget(),
+      body: const SafeArea(child: ThreadBookmarkWidget()),
     );
   }
 }

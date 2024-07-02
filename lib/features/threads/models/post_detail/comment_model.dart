@@ -9,12 +9,8 @@ class CommentModel {
     try {
       List<ThreadFeedModel> items = [];
       if (json != null) {
-        int count = 0;
         json.forEach((key, value) {
-          if (count != 0) {
             items.add(ThreadFeedModel.fromJson(value));
-          }
-          count++;
         });
       }
       return items;

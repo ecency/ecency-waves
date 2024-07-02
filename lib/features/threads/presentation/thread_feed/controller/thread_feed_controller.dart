@@ -3,6 +3,7 @@ import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/providers/bookmark_provider.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
 import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
@@ -17,7 +18,7 @@ class ThreadFeedController extends ChangeNotifier
     implements ControllerInterface<ThreadFeedModel> {
   final ThreadRepository _repository = getIt<ThreadRepository>();
   final ThreadLocalRepository _localRepository = getIt<ThreadLocalRepository>();
-  ThreadFeedType threadType = ThreadFeedType.ecency;
+  late ThreadFeedType threadType;
   final AccountPostType _postType = AccountPostType.posts;
   final BookmarkProvider bookmarkProvider =
       BookmarkProvider<ThreadBookmarkModel>(type: BookmarkType.thread);
@@ -33,6 +34,7 @@ class ThreadFeedController extends ChangeNotifier
   ViewState viewState = ViewState.loading;
 
   ThreadFeedController() {
+    threadType = _localRepository.readDefaultThread();
     super.pageLimit = 10;
     init();
   }
@@ -49,7 +51,7 @@ class ThreadFeedController extends ChangeNotifier
   void _loadSingleFeedType(ThreadFeedType type) async {
     _loadLocalThreads(type);
     ActionListDataResponse<ThreadFeedModel> accountPostResponse =
-        await _repository.getAccountPosts(gethreadName(), _postType, pageLimit);
+        await _repository.getAccountPosts(_getThreadAccountName(), _postType, pageLimit);
     if (accountPostResponse.isSuccess) {
       if (accountPostResponse.data != null &&
           accountPostResponse.data!.isNotEmpty) {
@@ -115,7 +117,7 @@ class ThreadFeedController extends ChangeNotifier
             .expand((list) => list!)
             .toList();
         if (type == threadType) {
-          ThreadFeedModel.sortList(singleFeedList);
+          Thread.sortList(singleFeedList);
           if (totalFeeds.isEmpty) {
             viewState = ViewState.empty;
           } else {
@@ -133,7 +135,7 @@ class ThreadFeedController extends ChangeNotifier
 
   Future<List<ThreadFeedModel>?> _loadFeed(ThreadFeedType type) async {
     ActionSingleDataResponse<ThreadFeedModel> postResponse = await _repository
-        .getFirstAccountPost(gethreadName(type: type), _postType, 1);
+        .getFirstAccountPost(_getThreadAccountName(type: type), _postType, 1);
     if (postResponse.isSuccess) {
       ActionListDataResponse<ThreadFeedModel> response = await _repository
           .getcomments(postResponse.data!.author, postResponse.data!.permlink);
@@ -232,12 +234,8 @@ class ThreadFeedController extends ChangeNotifier
   List<ThreadFeedModel> filterTopLevelComments(String parentPermlink,
       {List<ThreadFeedModel>? items}) {
     List<ThreadFeedModel> result = items ?? this.items;
-    result = result
-        .where((element) =>
-            element.depth == 1 && element.parentPermlink == parentPermlink)
-        .toList();
-    ThreadFeedModel.sortList(result, isAscending: false);
-    return result;
+    return Thread.filterTopLevelComments(parentPermlink,
+        items: result, depth: 1);
   }
 
   ThreadInfo? get rootThreadInfo {
@@ -265,7 +263,7 @@ class ThreadFeedController extends ChangeNotifier
     }
   }
 
-  String gethreadName({ThreadFeedType? type}) {
+    String _getThreadAccountName({ThreadFeedType? type}) {
     switch (type ?? threadType) {
       case ThreadFeedType.ecency:
         return "ecency.waves";
@@ -279,4 +277,5 @@ class ThreadFeedController extends ChangeNotifier
         return "All";
     }
   }
+
 }

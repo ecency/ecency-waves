@@ -6,6 +6,7 @@ import 'package:waves/features/auth/presentation/view/auth_key_chain_view.dart';
 import 'package:waves/features/auth/presentation/view/auth_view.dart';
 import 'package:waves/features/auth/presentation/view/hive_signer_auth_view.dart';
 import 'package:waves/features/bookmarks/views/thread_bookmark/bookmark_view.dart';
+import 'package:waves/features/settings/presentation/setting/view/setting_view.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/view/add_comment_view.dart';
@@ -48,7 +49,7 @@ class AppRouter {
             return AddCommentView(
               author: accountName,
               permlink: permlink,
-              depth: depth!= null ? int.tryParse(depth) : null,
+              depth: depth != null ? int.tryParse(depth) : null,
             );
           }),
       GoRoute(
@@ -95,8 +96,15 @@ class AppRouter {
         name: Routes.userProfileView,
         builder: (context, state) {
           return UserProfileView(
-            accountName:state.uri.queryParameters[RouteKeys.accountName]!,
+            accountName: state.uri.queryParameters[RouteKeys.accountName]!,
           );
+        },
+      ),
+      GoRoute(
+        path: '/${Routes.settingsView}',
+        name: Routes.settingsView,
+        builder: (context, state) {
+          return const SettingView();
         },
       ),
     ];

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:waves/core/common/extensions/image_thumbs.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/view_image.dart';
 import 'package:waves/core/utilities/act.dart';
@@ -20,11 +21,15 @@ class ThreadMarkDown extends StatelessWidget {
     final theme = Theme.of(context);
     return MarkdownBody(
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+        blockquoteDecoration: const BoxDecoration(color: Colors.transparent),
+        blockquotePadding: EdgeInsets.zero,
         a: _threadLinkTextStyle(theme),
         p: _threadTextStyle(theme),
       ),
       inlineSyntaxes: [HashtagSyntax()],
       data: Parser.removeAllHtmlTags(item.body),
+      // data:
+      //     "![image](https://img.inleo.io/DQmVABFnMDwPhMe6ZnRN7nG8RAo37uk9v9QMQyiaQpd64bk/Screenshot_20240627-081817.jpg)",
       builders: {
         'hashtag': HashTagBuilder(theme: theme),
       },
@@ -48,7 +53,9 @@ class ThreadMarkDown extends StatelessWidget {
             child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(12)),
                 child: Image.network(
-                  uri.toString(),
+                  context.proxyImage(
+                    uri.toString(),
+                  ),
                   frameBuilder:
                       (context, child, frame, wasSynchronouslyLoaded) =>
                           frame == null
@@ -89,9 +96,3 @@ class ThreadMarkDown extends StatelessWidget {
         .copyWith(fontWeight: FontWeight.w300, color: theme.primaryColor);
   }
 }
-
-
-
-
-
-

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/repository/thread_repository.dart';
 
@@ -35,7 +36,7 @@ class CommentDetailController extends ChangeNotifier {
           response.data!.remove(thread.first);
         }
         items = response.data!;
-        items = refactorComments(items, permlink);
+        items =  Thread.filterTopLevelComments(permlink,items: items,depth: mainThread.depth+1 );
         if (items.isNotEmpty) {
           viewState = ViewState.data;
         } else {
@@ -56,48 +57,9 @@ class CommentDetailController extends ChangeNotifier {
     _init();
   }
 
-  List<ThreadFeedModel> refactorComments(
-      List<ThreadFeedModel> content, String parentPermlink) {
-    List<ThreadFeedModel> refactoredComments = [];
-    var newContent = List<ThreadFeedModel>.from(content);
-    for (var e in newContent) {
-      e = e.copyWith(visited: false);
-    }
-    ThreadFeedModel.sortList(newContent);
-    refactoredComments.addAll(
-        newContent.where((e) => e.parentPermlink == parentPermlink).toList());
-    while (refactoredComments.where((e) => e.visited == false).isNotEmpty) {
-      var firstComment =
-          refactoredComments.where((e) => e.visited == false).first;
-      var indexOfFirstElement = refactoredComments.indexOf(firstComment);
-      if (firstComment.children != 0) {
-        List<ThreadFeedModel> children = newContent
-            .where((e) => e.parentPermlink == firstComment.permlink)
-            .toList();
-        children.sort((a, b) {
-          var aTime = b.created;
-          var bTime = a.created;
-          if (aTime.isAfter(bTime)) {
-            return -1;
-          } else if (bTime.isAfter(aTime)) {
-            return 1;
-          } else {
-            return 0;
-          }
-        });
-        refactoredComments.insertAll(indexOfFirstElement + 1, children);
-      }
-      int index =
-          refactoredComments.indexWhere((element) => element == firstComment);
-      refactoredComments[index] = firstComment.copyWith(visited: true);
-    }
-    return refactoredComments;
-  }
-
   void onCommentAdded(ThreadFeedModel thread) {
     mainThread = mainThread.copyWith(children: mainThread.children! + 1);
-    items = [...items, thread];
-    items = refactorComments(items, permlink);
+    items = [thread,...items];
     if (viewState == ViewState.empty) {
       viewState = ViewState.data;
     }

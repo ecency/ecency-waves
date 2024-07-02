@@ -4,6 +4,7 @@ import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dar
 
 class LocalService {
   final GetStorage _getStorage;
+  final _defaultThreadKey = 'defaultThread';
 
   LocalService({required GetStorage getStorage}) : _getStorage = getStorage;
 
@@ -18,5 +19,15 @@ class LocalService {
     String? data = _getStorage.read(enumToString(type));
     if (data == null) return null;
     return ThreadFeedModel.fromRawJson(data);
+  }
+
+  Future<void> writeDefaultThread(ThreadFeedType type) async {
+    await _getStorage.write(_defaultThreadKey, enumToString(type));
+  }
+
+  ThreadFeedType? readDefaultThread() {
+    String? data = _getStorage.read(_defaultThreadKey);
+    if (data == null) return null;
+    return enumFromString(data, ThreadFeedType.values);
   }
 }

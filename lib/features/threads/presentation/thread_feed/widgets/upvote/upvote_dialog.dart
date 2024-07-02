@@ -1,7 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -42,12 +39,10 @@ class UpvoteDialog extends StatefulWidget {
 }
 
 class _UpvoteDialogState extends State<UpvoteDialog> {
-  double weight = 0.1;
+  double weight = 0.01;
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    log(widget.author);
-    log(widget.permlink);
     return Container(
       margin: const EdgeInsets.all(15.0),
       decoration: BoxDecoration(
@@ -157,7 +152,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
             borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20)),
-            text: LocaleText.done,
+            text: LocaleText.upvote,
             onPressed: () {
               Navigator.pop(context);
               if (userData.isPostingKeyLogin) {

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -38,15 +40,19 @@ class CommentDetailView extends StatelessWidget {
           selector: (_, myType) => myType.mainThread,
           builder: (context, item, child) {
             return Scaffold(
-              appBar: AppBar(),
+              appBar: AppBar(
+                title: const Text("Post"),
+              ),
               bottomNavigationBar: _bottomBar(theme, item),
-              body: Padding(
-                padding: kScreenVerticalPadding,
-                child: CustomScrollView(
-                  slivers: [
-                    _mainThread(item, userController, context, theme),
-                    _comments()
-                  ],
+              body: SafeArea(
+                child: Padding(
+                  padding: kScreenVerticalPadding,
+                  child: CustomScrollView(
+                    slivers: [
+                      _mainThread(item, userController, context, theme),
+                      _comments()
+                    ],
+                  ),
                 ),
               ),
             );
@@ -66,6 +72,8 @@ class CommentDetailView extends StatelessWidget {
                 previous != next || previous.length != next.length,
             selector: (_, myType) => myType.items,
             builder: (context, replies, child) {
+              log(item.author);
+              log(item.permlink);
               return SliverList.separated(
                   itemCount: replies.length,
                   itemBuilder: (context, index) {
@@ -141,7 +149,7 @@ class CommentDetailView extends StatelessWidget {
                                 Border.all(color: theme.colorScheme.tertiary),
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(20))),
-                        child:  Text("${LocaleText.addAComment}..."),
+                        child: Text("${LocaleText.addAComment}..."),
                       ),
                     ),
                   )
@@ -184,9 +192,7 @@ class CommentDetailView extends StatelessWidget {
         },
       ).then((data) {
         if (data != null && data is ThreadFeedModel) {
-          // Navigator.pop(context);
-          print(data);
-          // context.read<CommentDetailController>().onCommentAdded(data);
+          context.read<CommentDetailController>().onCommentAdded(data);
         }
       });
     }
