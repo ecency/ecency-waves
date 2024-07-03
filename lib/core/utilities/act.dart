@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,10 +11,14 @@ class Act {
     var uri = Uri.tryParse(url);
     if (uri != null) {
       var canLaunch = await canLaunchUrl(uri);
-      if (canLaunch) {
+      if (Platform.isIOS) {
         await launchUrl(uri);
       } else {
-        dev.log("URL can't be launched.");
+        if (canLaunch) {
+          await launchUrl(uri);
+        } else {
+          dev.log("URL can't be launched.");
+        }
       }
     }
   }

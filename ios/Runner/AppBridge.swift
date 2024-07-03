@@ -135,7 +135,7 @@ class AppBridge: NSObject {
                         let username = arguments ["username"] as? String,
                         let author = arguments ["author"] as? String,
                         let permlink = arguments ["permlink"] as? String,
-                        let weight = arguments ["weight"] as? String,
+                        let weight = arguments ["weight"] as? Int,
                         let postingKey = arguments ["postingKey"] as? String,
                         let token = arguments ["token"] as? String,
                         let authKey = arguments ["authKey"] as? String
