@@ -82,7 +82,7 @@ class _AddCommentViewState extends State<AddCommentView> {
           } else if (userData.isHiveSignerLogin) {
             _hiveSignerCommentTransaction(comment, userData, context);
           } else {
-            _dialogForHiveTransaction(context, comment, userData);
+            _onTransactionDecision(comment, AuthType.hiveKeyChain, context, userData);
           }
         },
         child: const Icon(Icons.reply),

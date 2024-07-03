@@ -88,7 +88,7 @@ Future<String> voteContentFromPlatform(
     'username': username,
     'author': author,
     'permlink': permlink,
-    'weight': weight,
+    'weight': weight.toInt(),
     'postingKey': postingKey ?? '',
     'token': token ?? '',
     'authKey': authKey ?? '',

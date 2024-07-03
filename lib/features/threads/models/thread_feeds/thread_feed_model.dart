@@ -244,6 +244,8 @@ class ThreadFeedModel extends Equatable {
     return null;
   }
 
+  String get identifier => "$author-$permlink";
+
   List<String>? _extractImages() {
     String pattern =
         r"https?:\/\/(?!(?:.*?\/@[a-zA-Z0-9]+\/[a-zA-Z0-9]+))(?:[^)\s]+)";
@@ -256,7 +258,6 @@ class ThreadFeedModel extends Equatable {
     return validUrls.isNotEmpty ? validUrls : null;
   }
 
-  
   static List<ThreadFeedModel> fromRawJson(String str) =>
       ThreadFeedModel.parseThreads(json.decode(str));
 

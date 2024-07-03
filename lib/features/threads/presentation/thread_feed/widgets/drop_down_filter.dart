@@ -30,12 +30,11 @@ class _DropDownFilterState extends State<DropDownFilter> {
     final theme = Theme.of(context);
     final controller = context.read<ThreadFeedController>();
     final List types = ThreadFeedType.values.sublist(1);
-    String defaultTypeString =
-        Thread.gethreadName(type: controller.threadType);
+    String defaultTypeString = Thread.gethreadName(type: controller.threadType);
     return AnimatedContainer(
       key: const ValueKey('dropdown'),
       duration: const Duration(milliseconds: 200),
-      width: 150,
+      width: 175,
       child: Stack(
         children: [
           CoolDropdown<ThreadFeedType>(
@@ -101,28 +100,26 @@ class _DropDownFilterState extends State<DropDownFilter> {
             child: IgnorePointer(
               child: Container(
                 color: theme.cardColor,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 24.0),
-                  child: Padding(
-                        padding: const EdgeInsets.only(right: 5.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircleAvatar(
-                              radius: 15,
-                              backgroundColor: Colors.transparent,
-                              backgroundImage: AssetImage(Thread
-                                  .getThreadImage(type:controller.threadType)),
-                            ),
-                            const Gap(10),
-                            Text(
-                              Thread.gethreadName(type: controller.threadType),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                   
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 15,
+                      backgroundColor: Colors.transparent,
+                      backgroundImage: AssetImage(
+                          Thread.getThreadImage(type: controller.threadType)),
+                    ),
+                    const Gap(10),
+                    Text(
+                      Thread.gethreadName(type: controller.threadType),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Gap(2),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4.0),
+                      child: Icon(Icons.arrow_drop_down),
+                    )
+                  ],
                 ),
               ),
             ),
@@ -131,5 +128,4 @@ class _DropDownFilterState extends State<DropDownFilter> {
       ),
     );
   }
-
 }

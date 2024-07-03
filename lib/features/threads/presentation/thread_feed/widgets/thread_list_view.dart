@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
+import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_feed_divider.dart';
@@ -27,6 +28,7 @@ class _ThreadListViewState extends State<ThreadListView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final controller = context.read<ThreadFeedController>();
     return Stack(
       children: [
         Selector<ThreadFeedController, List<ThreadFeedModel>>(
@@ -52,27 +54,31 @@ class _ThreadListViewState extends State<ThreadListView> {
                 ),
                 Expanded(
                   child: ScrollEndListener(
-                    loadNextPage:()=> context.read<ThreadFeedController>().loadNextPage() ,
-                    child: ListView.separated(
-                      padding: kScreenVerticalPadding,
-                      controller: scrollController,
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            ThreadTile(item: items[index]),
-                            if (index == items.length - 1)
-                              PaginationLoader(
-                                pageVisibilityListener: (context) =>
-                                    context.select<ThreadFeedController, bool>(
-                                        (value) => value.isNextPageLoading),
-                              ),
-                          ],
-                        );
-                      },
-                      separatorBuilder: (context, index) {
-                        return const ThreadFeedDivider();
-                      },
+                    loadNextPage: () => controller.loadNextPage(),
+                    child: RefreshIndicator(
+                      key: ValueKey(enumToString(controller.threadType)),
+                      onRefresh: controller.refresh,
+                      child: ListView.separated(
+                        padding: kScreenVerticalPadding,
+                        controller: scrollController,
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              ThreadTile(item: items[index]),
+                              if (index == items.length - 1)
+                                PaginationLoader(
+                                  pageVisibilityListener: (context) => context
+                                      .select<ThreadFeedController, bool>(
+                                          (value) => value.isNextPageLoading),
+                                ),
+                            ],
+                          );
+                        },
+                        separatorBuilder: (context, index) {
+                          return const ThreadFeedDivider();
+                        },
+                      ),
                     ),
                   ),
                 ),

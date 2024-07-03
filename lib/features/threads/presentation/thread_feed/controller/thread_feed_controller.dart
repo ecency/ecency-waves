@@ -40,18 +40,19 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   @override
-  void init() async {
+  Future<void> init() async {
     if (threadType == ThreadFeedType.all) {
-      _loadAllFeedType(threadType);
+      await _loadAllFeedType(threadType);
     } else {
-      _loadSingleFeedType(threadType);
+      await _loadSingleFeedType(threadType);
     }
   }
 
-  void _loadSingleFeedType(ThreadFeedType type) async {
+  Future<void> _loadSingleFeedType(ThreadFeedType type) async {
     _loadLocalThreads(type);
     ActionListDataResponse<ThreadFeedModel> accountPostResponse =
-        await _repository.getAccountPosts(_getThreadAccountName(), _postType, pageLimit);
+        await _repository.getAccountPosts(
+            _getThreadAccountName(), _postType, pageLimit);
     if (accountPostResponse.isSuccess) {
       if (accountPostResponse.data != null &&
           accountPostResponse.data!.isNotEmpty) {
@@ -76,7 +77,8 @@ class ThreadFeedController extends ChangeNotifier
               if (this.items.isEmpty) {
                 this.items = items;
                 isDataDisplayedFromServer = true;
-              } else if (this.items.first.idString != items.first.idString) {
+              } else if (this.items.first.identifier !=
+                  items.first.identifier) {
                 newFeeds = [...items];
                 notifyListeners();
               } else {
@@ -100,7 +102,7 @@ class ThreadFeedController extends ChangeNotifier
     notifyListeners();
   }
 
-  void _loadAllFeedType(ThreadFeedType type) async {
+  Future<void> _loadAllFeedType(ThreadFeedType type) async {
     try {
       List<List<ThreadFeedModel>?> totalFeeds = await Future.wait([
         _loadFeed(ThreadFeedType.ecency),
@@ -158,6 +160,7 @@ class ThreadFeedController extends ChangeNotifier
 
   void loadNewFeeds() {
     items = [...newFeeds];
+    isDataDisplayedFromServer = true;
     viewState = ViewState.data;
     newFeeds = [];
     notifyListeners();
@@ -225,10 +228,12 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   @override
-  void refresh() {
-    viewState = ViewState.loading;
-    notifyListeners();
-    init();
+  Future<void> refresh() async {
+    if (viewState != ViewState.data) {
+      viewState = ViewState.loading;
+      notifyListeners();
+    }
+    await init();
   }
 
   List<ThreadFeedModel> filterTopLevelComments(String parentPermlink,
@@ -263,7 +268,7 @@ class ThreadFeedController extends ChangeNotifier
     }
   }
 
-    String _getThreadAccountName({ThreadFeedType? type}) {
+  String _getThreadAccountName({ThreadFeedType? type}) {
     switch (type ?? threadType) {
       case ThreadFeedType.ecency:
         return "ecency.waves";
@@ -277,5 +282,4 @@ class ThreadFeedController extends ChangeNotifier
         return "All";
     }
   }
-
 }
