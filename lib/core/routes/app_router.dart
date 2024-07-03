@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
-import 'package:waves/features/auth/presentation/view/auth_key_chain_view.dart';
+import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/presentation/view/auth_view.dart';
+import 'package:waves/features/auth/presentation/view/hive_auth_transaction_view.dart';
+import 'package:waves/features/auth/presentation/view/hive_key_chain_auth_view.dart';
 import 'package:waves/features/auth/presentation/view/hive_signer_auth_view.dart';
+import 'package:waves/features/auth/presentation/view/posting_key_auth_view.dart';
 import 'package:waves/features/bookmarks/views/thread_bookmark/bookmark_view.dart';
 import 'package:waves/features/settings/presentation/setting/view/setting_view.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
@@ -69,17 +72,31 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/${Routes.hiveAuthView}',
-        name: Routes.hiveAuthView,
+        path: '/${Routes.hiveAuthTransactionView}',
+        name: Routes.hiveAuthTransactionView,
         builder: (context, state) {
           String accountName =
               state.uri.queryParameters[RouteKeys.accountName]!;
           bool isHiveKeyChainLogin = _stringToBool(
               state.uri.queryParameters[RouteKeys.isHiveKeyChainLogin]!);
-          return HiveAuthView(
+          return HiveAuthTransactionView(
             accountName: accountName,
             isHiveKeyChainLogin: isHiveKeyChainLogin,
           );
+        },
+      ),
+       GoRoute(
+        path: '/${Routes.postingKeyAuthView}',
+        name: Routes.postingKeyAuthView,
+        builder: (context, state) {
+          return const PostingKeyAuthView();
+        },
+      ),
+       GoRoute(
+        path: '/${Routes.hiveKeyChainAuthView}',
+        name: Routes.hiveKeyChainAuthView,
+        builder: (context, state) {
+          return  HiveKeyChainAuthView(authType:state.extra as AuthType ,);
         },
       ),
       GoRoute(

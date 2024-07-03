@@ -6,8 +6,8 @@ import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/features/auth/presentation/controller/hive_auth_controller.dart';
 
-class HiveAuthView extends StatefulWidget {
-  const HiveAuthView(
+class HiveAuthTransactionView extends StatefulWidget {
+  const HiveAuthTransactionView(
       {super.key,
       required this.accountName,
       required this.isHiveKeyChainLogin});
@@ -16,10 +16,11 @@ class HiveAuthView extends StatefulWidget {
   final bool isHiveKeyChainLogin;
 
   @override
-  State<HiveAuthView> createState() => _HiveAuthViewState();
+  State<HiveAuthTransactionView> createState() =>
+      _HiveAuthTransactionViewState();
 }
 
-class _HiveAuthViewState extends State<HiveAuthView> {
+class _HiveAuthTransactionViewState extends State<HiveAuthTransactionView> {
   late final HiveAuthController hiveAuthController;
   @override
   void initState() {
@@ -27,7 +28,9 @@ class _HiveAuthViewState extends State<HiveAuthView> {
       ishiveKeyChainMethod: widget.isHiveKeyChainLogin,
       showError: (error) => context.showSnackBar(error),
       onSuccess: (_) {
-        context.showSnackBar(LocaleText.successfullLoginMessage(widget.accountName));
+        context.showSnackBar(
+            LocaleText.successfullLoginMessage(widget.accountName));
+        Navigator.pop(context);
         Navigator.pop(context);
         Navigator.pop(context);
       },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 
-class AuthTextField extends StatelessWidget {
+class AuthTextField extends StatefulWidget {
   const AuthTextField(
       {super.key,
       required this.textEditingController,
@@ -13,6 +13,19 @@ class AuthTextField extends StatelessWidget {
   final Widget? leading;
   final bool isPassword;
   final String hintText;
+
+  @override
+  State<AuthTextField> createState() => _AuthTextFieldState();
+}
+
+class _AuthTextFieldState extends State<AuthTextField> {
+  late bool isPassword;
+
+  @override
+  void initState() {
+    isPassword = widget.isPassword;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +42,12 @@ class AuthTextField extends StatelessWidget {
             padding: const EdgeInsets.only(
               left: 8.0,
             ),
-            child: leading ??
+            child: widget.leading ??
                 ValueListenableBuilder(
-                  valueListenable: textEditingController,
+                  valueListenable: widget.textEditingController,
                   builder: (context, value, child) {
                     return UserProfileImage(
-                      key: ValueKey(textEditingController.text),
+                      key: ValueKey(widget.textEditingController.text),
                       verticalPadding: 4,
                       fillColor: theme.colorScheme.tertiaryContainer,
                       url: value.text,
@@ -46,22 +59,31 @@ class AuthTextField extends StatelessWidget {
           Expanded(
             child: TextField(
                 obscureText: isPassword,
-                controller: textEditingController,
+                controller: widget.textEditingController,
                 autofocus: true,
                 decoration: InputDecoration(
-                    fillColor: theme.colorScheme.tertiary,
-                    border: border,
-                    errorBorder: border,
-                    enabledBorder: border,
-                    focusedBorder: border,
-                    disabledBorder: border,
-                    focusedErrorBorder: border,
-                    contentPadding:
-                        const EdgeInsets.only(right: 15, top: 10, left: 15),
-                    hintText: hintText,
-                    filled: true,
-                    isDense: true,
-                    suffixIcon: _clearIcon())),
+                  fillColor: theme.colorScheme.tertiary,
+                  border: border,
+                  errorBorder: border,
+                  enabledBorder: border,
+                  focusedBorder: border,
+                  disabledBorder: border,
+                  focusedErrorBorder: border,
+                  contentPadding:
+                      const EdgeInsets.only(right: 15, top: 10, left: 15),
+                  hintText: widget.hintText,
+                  filled: true,
+                  isDense: true,
+                  suffixIcon: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      _eyeVisibilityIcon(theme),
+                      _clearIcon(),
+                    ],
+                  ),
+                )),
           ),
         ],
       ),
@@ -78,20 +100,41 @@ class AuthTextField extends StatelessWidget {
 
   Widget _clearIcon() {
     return ValueListenableBuilder(
-      valueListenable: textEditingController,
+      valueListenable: widget.textEditingController,
       builder: (context, value, child) {
         return Visibility(
-            visible: textEditingController.text.isNotEmpty, child: child!);
+            visible: widget.textEditingController.text.isNotEmpty,
+            child: child!);
       },
       child: IconButton(
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(),
+        visualDensity: VisualDensity.compact,
         onPressed: () {
-          textEditingController.clear();
+          widget.textEditingController.clear();
         },
         icon: const Icon(
           Icons.cancel,
           size: 25,
+        ),
+      ),
+    );
+  }
+
+  Widget _eyeVisibilityIcon(ThemeData theme) {
+    return Visibility(
+      visible: widget.isPassword,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        visualDensity: VisualDensity.compact,
+        constraints: const BoxConstraints(),
+        onPressed: () {
+          setState(() {
+            isPassword = !isPassword;
+          });
+        },
+        icon: Icon(
+          isPassword ? Icons.visibility : Icons.visibility_off,
         ),
       ),
     );
