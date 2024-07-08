@@ -59,15 +59,6 @@ class _DropDownFilterState extends State<DropDownFilter> {
                 .map(
                   (e) => CoolDropdownItem<ThreadFeedType>(
                       isSelected: e == controller.threadType,
-                      selectedIcon: Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: CircleAvatar(
-                          backgroundColor: Colors.transparent,
-                          radius: 12,
-                          backgroundImage:
-                              AssetImage(Thread.getThreadImage(type: e)),
-                        ),
-                      ),
                       label: Thread.gethreadName(type: e),
                       value: e),
                 )
@@ -103,13 +94,6 @@ class _DropDownFilterState extends State<DropDownFilter> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 15,
-                      backgroundColor: Colors.transparent,
-                      backgroundImage: AssetImage(
-                          Thread.getThreadImage(type: controller.threadType)),
-                    ),
-                    const Gap(10),
                     Text(
                       Thread.gethreadName(type: controller.threadType),
                       textAlign: TextAlign.center,

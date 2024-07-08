@@ -48,13 +48,13 @@ class Thread {
   static String gethreadName({required ThreadFeedType type}) {
     switch (type) {
       case ThreadFeedType.ecency:
-        return "Ecency";
+        return "Waves";
       case ThreadFeedType.liketu:
-        return "Liketu";
+        return "Moments";
       case ThreadFeedType.leo:
-        return "Inleo";
+        return "Threads";
       case ThreadFeedType.dbuzz:
-        return "Dbuzz";
+        return "dBuzz";
       case ThreadFeedType.all:
         return "All";
     }

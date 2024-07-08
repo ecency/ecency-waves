@@ -61,15 +61,6 @@ class _DefaultThreadDropdownState extends State<DefaultThreadDropdown> {
             .map(
               (e) => CoolDropdownItem<ThreadFeedType>(
                   isSelected: e == selectedThreadType,
-                  selectedIcon: Padding(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.transparent,
-                      radius: 12,
-                      backgroundImage:
-                          AssetImage(Thread.getThreadImage(type: e)),
-                    ),
-                  ),
                   label: Thread.gethreadName(type: e),
                   value: e),
             )
