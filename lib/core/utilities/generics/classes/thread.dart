@@ -54,7 +54,7 @@ class Thread {
       case ThreadFeedType.leo:
         return "Threads";
       case ThreadFeedType.dbuzz:
-        return "dBuzz";
+        return "Buzz";
       case ThreadFeedType.all:
         return "All";
     }

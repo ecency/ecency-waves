@@ -45,8 +45,7 @@ class _DropDownFilterState extends State<DropDownFilter> {
                 value: controller.threadType),
             dropdownItemOptions: DropdownItemOptions(
               render: DropdownItemRender.all,
-              selectedBoxDecoration:
-                  BoxDecoration(color: theme.colorScheme.tertiaryContainer),
+              selectedBoxDecoration: BoxDecoration(color: Colors.grey.shade600),
               textStyle: TextStyle(color: theme.primaryColorDark),
               selectedTextStyle: TextStyle(color: theme.primaryColorDark),
             ),

@@ -54,7 +54,8 @@ class _ThreadListViewState extends State<ThreadListView> {
                 ),
                 Expanded(
                   child: ScrollEndListener(
-                    loadNextPage: () => controller.loadNextPage(),
+                    loadNextPage: () =>
+                        controller.loadNextPage(type: controller.threadType),
                     child: RefreshIndicator(
                       key: ValueKey(enumToString(controller.threadType)),
                       onRefresh: controller.refresh,
@@ -117,7 +118,7 @@ class _ThreadListViewState extends State<ThreadListView> {
                   horizontal: kScreenHorizontalPaddingDigit, vertical: 10),
               decoration: BoxDecoration(color: theme.primaryColor),
               child: Text(
-                "Load Latest Threads",
+                "Load new content",
                 style: theme.textTheme.bodyLarge!.copyWith(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.bold),

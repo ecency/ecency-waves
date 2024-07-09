@@ -1,7 +1,9 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/ui.dart';
+import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/act.dart';
@@ -54,9 +56,7 @@ class _AddCommentViewState extends State<AddCommentView> {
   Widget build(BuildContext context) {
     final UserAuthModel userData = context.read<UserController>().userData!;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleText.addAComment),
-      ),
+      appBar: _appBar(),
       body: SafeArea(
           child: Padding(
         padding: kScreenPadding,
@@ -65,8 +65,8 @@ class _AddCommentViewState extends State<AddCommentView> {
           expands: true,
           maxLines: null,
           minLines: null,
-          decoration: InputDecoration(
-              hintText: LocaleText.addYourReply, border: InputBorder.none),
+          decoration:
+              InputDecoration(hintText: hintText, border: InputBorder.none),
         ),
       )),
       floatingActionButton: FloatingActionButton(
@@ -82,12 +82,44 @@ class _AddCommentViewState extends State<AddCommentView> {
           } else if (userData.isHiveSignerLogin) {
             _hiveSignerCommentTransaction(comment, userData, context);
           } else {
-            _onTransactionDecision(comment, AuthType.hiveKeyChain, context, userData);
+            _onTransactionDecision(
+                comment, AuthType.hiveKeyChain, context, userData);
           }
         },
         child: const Icon(Icons.reply),
       ),
     );
+  }
+
+  AppBar _appBar() {
+    return isRoot
+        ? AppBar(
+            title: const Text("Publish"),
+          )
+        : AppBar(
+            leadingWidth: 30,
+            title: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: UserProfileImage(
+                url: widget.author,
+              ),
+              title: AutoSizeText(
+                "Reply to ${widget.author!}",
+                minFontSize: 14,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                widget.permlink!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
+  }
+
+  String get hintText {
+    return isRoot ? "What's happening?" : "Reply, engage, exchange ideas";
   }
 
   void _postingKeyCommentTransaction(String comment,

@@ -77,6 +77,7 @@ class ThreadFeedController extends ChangeNotifier
               if (this.items.isEmpty) {
                 this.items = items;
                 isDataDisplayedFromServer = true;
+                _loadNextPageOnFewerResults(type);
               } else if (this.items.first.identifier !=
                   items.first.identifier) {
                 newFeeds = [...items];
@@ -84,6 +85,7 @@ class ThreadFeedController extends ChangeNotifier
               } else {
                 isDataDisplayedFromServer = true;
                 this.items = [...items];
+                _loadNextPageOnFewerResults(type);
               }
 
               viewState = ViewState.data;
@@ -162,8 +164,15 @@ class ThreadFeedController extends ChangeNotifier
     items = [...newFeeds];
     isDataDisplayedFromServer = true;
     viewState = ViewState.data;
+    _loadNextPageOnFewerResults(threadType);
     newFeeds = [];
     notifyListeners();
+  }
+
+  void _loadNextPageOnFewerResults(ThreadFeedType type) {
+    if (items.length < 10) {
+      loadNextPage(saveLocal: true, type: type);
+    }
   }
 
   void refreshOnUpvote(int postId, ActiveVoteModel newVote) {
@@ -202,20 +211,24 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   @override
-  void loadNextPage() async {
+  void loadNextPage({bool saveLocal = false, ThreadFeedType? type}) async {
+    type ??= threadType;
     if (!super.isNextPageLoading && isDataDisplayedFromServer) {
       super.isNextPageLoading = true;
       currentPage++;
-      if (!super.isPageEnded && currentPage <= pages.length) {
+      if (!super.isPageEnded && currentPage < pages.length) {
         notifyListeners();
         ActionListDataResponse<ThreadFeedModel> response =
             await _repository.getcomments(
                 pages[currentPage].author, pages[currentPage].permlink);
-        if (response.isSuccess && response.data != null) {
+        if (response.isSuccess && response.data != null && type == threadType) {
           List<ThreadFeedModel> newItems = filterTopLevelComments(
               pages[currentPage].permlink,
               items: response.data);
           items = [...items, ...newItems];
+          if (saveLocal) {
+            _localRepository.writeLocalThreads(items, type);
+          }
         }
         super.isNextPageLoading = false;
         notifyListeners();
@@ -255,6 +268,8 @@ class ThreadFeedController extends ChangeNotifier
       isDataDisplayedFromServer = false;
       super.isNextPageLoading = false;
       super.isPageEnded = false;
+      currentPage = 0;
+      pages = [];
       items = [];
       newFeeds = [];
       viewState = ViewState.loading;

@@ -33,8 +33,8 @@ class SettingView extends StatelessWidget {
                     icon: themeController.isLightTheme()
                         ? Icons.dark_mode
                         : Icons.light_mode),
-                 DrawerTile(
-                  text: "Default Wave",
+                const DrawerTile(
+                  text: "Default Feed",
                   icon: Icons.help_outline,
                   trailing: DefaultThreadDropdown(),
                 )
