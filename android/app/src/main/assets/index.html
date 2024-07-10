@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-  <!--
+  <head>
+    <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
 
@@ -15,321 +14,372 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <meta charset="UTF-8" />
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
 
+    <title>waves</title>
+    <link rel="manifest" href="manifest.json" />
+  </head>
 
-  <title>waves</title>
-  <link rel="manifest" href="manifest.json" />
+  <body>
+    <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-base64@3.7.7/base64.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+      integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://bundle.run/buffer@6.0.3"></script>
+    <script>
+      let timestamp = new Date().getTime() / 1000;
+      let messageObj;
+      var client = new dhive.Client([
+        "https://api.hive.blog",
+        "https://api.deathwings.me",
+        "https://hive-api.arcange.eu",
+        "https://hived.emre.sh",
+        "https://api.openhive.network",
+        "https://rpc.ausbit.dev",
+        "https://rpc.mahdiyari.info",
+        "https://hive-api.3speak.tv",
+        "https://anyx.io",
+        "https://techcoderx.com",
+        "https://api.hive.blue",
+        "https://api.c0ff33a.uk",
+        "https://api.pharesim.me",
+        "https://hived.privex.io",
+        "https://hive.roelandp.nl",
+      ]);
 
-</head>
-
-<body>
-  <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/js-base64@3.7.7/base64.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
-    integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://bundle.run/buffer@6.0.3"></script>
-  <script>
-    var client = new dhive.Client([
-      "https://api.hive.blog",
-      "https://api.deathwings.me",
-      "https://hive-api.arcange.eu",
-      "https://hived.emre.sh",
-      "https://api.openhive.network",
-      "https://rpc.ausbit.dev",
-      "https://rpc.mahdiyari.info",
-      "https://hive-api.3speak.tv",
-      "https://anyx.io",
-      "https://techcoderx.com",
-      "https://api.hive.blue",
-      "https://api.c0ff33a.uk",
-      "https://api.pharesim.me",
-      "https://hived.privex.io",
-      "https://hive.roelandp.nl",
-    ]);
-
-    async function runThisJS(jsCode, id) {
-      try {
-        const response = await eval(jsCode);
-        replyToNative({
-          data: response,
-          valid: true,
-          error: "",
-        }, id);
-      } catch (e) {
-        replyToNative({
-          data: null,
-          valid: false,
-          error: e.message,
-        }, id);
-      }
-    }
-
-    function doWeHaveHiveKeychainExtension() {
-      const keychain = window.hive_keychain;
-      return new Promise((res) => {
-        const data = {
-          valid: true,
-          data: keychain !== null && keychain !== undefined,
-          error: "",
+      function b64uEnc(str) {
+        const b64uLookup = {
+          "/": "_",
+          _: "/",
+          "+": "-",
+          "-": "+",
+          "=": ".",
+          ".": "=",
         };
-        res(replyToNative(data, id));
-      });
-    }
-
-    async function getRedirectUriData(identifier, uname) {
-      let username = uname.toLowerCase();
-      const auth_data = {
-        app: {
-          name: "Ecency-Waves",
-          description: "Ecency - Waves - MobileApp",
-        },
-        token: undefined,
-        challenge: {
-          key_type: "posting",
-          challenge: `${username}_${identifier}`,
-        },
-      };
-      let auth_key = uuidv4();
-      const data = CryptoJS.AES.encrypt(
-        JSON.stringify(auth_data),
-        auth_key
-      ).toString();
-      replyToNative({
-        valid: true,
-        error: "",
-        data: { encrypted_data: data, auth_key: auth_key },
-      }, identifier);
-    }
-
-    async function getDecryptedHASToken(id, username, data, authKey) {
-      try {
-        const decryptedData = JSON.parse(
-          CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
+        return window.Base64.encode(str).replace(
+          /(\+|\/|=)/g,
+          (m) => b64uLookup[m]
         );
-        const token = decryptedData.token;
-        const expire = decryptedData.expire;
-        replyToNative({
-          valid: true,
-          error: "",
-          data: { token: token, expire: expire },
-        }, id);
-      } catch (e) {
-        replyToNative({
-          valid: false,
-          error: e.toString(),
-          data: "",
-        }, id);
       }
-    }
 
-    async function validatePostingKey(id, accountName, postingKey) {
-      try {
-        const accounts = await client.database.getAccounts([
-          accountName,
-        ]);
-        const pubWif = accounts[0].posting.key_auths[0][0];
-        console.log("PubWif: ", pubWif);
-        const pKey = dhive.PrivateKey.fromString(postingKey)
-          .createPublic()
-          .toString();
-        console.log("PubWif from pKey = ", pubWif);
-        const valid = pKey === pubWif;
-        console.log(`is valid ${valid}`);
-        replyToNative({
-          valid: valid,
-          error: "",
-          data: valid.toString,
-        }, id);
-      } catch (error) {
-        console.log("Error: ", error);
-        replyToNative({
-          valid: false,
-          error: error.message,
-          data: null,
-        }, id);
-      }
-    }
-
-    async function commentOnContent(
-      id,
-      username,
-      author,
-      parentPermlink,
-      permlink,
-      comment,
-      postingKey,
-      token,
-      authKey
-    ) {
-      let description = atob(comment);
-      console.log(description);
-      description = decodeURIComponent(escape(description));
-      console.log(description);
-      // let permlink2 = new Date()
-      //   .toISOString()
-      //   .replace(/[^a-zA-Z0-9]+/g, "")
-      //   .toLowerCase();
-      // permlink2 = `re-${username}-${permlink2}`;
-      // console.log(permlink2);
-      let op = [
-        "comment",
-        {
-          parent_author: author,
-          parent_permlink: parentPermlink,
-          author: username,
-          permlink: permlink,
-          title: "",
-          body: description,
-          json_metadata: JSON.stringify({
-            tags: [
-              "ecency",
-              "ios",
-              "android",
-              "mobile",
-              "app",
-              "spknetwork",
-              "sagarkothari88",
-              "comment",
-              "reply",
-            ],
-            app: "Ecency-Waves",
-            format: "markdown+html",
-          }),
-        },
-      ];
-      performOperations(
-        id,
-        [op],
-        "commentOnContent",
-        username,
-        postingKey,
-        token,
-        authKey
-      );
-    }
-
-    function voteContent(
-      id,
-      username,
-      author,
-      permlink,
-      weight,
-      postingKey,
-      token,
-      authKey
-    ) {
-      let op = [
-        "vote",
-        {
-          voter: username,
-          author: author,
-          permlink: permlink,
-          weight: parseInt(weight),
-        },
-      ];
-      performOperations(
-        id,
-        [op],
-        "voteContent",
-        username,
-        postingKey,
-        token,
-        authKey
-      );
-    }
-
-    function performOperations(
-      id,
-      operations,
-      operationName,
-      username,
-      postingKey,
-      token,
-      authKey
-    ) {
-      if (
-        token !== undefined &&
-        authKey !== undefined &&
-        token.length > 0 &&
-        authKey.length > 0
-      ) {
-        const sign_data = {
-          key_type: "posting",
-          ops: operations,
-          broadcast: true,
-          nonce: Date.now(),
-        };
-        const data = CryptoJS.AES.encrypt(
-          JSON.stringify(sign_data),
-          authKey
-        ).toString();
-        replyToNative({
-          valid: true,
-          error: "",
-          data: data,
-        }, id);
-      } else {
-        async function tryPublish(operations, key) {
-          try {
-            return client.broadcast.sendOperations(
-              operations,
-              dhive.PrivateKey.fromString(key)
-            );
-          } catch (e) {
-            return e;
-          }
-        }
-        tryPublish(operations, postingKey)
-          .then((result) => {
-            replyToNative({
+      async function runThisJS(jsCode, id) {
+        try {
+          const response = await eval(jsCode);
+          replyToNative(
+            {
+              data: response,
               valid: true,
               error: "",
+            },
+            id
+          );
+        } catch (e) {
+          replyToNative(
+            {
+              data: null,
+              valid: false,
+              error: e.message,
+            },
+            id
+          );
+        }
+      }
+
+      function doWeHaveHiveKeychainExtension() {
+        const keychain = window.hive_keychain;
+        return new Promise((res) => {
+          const data = {
+            valid: true,
+            data: keychain !== null && keychain !== undefined,
+            error: "",
+          };
+          res(replyToNative(data, id));
+        });
+      }
+
+      async function getRedirectUriData(identifier, uname) {
+        let username = uname.toLowerCase();
+        timestamp = new Date().getTime() / 1000;
+        messageObj = {
+          signed_message: { type: "code", app: "ecency.app" },
+          authors: [username],
+          timestamp: timestamp,
+        };
+        const message = JSON.stringify(messageObj);
+        const auth_data = {
+          app: {
+            name: "Ecency-Waves",
+            description: "Ecency - Waves - MobileApp",
+          },
+          token: undefined,
+          challenge: {
+            key_type: "posting",
+            challenge: message,
+          },
+        };
+        let auth_key = uuidv4();
+        const data = CryptoJS.AES.encrypt(
+          JSON.stringify(auth_data),
+          auth_key
+        ).toString();
+        replyToNative(
+          {
+            valid: true,
+            error: "",
+            data: { encrypted_data: data, auth_key: auth_key },
+          },
+          identifier
+        );
+      }
+
+      async function getDecryptedHASToken(id, username, data, authKey) {
+        try {
+          const decryptedData = JSON.parse(
+            CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
+          );
+          const token = decryptedData.token;
+          const expire = decryptedData.expire;
+          const challenge = decryptedData.challenge.challenge;
+          messageObj.signatures = [challenge];
+          const hsToken = b64uEnc(JSON.stringify(messageObj));
+          console.log(`hsToken is ${hsToken}`);
+          replyToNative(
+            {
+              valid: true,
+              error: "",
+              data: { token: token, expire: expire, hsToken: hsToken },
+            },
+            id
+          );
+        } catch (e) {
+          replyToNative(
+            {
+              valid: false,
+              error: e.toString(),
               data: "",
-            }, id);
-          })
-          .catch((error) => {
-            console.error(error);
-            replyToNative({
+            },
+            id
+          );
+        }
+      }
+
+      async function validatePostingKey(id, accountName, postingKey) {
+        try {
+          const accounts = await client.database.getAccounts([accountName]);
+          const pubWif = accounts[0].posting.key_auths[0][0];
+          console.log("PubWif: ", pubWif);
+          const pKey = dhive.PrivateKey.fromString(postingKey)
+            .createPublic()
+            .toString();
+          console.log("PubWif from pKey = ", pubWif);
+          const valid = pKey === pubWif;
+          console.log(`is valid ${valid}`);
+          replyToNative(
+            {
+              valid: valid,
+              error: "",
+              data: valid.toString,
+            },
+            id
+          );
+        } catch (error) {
+          console.log("Error: ", error);
+          replyToNative(
+            {
               valid: false,
               error: error.message,
-              data: "",
-            }, id);
-          });
+              data: null,
+            },
+            id
+          );
+        }
       }
-    }
 
-    function b64uEnc(str) {
-      const b64uLookup = { "/": "_", _: "/", "+": "-", "-": "+", "=": ".", ".": "=" };
-      return window.Base64.encode(str).replace(/(\+|\/|=)/g, (m) => b64uLookup[m]);
-    }
-
-    async function getImageUploadProofWithPostingKey(id, account, key) {
-      const timestamp = new Date().getTime() / 1000;
-      const messageObj = {
-        signed_message: { type: "code", app: "ecency.app" },
-        authors: [account],
-        timestamp: timestamp,
-      };
-      const message = JSON.stringify(messageObj);
-      const signature = hive.auth.signMessage(message, key);
-      messageObj.signatures = [signature];
-      const result = b64uEnc(JSON.stringify(messageObj));
-      replyToNative(result, id, false);
-    }
-
-    function replyToNative(result, id, stringifyResult = true) {
-      if (stringifyResult) {
-        Android.postMessage(JSON.stringify(result), id);
-      } else {
-        Android.postMessage(result, id);
+      async function commentOnContent(
+        id,
+        username,
+        author,
+        parentPermlink,
+        permlink,
+        comment,
+        postingKey,
+        token,
+        authKey
+      ) {
+        let description = atob(comment);
+        console.log(description);
+        description = decodeURIComponent(escape(description));
+        console.log(description);
+        // let permlink2 = new Date()
+        //   .toISOString()
+        //   .replace(/[^a-zA-Z0-9]+/g, "")
+        //   .toLowerCase();
+        // permlink2 = `re-${username}-${permlink2}`;
+        // console.log(permlink2);
+        let op = [
+          "comment",
+          {
+            parent_author: author,
+            parent_permlink: parentPermlink,
+            author: username,
+            permlink: permlink,
+            title: "",
+            body: description,
+            json_metadata: JSON.stringify({
+              tags: [
+                "ecency",
+                "ios",
+                "android",
+                "mobile",
+                "app",
+                "spknetwork",
+                "sagarkothari88",
+                "comment",
+                "reply",
+              ],
+              app: "Ecency-Waves",
+              format: "markdown+html",
+            }),
+          },
+        ];
+        performOperations(
+          id,
+          [op],
+          "commentOnContent",
+          username,
+          postingKey,
+          token,
+          authKey
+        );
       }
-    }
-  </script>
-</body>
 
+      function voteContent(
+        id,
+        username,
+        author,
+        permlink,
+        weight,
+        postingKey,
+        token,
+        authKey
+      ) {
+        let op = [
+          "vote",
+          {
+            voter: username,
+            author: author,
+            permlink: permlink,
+            weight: parseInt(weight),
+          },
+        ];
+        performOperations(
+          id,
+          [op],
+          "voteContent",
+          username,
+          postingKey,
+          token,
+          authKey
+        );
+      }
+
+      function performOperations(
+        id,
+        operations,
+        operationName,
+        username,
+        postingKey,
+        token,
+        authKey
+      ) {
+        if (
+          token !== undefined &&
+          authKey !== undefined &&
+          token.length > 0 &&
+          authKey.length > 0
+        ) {
+          const sign_data = {
+            key_type: "posting",
+            ops: operations,
+            broadcast: true,
+            nonce: Date.now(),
+          };
+          const data = CryptoJS.AES.encrypt(
+            JSON.stringify(sign_data),
+            authKey
+          ).toString();
+          replyToNative(
+            {
+              valid: true,
+              error: "",
+              data: data,
+            },
+            id
+          );
+        } else {
+          async function tryPublish(operations, key) {
+            try {
+              return client.broadcast.sendOperations(
+                operations,
+                dhive.PrivateKey.fromString(key)
+              );
+            } catch (e) {
+              return e;
+            }
+          }
+          tryPublish(operations, postingKey)
+            .then((result) => {
+              replyToNative(
+                {
+                  valid: true,
+                  error: "",
+                  data: "",
+                },
+                id
+              );
+            })
+            .catch((error) => {
+              console.error(error);
+              replyToNative(
+                {
+                  valid: false,
+                  error: error.message,
+                  data: "",
+                },
+                id
+              );
+            });
+        }
+      }
+
+      async function getImageUploadProofWithPostingKey(id, account, key) {
+        const timestamp = new Date().getTime() / 1000;
+        const messageObj = {
+          signed_message: { type: "code", app: "ecency.app" },
+          authors: [account],
+          timestamp: timestamp,
+        };
+        const message = JSON.stringify(messageObj);
+        const signature = hive.auth.signMessage(message, key);
+        messageObj.signatures = [signature];
+        const result = b64uEnc(JSON.stringify(messageObj));
+        replyToNative(result, id, false);
+      }
+
+      function replyToNative(result, id, stringifyResult = true) {
+        if (stringifyResult) {
+          Android.postMessage(JSON.stringify(result), id);
+        } else {
+          Android.postMessage(result, id);
+        }
+      }
+    </script>
+  </body>
 </html>

@@ -4,11 +4,13 @@ class HiveAuthModel  {
   final String authKey;
   final String token;
   final int expiry;
+  final String hsToken;
 
   HiveAuthModel({
     required this.authKey,
     required this.token,
     required this.expiry,
+    required this.hsToken,
   });
 
   factory HiveAuthModel.fromJson(Map<String, dynamic> json) {
@@ -16,6 +18,7 @@ class HiveAuthModel  {
       authKey: json['authKey'],
       token: json['token'],
       expiry: json['expiry'],
+      hsToken: json['hsToken'],
     );
   }
 
@@ -24,6 +27,7 @@ class HiveAuthModel  {
       'authKey': authKey,
       'token': token,
       'expiry': expiry,
+      'hsToken': hsToken,
     };
   }
 
@@ -39,11 +43,13 @@ class HiveAuthModel  {
     String? authKey,
     String? token,
     int? expiry,
+    String? hsToken,
   }) {
     return HiveAuthModel(
       authKey: authKey ?? this.authKey,
       token: token ?? this.token,
       expiry: expiry ?? this.expiry,
+      hsToken: hsToken ?? this.hsToken,
     );
   }
 }

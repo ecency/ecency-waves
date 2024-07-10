@@ -102,6 +102,7 @@ class HiveAuthController extends HiveTransactionController {
         authKey: authKey!,
         token: decryptionResponse.data!.token!,
         expiry: decryptionResponse.data!.expire!,
+        hsToken: decryptionResponse.data!.hsToken!,
       ),
     );
     await Future.wait([

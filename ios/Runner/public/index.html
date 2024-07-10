@@ -85,6 +85,13 @@
 
     async function getRedirectUriData(identifier, uname) {
       let username = uname.toLowerCase();
+      const timestamp = new Date().getTime() / 1000;
+      const messageObj = {
+        signed_message: { type: "code", app: "ecency.app" },
+        authors: [username],
+        timestamp: timestamp,
+      };
+      const message = JSON.stringify(messageObj);
       const auth_data = {
         app: {
           name: "Ecency-Waves",
@@ -93,7 +100,7 @@
         token: undefined,
         challenge: {
           key_type: "posting",
-          challenge: `${username}_${identifier}`,
+          challenge: message,
         },
       };
       let auth_key = uuidv4();
@@ -113,6 +120,7 @@
         const decryptedData = JSON.parse(
           CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
         );
+        console.log(`Decrypted data is ${JSON.stringify(decryptedData)}`);
         const token = decryptedData.token;
         const expire = decryptedData.expire;
         replyToNative({
