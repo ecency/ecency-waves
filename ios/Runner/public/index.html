@@ -27,6 +27,7 @@
   <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-base64@3.7.7/base64.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
     integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -91,7 +92,7 @@
         },
         token: undefined,
         challenge: {
-          key_type: "active",
+          key_type: "posting",
           challenge: `${username}_${identifier}`,
         },
       };
@@ -304,6 +305,24 @@
       }
     }
 
+    function b64uEnc(str) {
+      const b64uLookup = { "/": "_", _: "/", "+": "-", "-": "+", "=": ".", ".": "=" };
+      return window.Base64.encode(str).replace(/(\+|\/|=)/g, (m) => b64uLookup[m]);
+    }
+
+    async function getImageUploadProofWithPostingKey(id, account, key) {
+      const timestamp = new Date().getTime() / 1000;
+      const messageObj = {
+        signed_message: { type: "code", app: "ecency.app" },
+        authors: [account],
+        timestamp: timestamp,
+      };
+      const message = JSON.stringify(messageObj);
+      const signature = hive.auth.signMessage(message, key);
+      messageObj.signatures = [signature];
+      const result = b64uEnc(JSON.stringify(messageObj));
+      replyToNative(result, id, false);
+    }
 
     function replyToNative(result, id, stringifyResult = true) {
       if (stringifyResult) {
