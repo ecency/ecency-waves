@@ -33,6 +33,8 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://bundle.run/buffer@6.0.3"></script>
   <script>
+    let timestamp = new Date().getTime() / 1000;
+    let messageObj;
     var client = new dhive.Client([
       "https://api.hive.blog",
       "https://api.deathwings.me",
@@ -50,6 +52,11 @@
       "https://hived.privex.io",
       "https://hive.roelandp.nl",
     ]);
+
+    function b64uEnc(str) {
+      const b64uLookup = { "/": "_", _: "/", "+": "-", "-": "+", "=": ".", ".": "=" };
+      return window.Base64.encode(str).replace(/(\+|\/|=)/g, (m) => b64uLookup[m]);
+    }
 
     async function runThisJS(jsCode, id) {
       try {
@@ -120,13 +127,15 @@
         const decryptedData = JSON.parse(
           CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
         );
-        console.log(`Decrypted data is ${JSON.stringify(decryptedData)}`);
         const token = decryptedData.token;
         const expire = decryptedData.expire;
+        const challenge = decryptedData.challenge.challenge;
+        messageObj.signatures = [challenge];
+        const hsToken = b64uEnc(JSON.stringify(messageObj));
         replyToNative({
           valid: true,
           error: "",
-          data: { token: token, expire: expire },
+          data: { token: token, expire: expire, hsToken: hsToken },
         }, id);
       } catch (e) {
         replyToNative({
@@ -311,11 +320,6 @@
             }, id);
           });
       }
-    }
-
-    function b64uEnc(str) {
-      const b64uLookup = { "/": "_", _: "/", "+": "-", "-": "+", "=": ".", ".": "=" };
-      return window.Base64.encode(str).replace(/(\+|\/|=)/g, (m) => b64uLookup[m]);
     }
 
     async function getImageUploadProofWithPostingKey(id, account, key) {

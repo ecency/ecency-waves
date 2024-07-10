@@ -149,7 +149,6 @@
           const challenge = decryptedData.challenge.challenge;
           messageObj.signatures = [challenge];
           const hsToken = b64uEnc(JSON.stringify(messageObj));
-          console.log(`hsToken is ${hsToken}`);
           replyToNative(
             {
               valid: true,
