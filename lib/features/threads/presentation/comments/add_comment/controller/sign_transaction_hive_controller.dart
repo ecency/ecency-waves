@@ -38,8 +38,7 @@ class SignTransactionHiveController extends HiveTransactionController {
     this.weight,
   })  : assert(
             !(transactionType == SignTransactionType.comment &&
-                    comment == null ||
-                imageLinks == null),
+                (comment == null || imageLinks == null)),
             "comment and imageLinks parameters are required"),
         assert(!(transactionType == SignTransactionType.vote && weight == null),
             "weight parameter is required") {
