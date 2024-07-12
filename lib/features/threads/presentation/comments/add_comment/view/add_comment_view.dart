@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/add_comment_bottom_action_bar.dart';
@@ -21,9 +22,35 @@ class AddCommentView extends StatefulWidget {
 }
 
 class _AddCommentViewState extends State<AddCommentView> {
-  final TextEditingController commentTextEditingController =
-      TextEditingController();
+  final TextEditingController commentTextEditingController = TextEditingController();
   late final bool isRoot;
+  final FocusNode _nodeText = FocusNode();
+
+  KeyboardActionsConfig _buildConfig(BuildContext context) {
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+      keyboardBarColor: Colors.black,
+      actions: [
+        KeyboardActionsItem(
+          focusNode: _nodeText,
+          toolbarButtons: [
+            (node) {
+              return GestureDetector(
+                onTap: () => node.unfocus(),
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "Done",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              );
+            }
+          ],
+        ),
+      ],
+    );
+  }
 
   @override
   void initState() {
@@ -39,18 +66,24 @@ class _AddCommentViewState extends State<AddCommentView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBar(),
-      body: SafeArea(
+      body: KeyboardActions(
+        config: _buildConfig(context),
+        child: SafeArea(
           child: Padding(
-        padding: kScreenPadding,
-        child: TextField(
-          controller: commentTextEditingController,
-          expands: true,
-          maxLines: null,
-          minLines: null,
-          decoration:
-              InputDecoration(hintText: hintText, border: InputBorder.none),
+            padding: kScreenPadding,
+            child: TextField(
+              keyboardType: TextInputType.multiline,
+              controller: commentTextEditingController,
+              // expands: true,
+              maxLines: 5,
+              minLines: 1,
+              focusNode: _nodeText,
+              textInputAction: TextInputAction.newline,
+              decoration: InputDecoration(hintText: hintText, border: InputBorder.none),
+            ),
+          ),
         ),
-      )),
+      ),
       bottomNavigationBar: SafeArea(
         child: AddCommentBottomActionBar(
             commentTextEditingController: commentTextEditingController,

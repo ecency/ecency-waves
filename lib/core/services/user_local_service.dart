@@ -13,6 +13,11 @@ class UserLocalService {
   UserLocalService({required FlutterSecureStorage secureStorage})
       : _secureStorage = secureStorage;
 
+  Future<void> cleanup() async {
+    await _secureStorage.delete(key: _currentUserAccountStorageKey);
+    await _secureStorage.delete(key: _allUserAccountsStorageKey);
+  }
+
   Future<UserAuthModel?> readCurrentUser() async {
     String? jsonString =
         await _secureStorage.read(key: _currentUserAccountStorageKey);
