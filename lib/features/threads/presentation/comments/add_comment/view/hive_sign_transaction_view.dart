@@ -27,6 +27,7 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       transactionType: widget.data.transactionType,
       ishiveKeyChainMethod: widget.data.ishiveKeyChainMethod,
       comment: widget.data.comment,
+      imageLinks: widget.data.imageLinks,
       weight: widget.data.weight,
       showError: (error) => context.showSnackBar(error),
       onSuccess: (data) {

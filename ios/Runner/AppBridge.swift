@@ -147,6 +147,18 @@ class AppBridge: NSObject {
                         id: id,
                         jsCode: "voteContent('\(id)','\(username)', '\(author)', '\(permlink)', '\(weight)', '\(postingKey)', '\(token)', '\(authKey)');"
                     ) { text in result(text) }
+                case "getImageUploadProofWithPostingKey":
+                    guard
+                        let username = arguments ["username"] as? String,
+                        let postingKey = arguments ["postingKey"] as? String
+                    else {
+                        debugPrint("username & postingKey are not set")
+                        return result(FlutterMethodNotImplemented)
+                    }
+                    webVC.runThisJS(
+                        id: id,
+                        jsCode: "getImageUploadProofWithPostingKey('\(id)', '\(username)', '\(postingKey)');"
+                    ) { text in result(text) }
                 default:
                     result(FlutterMethodNotImplemented)
             }

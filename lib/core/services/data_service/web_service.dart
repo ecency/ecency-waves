@@ -78,3 +78,10 @@ Future<String> voteContentFromPlatform(
 ) async {
   throw UnimplementedError();
 }
+
+Future<String> getImageUploadProofWithPostingKeyFromPlatform(
+  String username,
+  String postingKey,
+) {
+  throw UnimplementedError();
+}

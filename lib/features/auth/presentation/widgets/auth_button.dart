@@ -36,15 +36,15 @@ class AuthButton extends StatelessWidget {
   Widget child(ThemeData theme) {
     if (authType == AuthType.hiveKeyChain) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hive-keychain-logo.png', "Hive KeyChain");
+          theme, 'assets/images/auth/hive-keychain-logo.png', "HiveKeychain");
     } else if (authType == AuthType.hiveAuth) {
       return _buttonChildren(
           theme, 'assets/images/auth/hiveauth_icon.png', "HiveAuth");
     } else if (authType == AuthType.hiveSign) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hive-signer-logo.png', "Hive Signer");
+          theme, 'assets/images/auth/hive-signer-logo.png', "Hivesigner");
     } else {
-      return _buttonChildren(theme, null, "Key");
+      return _buttonChildren(theme, null, "Private Key");
     }
   }
 

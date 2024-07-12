@@ -37,6 +37,7 @@ class HiveSignerController {
     UserAuthModel<HiveSignerAuthModel> data = UserAuthModel(
         accountName: accountName,
         authType: AuthType.hiveSign,
+        imageUploadToken: token,
         auth: HiveSignerAuthModel(token: token));
     await Future.wait([
       _userLocalRepository.writeCurrentUser(data),

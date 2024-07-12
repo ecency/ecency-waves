@@ -18,15 +18,17 @@ class SignTransactionPostingKeyController {
     required Function(String) onSuccess,
     required VoidCallback onFailure,
     required Function(String) showToast,
+    required List<String> imageLinks,
   }) async {
     String generatedPermlink = Act.generatePermlink(authData.accountName);
+    String commentWithImages = Act.commentWithImages(comment, imageLinks);
     ActionSingleDataResponse<String> commentResponse =
         await _threadRepository.commentOnContent(
             authData.accountName,
             author,
             parentPermlink,
             generatedPermlink,
-            comment,
+            commentWithImages,
             authData.auth.postingKey,
             null,
             null);

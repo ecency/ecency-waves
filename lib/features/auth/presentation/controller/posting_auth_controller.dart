@@ -26,8 +26,10 @@ class PostingAuthController extends ChangeNotifier {
     showLoader();
     ActionSingleDataResponse response =
         await _authRepository.validatePostingKey(accountName, postingKey);
-    if (response.isSuccess) {
-      await _saveToLocal(accountName, postingKey);
+    ActionSingleDataResponse<String> proofResponse = await _authRepository
+        .getImageUploadProofWithPostingKey(accountName, postingKey);
+    if (response.isSuccess && proofResponse.isSuccess) {
+      await _saveToLocal(accountName, postingKey, proofResponse.data!);
       showToast(LocaleText.smPostingLoginMessage);
       hideLoader();
       onSuccess();
@@ -37,11 +39,13 @@ class PostingAuthController extends ChangeNotifier {
     }
   }
 
-  Future<void> _saveToLocal(String accountName, String postingKey) async {
+  Future<void> _saveToLocal(
+      String accountName, String postingKey, String token) async {
     UserAuthModel<PostingAuthModel> data = UserAuthModel(
         accountName: accountName,
         authType: AuthType.postingKey,
-        auth: PostingAuthModel(postingKey: postingKey));
+        imageUploadToken: token,
+        auth: PostingAuthModel(postingKey: postingKey,));
     await Future.wait([
       _userLocalRepository.writeCurrentUser(data),
       MultiAccountProvider().addUserAccount(data)

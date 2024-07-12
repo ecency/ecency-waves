@@ -1,5 +1,9 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/models/auth_decryption_token_response.dart';
@@ -9,6 +13,8 @@ import 'package:waves/core/services/data_service/service.dart'
     if (dart.library.io) 'package:waves/core/services/data_service/mobile_service.dart'
     if (dart.library.html) 'package:waves/core/services/data_service/web_service.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/threads/models/comment/image_upload_error_response.dart';
+import 'package:waves/features/threads/models/comment/image_upload_response.dart';
 import 'package:waves/features/threads/models/post_detail/comment_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
@@ -260,7 +266,7 @@ class ApiService {
   ) async {
     try {
       var url = Uri.parse(
-          'https://hivexplorer.com/api/get_accounts?names=\[%22$accountName%22\]');
+          'https://hivexplorer.com/api/get_accounts?names=[%22$accountName%22]');
 
       http.Response response = await http.get(
         url,
@@ -300,6 +306,68 @@ class ApiService {
       } else {
         return ActionSingleDataResponse(
             status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<String>> getImageUploadProofWithPostingKey(
+      String accountName, String postingKey) async {
+    try {
+      String jsonString = await getImageUploadProofWithPostingKeyFromPlatform(
+          accountName, postingKey);
+      ActionSingleDataResponse<String> response = ActionSingleDataResponse(
+          errorMessage: "",
+          status: ResponseStatus.success,
+          isSuccess: true,
+          valid: true,
+          data: jsonString);
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<ImageUploadResponse>> uploadAndGetImageUrl(
+      XFile image, String imageUploadToken) async {
+    try {
+      var request = http.MultipartRequest(
+          'POST', Uri.parse('https://images.ecency.com/hs/$imageUploadToken'));
+
+      String imageExtension = image.name.split(".").last;
+      if (imageExtension.toLowerCase() == 'jpg') {
+        imageExtension = "jpeg";
+      }
+
+      var multipartFile = http.MultipartFile(
+        'file',
+        image.readAsBytes().asStream(),
+        await image.length(),
+        filename: image.name,
+        contentType: MediaType("image", imageExtension),
+      );
+      request.files.add(multipartFile);
+
+      http.StreamedResponse response = await request.send();
+      var responseString = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<ImageUploadResponse>(
+            data: ImageUploadResponse.fromJsonString(responseString),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed,
+            errorMessage:
+                ImageUploadErrorResponse.fromJsonString(responseString)
+                        .error
+                        ?.message ??
+                    "Something went wrong");
       }
     } catch (e) {
       return ActionSingleDataResponse(

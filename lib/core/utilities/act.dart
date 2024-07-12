@@ -53,4 +53,17 @@ class Act {
     int max = pow(10, numberOfDigits).toInt() - 1;
     return min + random.nextInt(max - min + 1);
   }
+
+  static String commentWithImages(String comment, List<String> imageLinks) {
+    String result = "";
+    if (comment.trim().isNotEmpty) {
+      result += comment;
+      result += '\n\n';
+    }
+    for (int i = 0; i < imageLinks.length; i++) {
+      String image = imageLinks[i];
+      result += "![image-${i + 1}]($image)";
+    }
+    return result;
+  }
 }

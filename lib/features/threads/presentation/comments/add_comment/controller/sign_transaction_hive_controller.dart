@@ -19,6 +19,7 @@ class SignTransactionHiveController extends HiveTransactionController {
   final String permlink;
   final UserAuthModel<HiveAuthModel> authData;
   final String? comment;
+  final List<String>? imageLinks;
   final double? weight;
   final SignTransactionType transactionType;
   String? _generatedPermlink;
@@ -33,11 +34,13 @@ class SignTransactionHiveController extends HiveTransactionController {
     required super.onFailure,
     required super.ishiveKeyChainMethod,
     this.comment,
+    this.imageLinks,
     this.weight,
   })  : assert(
             !(transactionType == SignTransactionType.comment &&
-                comment == null),
-            "comment parameter is required"),
+                    comment == null ||
+                imageLinks == null),
+            "comment and imageLinks parameters are required"),
         assert(!(transactionType == SignTransactionType.vote && weight == null),
             "weight parameter is required") {
     _initSignTransactionSocketSubscription();
@@ -51,7 +54,9 @@ class SignTransactionHiveController extends HiveTransactionController {
       } else if (data.type == SocketType.signWait) {
         _onSocketSignWait(data);
       } else if (data.type == SocketType.signAck) {
-        onSuccess(transactionType == SignTransactionType.comment ? _generatedPermlink : true);
+        onSuccess(transactionType == SignTransactionType.comment
+            ? _generatedPermlink
+            : true);
         showError(successMessage);
         resetListeners();
       } else if (data.type == SocketType.signNack ||
@@ -102,13 +107,13 @@ class SignTransactionHiveController extends HiveTransactionController {
   Future<ActionSingleDataResponse<String>> transactionMethod() async {
     switch (transactionType) {
       case SignTransactionType.comment:
-        _generatedPermlink =  Act.generatePermlink(authData.accountName);
+        _generatedPermlink = Act.generatePermlink(authData.accountName);
         return _threadRepository.commentOnContent(
             authData.accountName,
             author,
             permlink, //parentPermlink
-            _generatedPermlink!, 
-            comment!,
+            _generatedPermlink!,
+            Act.commentWithImages(comment!, imageLinks!),
             null,
             authData.auth.authKey,
             authData.auth.token);

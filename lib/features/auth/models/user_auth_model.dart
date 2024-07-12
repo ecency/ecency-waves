@@ -7,12 +7,14 @@ import 'package:waves/features/auth/models/posting_auth_model.dart';
 class UserAuthModel<T> {
   final String accountName;
   final AuthType authType;
+  final String imageUploadToken;
   final T auth;
 
   UserAuthModel({
     required this.accountName,
     required this.auth,
     required this.authType,
+    required this.imageUploadToken,
   });
 
   bool get isPostingKeyLogin => authType == AuthType.postingKey;
@@ -24,6 +26,7 @@ class UserAuthModel<T> {
     return UserAuthModel(
       accountName: json['accountName'],
       authType: enumFromString(json['authType'], AuthType.values),
+      imageUploadToken: json['imageUploadToken'],
       auth: _fromJsonAuth<T>(
         json['auth'],
         enumFromString(json['authType'], AuthType.values),
@@ -35,6 +38,7 @@ class UserAuthModel<T> {
     return {
       'accountName': accountName,
       'authType': enumToString(authType),
+      'imageUploadToken':imageUploadToken,
       'auth': _toJsonAuth<T>(auth),
     };
   }
@@ -59,11 +63,13 @@ class UserAuthModel<T> {
   UserAuthModel<T> copyWith({
     String? accountName,
     AuthType? authType,
+    String? imageUploadToken,
     T? auth,
   }) {
     return UserAuthModel<T>(
       accountName: accountName ?? this.accountName,
       authType: authType ?? this.authType,
+      imageUploadToken: imageUploadToken ?? this.imageUploadToken,
       auth: auth ?? this.auth,
     );
   }

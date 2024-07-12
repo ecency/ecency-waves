@@ -4,6 +4,7 @@ class SignTransactionNavigationModel {
   final String author;
   final String permlink;
   final String? comment;
+  final List<String>? imageLinks;
   final double? weight;
   final bool ishiveKeyChainMethod;
   final SignTransactionType transactionType;
@@ -11,6 +12,7 @@ class SignTransactionNavigationModel {
   SignTransactionNavigationModel({
     required this.author,
     required this.permlink,
+    this.imageLinks,
     this.comment,
     this.weight,
     required this.transactionType,

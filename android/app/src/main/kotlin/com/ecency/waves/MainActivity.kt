@@ -98,6 +98,11 @@ class MainActivity: FlutterActivity() {
                     "voteContent('$id','$username', '$author', '$permlink', '$weight', '$postingKey', '$token', '$authKey');",
                     null
                 )
+            } else if (call.method == "getImageUploadProofWithPostingKey" && username != null && postingKey != null) {
+                webView?.evaluateJavascript(
+                    "getImageUploadProofWithPostingKey('$id', '$username', '$postingKey');",
+                    null
+                )
             } 
     }
 }

@@ -20,8 +20,10 @@ class SignTransactionHiveSignerController {
     required Function(String) onSuccess,
     required VoidCallback onFailure,
     required Function(String) showToast,
+    required List<String> imageLinks
   }) async {
     String generatedPermlink = Act.generatePermlink(authData.accountName);
+    String commentWithImages = Act.commentWithImages(comment, imageLinks);
     ActionSingleDataResponse commentResponse =
         await _threadRepository.commentUsingHiveSigner(
       authData.auth.token,
@@ -32,7 +34,7 @@ class SignTransactionHiveSignerController {
             parentPermlink: parentPermlink,
             username: authData.accountName,
             permlink: generatedPermlink,
-            comment: comment),
+            comment: commentWithImages),
       ),
     );
     if (commentResponse.isSuccess) {
