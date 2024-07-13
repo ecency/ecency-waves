@@ -27,11 +27,14 @@
   <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-base64@3.7.7/base64.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
     integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://bundle.run/buffer@6.0.3"></script>
   <script>
+    let timestamp = new Date().getTime() / 1000;
+    let messageObj;
     var client = new dhive.Client([
       "https://api.hive.blog",
       "https://api.deathwings.me",
@@ -49,6 +52,11 @@
       "https://hived.privex.io",
       "https://hive.roelandp.nl",
     ]);
+
+    function b64uEnc(str) {
+      const b64uLookup = { "/": "_", _: "/", "+": "-", "-": "+", "=": ".", ".": "=" };
+      return window.Base64.encode(str).replace(/(\+|\/|=)/g, (m) => b64uLookup[m]);
+    }
 
     async function runThisJS(jsCode, id) {
       try {
@@ -84,6 +92,13 @@
 
     async function getRedirectUriData(identifier, uname) {
       let username = uname.toLowerCase();
+      const timestamp = new Date().getTime() / 1000;
+      messageObj = {
+        signed_message: { type: "code", app: "ecency.app" },
+        authors: [username],
+        timestamp: timestamp,
+      };
+      const message = JSON.stringify(messageObj);
       const auth_data = {
         app: {
           name: "Ecency-Waves",
@@ -91,8 +106,8 @@
         },
         token: undefined,
         challenge: {
-          key_type: "active",
-          challenge: `${username}_${identifier}`,
+          key_type: "posting",
+          challenge: message,
         },
       };
       let auth_key = uuidv4();
@@ -114,10 +129,13 @@
         );
         const token = decryptedData.token;
         const expire = decryptedData.expire;
+        const challenge = decryptedData.challenge.challenge;
+        messageObj.signatures = [challenge];
+        const hsToken = b64uEnc(JSON.stringify(messageObj));
         replyToNative({
           valid: true,
           error: "",
-          data: { token: token, expire: expire },
+          data: { token: token, expire: expire, hsToken: hsToken },
         }, id);
       } catch (e) {
         replyToNative({
@@ -277,7 +295,10 @@
       } else {
         async function tryPublish(operations, key) {
           try {
-            return hive.broadcast.sendAsync({ operations }, { posting: key });
+            return client.broadcast.sendOperations(
+              operations,
+              dhive.PrivateKey.fromString(key)
+            );
           } catch (e) {
             return e;
           }
@@ -301,6 +322,19 @@
       }
     }
 
+    async function getImageUploadProofWithPostingKey(id, account, key) {
+      const timestamp = new Date().getTime() / 1000;
+      const messageObj = {
+        signed_message: { type: "code", app: "ecency.app" },
+        authors: [account],
+        timestamp: timestamp,
+      };
+      const message = JSON.stringify(messageObj);
+      const signature = hive.auth.signMessage(message, key);
+      messageObj.signatures = [signature];
+      const result = b64uEnc(JSON.stringify(messageObj));
+      replyToNative(result, id, false);
+    }
 
     function replyToNative(result, id, stringifyResult = true) {
       if (stringifyResult) {

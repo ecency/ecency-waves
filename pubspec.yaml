@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.0+9
 
 environment:
   sdk: '>=3.3.2 <4.0.0'
@@ -54,17 +54,29 @@ dependencies:
   qr_flutter: ^4.1.0
   flutter_secure_storage: ^4.2.1
   easy_localization: ^3.0.7
+  webview_flutter: ^4.8.0
+  image_picker: ^1.1.2
+  package_info_plus: ^8.0.0
+  keyboard_actions: ^4.2.0
+  
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+  flutter_lints: ^3.0.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/waves.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -82,6 +94,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/auth/
+    - assets/images/logo/
     - assets/translations/
 
   fonts:

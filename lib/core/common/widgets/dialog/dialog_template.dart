@@ -58,7 +58,7 @@ class DialogTemplate extends StatelessWidget {
             text: proceedButtonText!,
             onPressed: () {
               Navigator.pop(context);
-              if (onProceedTap != null) onProceedTap!;
+              if (onProceedTap != null) onProceedTap!();
             },
           )
       ],

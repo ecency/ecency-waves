@@ -7,7 +7,6 @@ import 'package:waves/core/common/widgets/drawer/drawer_header.dart';
 import 'package:waves/core/common/widgets/drawer/drawer_tile.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
-import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class DrawerMenu extends StatelessWidget {
@@ -16,7 +15,6 @@ class DrawerMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final themeController = context.read<ThemeController>();
     return Theme(
       data: theme.copyWith(
           dividerTheme: DividerThemeData(
@@ -52,14 +50,11 @@ class DrawerMenu extends StatelessWidget {
                             icon: Icons.bookmarks),
                         DrawerTile(
                             onTap: () {
-                              themeController.toggleTheme();
+                              context
+                                  .popAndPlatformPushNamed(Routes.settingsView);
                             },
-                            text: themeController.isLightTheme()
-                                ? LocaleText.darkMode
-                                : LocaleText.lightMode,
-                            icon: themeController.isLightTheme()
-                                ? Icons.dark_mode
-                                : Icons.light_mode),
+                            text: "Settings",
+                            icon: Icons.settings),
                         if (isLoggedIn)
                           DrawerTile(
                               onTap: () async {

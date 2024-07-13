@@ -24,4 +24,10 @@ class AuthRepository {
       String accountName, String postingKey) async {
     return await _apiService.validatePostingKey(accountName, postingKey);
   }
+
+  Future<ActionSingleDataResponse<String>> getImageUploadProofWithPostingKey(
+      String accountName, String postingKey) async {
+    return await _apiService.getImageUploadProofWithPostingKey(
+        accountName, postingKey);
+  }
 }

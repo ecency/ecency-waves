@@ -1,32 +1,46 @@
+// ignore_for_file: depend_on_referenced_packages
+
+import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/models/auth_decryption_token_response.dart';
 import 'package:waves/core/models/auth_redirection_response.dart';
+import 'package:waves/core/models/broadcast_model.dart';
 import 'package:waves/core/services/data_service/service.dart'
     if (dart.library.io) 'package:waves/core/services/data_service/mobile_service.dart'
     if (dart.library.html) 'package:waves/core/services/data_service/web_service.dart';
 import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/core/utilities/evaluate.dart';
+import 'package:waves/features/threads/models/comment/image_upload_error_response.dart';
+import 'package:waves/features/threads/models/comment/image_upload_response.dart';
 import 'package:waves/features/threads/models/post_detail/comment_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/user/models/follow_count_model.dart';
+import 'package:waves/features/user/models/user_model.dart';
 
 class ApiService {
-  Future<String> getChainProps() async {
-    // var jsCode = "client.database.getChainProperties();";
-    var jsCode = "client.database.getDiscussions('hot');";
-    String responseJson = await runThisJS_(jsCode);
-    return responseJson;
-  }
-
   Future<ActionListDataResponse<ThreadFeedModel>> getComments(
       String accountName, String permlink) async {
     try {
-      String jsonString = await runThisJS_(
-          "client.hivemind.call('get_discussion', ['$accountName','$permlink']);");
-      return ActionListDataResponse<ThreadFeedModel>(
-          data: CommentModel.fromRawJson(jsonString),
-          status: ResponseStatus.success,
-          isSuccess: true,
-          errorMessage: "");
+      var url = Uri.parse(
+          'https://hivexplorer.com/api/get_discussion?author=$accountName&permlink=$permlink');
+
+      var response = await http.get(
+        url,
+      );
+
+      if (response.statusCode == 200) {
+        return ActionListDataResponse<ThreadFeedModel>(
+            data: CommentModel.fromRawJson(response.body),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionListDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
     } catch (e) {
       return ActionListDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());
@@ -41,16 +55,38 @@ class ApiService {
     String? lastPermlink,
   ) async {
     try {
-      String jsonString = await runThisJS_(
-          "client.hivemind.getAccountPosts({ account: '$accountName', sort: '${enumToString(type)}', start_author: ${Evaluate.stringOrNull(lastAuthor)}, start_permlink: ${Evaluate.stringOrNull(lastPermlink)}, limit: $limit });");
-      ActionListDataResponse<ThreadFeedModel> response =
-          ActionListDataResponse.fromJsonString(
-              jsonString, (item) => ThreadFeedModel.fromJson(item));
-      return response;
+      http.Response response = await _getAccountPosts(
+          type, accountName, lastAuthor, lastPermlink, limit);
+
+      if (response.statusCode == 200) {
+        return ActionListDataResponse<ThreadFeedModel>(
+            data: ThreadFeedModel.fromRawJson(response.body),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionListDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
     } catch (e) {
       return ActionListDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());
     }
+  }
+
+  Future<http.Response> _getAccountPosts(
+      AccountPostType type,
+      String accountName,
+      String? lastAuthor,
+      String? lastPermlink,
+      int limit) async {
+    var url = Uri.parse(
+        'https://hivexplorer.com/api/get_account_posts?sort=${enumToString(type)}&account=$accountName&limit=$limit&start_author=$lastAuthor&start_permlink=$lastPermlink');
+
+    var response = await http.get(
+      url,
+    );
+    return response;
   }
 
   Future<ActionSingleDataResponse<ThreadFeedModel>> getFirstAccountPost(
@@ -61,12 +97,19 @@ class ApiService {
     String? lastPermlink,
   ) async {
     try {
-      String jsonString = await runThisJS_(
-          "client.hivemind.getAccountPosts({ account: '$accountName', sort: '${enumToString(type)}', start_author: ${Evaluate.stringOrNull(lastAuthor)}, start_permlink: ${Evaluate.stringOrNull(lastPermlink)}, limit: $limit });");
-      ActionSingleDataResponse<ThreadFeedModel> response =
-          ActionSingleDataResponse.fromJsonString(
-              parseFromList: true, jsonString, ThreadFeedModel.fromJson);
-      return response;
+      http.Response response = await _getAccountPosts(
+          type, accountName, lastAuthor, lastPermlink, limit);
+
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<ThreadFeedModel>(
+            data: ThreadFeedModel.fromRawJson(response.body).first,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
     } catch (e) {
       return ActionSingleDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());
@@ -127,10 +170,11 @@ class ApiService {
     String? token,
   ) async {
     try {
-      String jsonString = await commentOnContentFromPlatform(
-          username, author, parentPermlink,permlink, comment, postingKey, authKey, token);
+      String jsonString = await commentOnContentFromPlatform(username, author,
+          parentPermlink, permlink, comment, postingKey, authKey, token);
       ActionSingleDataResponse<String> response =
-          ActionSingleDataResponse.fromJsonString(jsonString, null,ignoreFromJson: true);
+          ActionSingleDataResponse.fromJsonString(jsonString, null,
+              ignoreFromJson: true);
       return response;
     } catch (e) {
       return ActionSingleDataResponse(
@@ -151,8 +195,180 @@ class ApiService {
       String jsonString = await voteContentFromPlatform(
           username, author, permlink, weight, postingKey, authKey, token);
       ActionSingleDataResponse<String> response =
-          ActionSingleDataResponse.fromJsonString(jsonString, null,ignoreFromJson: true);
+          ActionSingleDataResponse.fromJsonString(jsonString, null,
+              ignoreFromJson: true);
       return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(
+      String accessToken, BroadcastModel<T> args) async {
+    final url = Uri.parse('https://hivesigner.com/api/broadcast');
+    final headers = {
+      'Authorization': accessToken,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    final body = json.encode({
+      'operations': [
+        [
+          enumToString(args.type),
+          (args.data is VoteBroadCastModel
+              ? (args.data as VoteBroadCastModel).toJson()
+              : (args.data as CommentBroadCastModel).toJson())
+        ]
+      ]
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        Map decodedData = json.decode(response.body);
+        if (decodedData['error'] == null) {
+          return ActionSingleDataResponse(
+              data: null,
+              errorMessage: "",
+              status: ResponseStatus.success,
+              isSuccess: true);
+        } else {
+          return ActionSingleDataResponse(
+              data: null,
+              errorMessage: decodedData['error'],
+              status: ResponseStatus.failed,
+              isSuccess: false);
+        }
+      } else {
+        return ActionSingleDataResponse(
+            data: null,
+            errorMessage: LocaleText.somethingWentWrong,
+            status: ResponseStatus.failed,
+            isSuccess: false);
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          data: null,
+          errorMessage: e.toString(),
+          status: ResponseStatus.failed,
+          isSuccess: false);
+    }
+  }
+
+  Future<ActionSingleDataResponse<UserModel>> getAccountInfo(
+    String accountName,
+  ) async {
+    try {
+      var url = Uri.parse(
+          'https://hivexplorer.com/api/get_accounts?names=[%22$accountName%22]');
+
+      http.Response response = await http.get(
+        url,
+      );
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<UserModel>(
+            data: UserModel.fromJsonString(response.body).first,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<FollowCountModel>> getFollowCount(
+    String accountName,
+  ) async {
+    try {
+      var url = Uri.parse(
+          "https://hivexplorer.com/api/get_follow_count?account=$accountName");
+
+      http.Response response = await http.get(
+        url,
+      );
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<FollowCountModel>(
+            data: FollowCountModel.fromJsonString(response.body),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<String>> getImageUploadProofWithPostingKey(
+      String accountName, String postingKey) async {
+    try {
+      String jsonString = await getImageUploadProofWithPostingKeyFromPlatform(
+          accountName, postingKey);
+      ActionSingleDataResponse<String> response = ActionSingleDataResponse(
+          errorMessage: "",
+          status: ResponseStatus.success,
+          isSuccess: true,
+          valid: true,
+          data: jsonString);
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<ImageUploadResponse>> uploadAndGetImageUrl(
+      XFile image, String imageUploadToken) async {
+    try {
+      var request = http.MultipartRequest(
+          'POST', Uri.parse('https://images.ecency.com/hs/$imageUploadToken'));
+
+      String imageExtension = image.name.split(".").last;
+      if (imageExtension.toLowerCase() == 'jpg') {
+        imageExtension = "jpeg";
+      }
+
+      var multipartFile = http.MultipartFile(
+        'file',
+        image.readAsBytes().asStream(),
+        await image.length(),
+        filename: image.name,
+        contentType: MediaType("image", imageExtension),
+      );
+      request.files.add(multipartFile);
+
+      http.StreamedResponse response = await request.send();
+      var responseString = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<ImageUploadResponse>(
+            data: ImageUploadResponse.fromJsonString(responseString),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed,
+            errorMessage:
+                ImageUploadErrorResponse.fromJsonString(responseString)
+                        .error
+                        ?.message ??
+                    "Something went wrong");
+      }
     } catch (e) {
       return ActionSingleDataResponse(
           status: ResponseStatus.failed, errorMessage: e.toString());

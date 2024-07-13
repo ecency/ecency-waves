@@ -7,7 +7,7 @@ class LocaleText {
   static String get notLoggedIn => "not_logged_in".tr();
   static String get pleaseLoginFirst => "please_login_first".tr();
   static String get cancel => "cancel".tr();
-  static String get login => "login".tr();
+  static const String  login = "login";
   static String get bookmarks => "bookmarks".tr();
   static String get darkMode => "dark_mode".tr();
   static String get lightMode => "light_mode".tr();
@@ -38,4 +38,11 @@ class LocaleText {
   static String get smPostingLoginMessage => "sm_posting_login_message".tr();
   static String get smCommentPublishMessage => "sm_comment_publish_message".tr();
   static String get smVoteSuccessMessage => "sm_vote_success_message".tr();
+  static String get somethingWentWrong => "something_went_wrong".tr();
+  static const String loginWithPostingKey = "login_with_posting_key";
+  static const String pleaseEnterTheUsername = "please_enter_the_username";
+  static const String pleaseEnterThePostingKey = "please_enter_the_posting_key";
+  static const String username = "username";
+  static const String postingKey = "posting_key";
+  static const String noThreadsFound = "no_threads_found";
 }

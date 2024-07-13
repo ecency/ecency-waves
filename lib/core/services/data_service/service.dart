@@ -43,6 +43,13 @@ Future<String> voteContentFromPlatform(
   return _error();
 }
 
+Future<String> getImageUploadProofWithPostingKeyFromPlatform(
+  String username,
+  String postingKey,
+) {
+  return _error();
+}
+
 Future<String> _error() {
   return Future.value('error');
 }

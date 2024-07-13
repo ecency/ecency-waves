@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/models/hive_auth_model.dart';
+import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
 
@@ -12,6 +13,11 @@ class UserLocalService {
   UserLocalService({required FlutterSecureStorage secureStorage})
       : _secureStorage = secureStorage;
 
+  Future<void> cleanup() async {
+    await _secureStorage.delete(key: _currentUserAccountStorageKey);
+    await _secureStorage.delete(key: _allUserAccountsStorageKey);
+  }
+
   Future<UserAuthModel?> readCurrentUser() async {
     String? jsonString =
         await _secureStorage.read(key: _currentUserAccountStorageKey);
@@ -19,8 +25,10 @@ class UserLocalService {
       AuthType type = UserAuthModel.authTypeFromJsonString(jsonString);
       if (type == AuthType.hiveAuth || type == AuthType.hiveKeyChain) {
         return UserAuthModel<HiveAuthModel>.fromJsonString(jsonString);
-      } else {
+      } else if (type == AuthType.postingKey) {
         return UserAuthModel<PostingAuthModel>.fromJsonString(jsonString);
+      } else {
+        return UserAuthModel<HiveSignerAuthModel>.fromJsonString(jsonString);
       }
     }
     return null;
@@ -36,14 +44,15 @@ class UserLocalService {
     String? userJsonData =
         await _secureStorage.read(key: _allUserAccountsStorageKey);
     if (userJsonData != null) {
-      List jsonStringList =
-          UserAuthModel.fromRawJsonList(userJsonData);
+      List jsonStringList = UserAuthModel.fromRawJsonList(userJsonData);
       List<UserAuthModel> data = jsonStringList.map((element) {
         AuthType type = UserAuthModel.authTypeFromMap(element);
         if (type == AuthType.hiveAuth || type == AuthType.hiveKeyChain) {
           return UserAuthModel<HiveAuthModel>.fromJson(element);
-        } else {
+        } else if (type == AuthType.postingKey) {
           return UserAuthModel<PostingAuthModel>.fromJson(element);
+        } else {
+          return UserAuthModel<HiveSignerAuthModel>.fromJson(element);
         }
       }).toList();
       if (data.isNotEmpty && currentUserName != null) {

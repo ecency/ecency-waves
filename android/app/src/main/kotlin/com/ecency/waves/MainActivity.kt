@@ -43,7 +43,7 @@ class MainActivity: FlutterActivity() {
             val permlink = call.argument<String?>("permlink")
             val parentPermlink = call.argument<String?>("parentPermlink")
             val comment = call.argument<String?>("comment")
-            val weight = call.argument<Double?>("weight")
+            val weight = call.argument<Int?>("weight")
             if (id == null) {
                 result.error(
                     "UNAVAILABLE",
@@ -96,6 +96,11 @@ class MainActivity: FlutterActivity() {
                 && authKey != null ) {
                 webView?.evaluateJavascript(
                     "voteContent('$id','$username', '$author', '$permlink', '$weight', '$postingKey', '$token', '$authKey');",
+                    null
+                )
+            } else if (call.method == "getImageUploadProofWithPostingKey" && username != null && postingKey != null) {
+                webView?.evaluateJavascript(
+                    "getImageUploadProofWithPostingKey('$id', '$username', '$postingKey');",
                     null
                 )
             } 

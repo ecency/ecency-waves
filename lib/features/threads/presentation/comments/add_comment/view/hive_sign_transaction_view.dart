@@ -27,11 +27,12 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       transactionType: widget.data.transactionType,
       ishiveKeyChainMethod: widget.data.ishiveKeyChainMethod,
       comment: widget.data.comment,
+      imageLinks: widget.data.imageLinks,
       weight: widget.data.weight,
       showError: (error) => context.showSnackBar(error),
-      onSuccess: (generatedPermlink) {
+      onSuccess: (data) {
         context.showSnackBar(LocaleText.smCommentPublishMessage);
-        Navigator.pop(context,generatedPermlink);
+        Navigator.pop(context, data);
       },
       authData: context.read<UserController>().userData!
           as UserAuthModel<HiveAuthModel>,
@@ -60,7 +61,9 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              widget.data.ishiveKeyChainMethod ? LocaleText.keyChain : LocaleText.hiveAuth,
+              widget.data.ishiveKeyChainMethod
+                  ? LocaleText.keyChain
+                  : LocaleText.hiveAuth,
               style: theme.textTheme.displaySmall,
             ),
           ),
@@ -68,7 +71,8 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
             child: Padding(
               padding: kScreenPadding,
               child: TransactionWidgetView(
-                listenerProvider: hiveSignTransactionController.listenersProvider,
+                listenerProvider:
+                    hiveSignTransactionController.listenersProvider,
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,10 +11,14 @@ class Act {
     var uri = Uri.tryParse(url);
     if (uri != null) {
       var canLaunch = await canLaunchUrl(uri);
-      if (canLaunch) {
+      if (Platform.isIOS) {
         await launchUrl(uri);
       } else {
-        dev.log("URL can't be launched.");
+        if (canLaunch) {
+          await launchUrl(uri);
+        } else {
+          dev.log("URL can't be launched.");
+        }
       }
     }
   }
@@ -47,5 +52,18 @@ class Act {
     int min = pow(10, numberOfDigits - 1).toInt();
     int max = pow(10, numberOfDigits).toInt() - 1;
     return min + random.nextInt(max - min + 1);
+  }
+
+  static String commentWithImages(String comment, List<String> imageLinks) {
+    String result = "";
+    if (comment.trim().isNotEmpty) {
+      result += comment;
+      result += '\n\n';
+    }
+    for (int i = 0; i < imageLinks.length; i++) {
+      String image = imageLinks[i];
+      result += "![image-${i + 1}]($image)";
+    }
+    return result;
   }
 }

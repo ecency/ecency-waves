@@ -14,4 +14,10 @@ class ThreadJsonVideo {
           asMap(json, 'info'),
         ),
       );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'info': info.toJson(),
+    };
+  }
 }

@@ -20,9 +20,9 @@ class ThreadEarnings extends StatelessWidget {
         double.parse(pendingPayoutvalue?.replaceAll(" HBD", "") ?? "0.0");
     return IconWithText(
       padding: const EdgeInsets.only(top: 2, right: 2, bottom: 2),
-      icon: Icons.arrow_circle_up_outlined,
+      icon: Icons.attach_money,
       iconColor: iconColor,
-      text: "\$ ${value.toStringAsFixed(2)}",
+      text: value.toStringAsFixed(2),
       textStyle: textStyle,
       iconGap: iconGap,
       borderRadius: const BorderRadius.all(Radius.circular(8)),

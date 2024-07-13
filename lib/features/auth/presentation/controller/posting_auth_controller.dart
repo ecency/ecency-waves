@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/models/action_response.dart';
-import 'package:waves/core/utilities/act.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
@@ -20,34 +19,33 @@ class PostingAuthController extends ChangeNotifier {
 
   Future<void> validatePostingKey(String accountName,
       {required Function(String) showToast,
+      required String postingKey,
       required VoidCallback onSuccess,
       required VoidCallback showLoader,
       required VoidCallback hideLoader}) async {
     showLoader();
-    String? postingKey = await Act.getStringFromclipboard();
-    if (postingKey != null) {
-      ActionSingleDataResponse response =
-          await _authRepository.validatePostingKey(accountName, postingKey);
-      if (response.isSuccess) {
-        await _saveToLocal(accountName, postingKey);
-        showToast(LocaleText.smPostingLoginMessage);
-        hideLoader();
-        onSuccess();
-      } else {
-        showToast(response.errorMessage);
-        hideLoader();
-      }
+    ActionSingleDataResponse response =
+        await _authRepository.validatePostingKey(accountName, postingKey);
+    ActionSingleDataResponse<String> proofResponse = await _authRepository
+        .getImageUploadProofWithPostingKey(accountName, postingKey);
+    if (response.isSuccess && proofResponse.isSuccess) {
+      await _saveToLocal(accountName, postingKey, proofResponse.data!);
+      showToast(LocaleText.smPostingLoginMessage);
+      hideLoader();
+      onSuccess();
     } else {
-      showToast(LocaleText.emPostingLoginMessage);
+      showToast(response.errorMessage);
       hideLoader();
     }
   }
 
-  Future<void> _saveToLocal(String accountName, String postingKey) async {
+  Future<void> _saveToLocal(
+      String accountName, String postingKey, String token) async {
     UserAuthModel<PostingAuthModel> data = UserAuthModel(
         accountName: accountName,
         authType: AuthType.postingKey,
-        auth: PostingAuthModel(postingKey: postingKey));
+        imageUploadToken: token,
+        auth: PostingAuthModel(postingKey: postingKey,));
     await Future.wait([
       _userLocalRepository.writeCurrentUser(data),
       MultiAccountProvider().addUserAccount(data)

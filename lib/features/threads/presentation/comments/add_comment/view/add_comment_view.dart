@@ -1,148 +1,128 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:waves/core/common/extensions/ui.dart';
-import 'package:waves/core/locales/locale_text.dart';
-import 'package:waves/core/routes/routes.dart';
-import 'package:waves/core/utilities/act.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
+import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
-import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/features/auth/models/posting_auth_model.dart';
-import 'package:waves/features/auth/models/user_auth_model.dart';
-import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
-import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
-import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
-import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
-import 'package:waves/features/user/view/user_controller.dart';
+import 'package:waves/features/threads/presentation/comments/add_comment/widgets/add_comment_bottom_action_bar.dart';
 
 class AddCommentView extends StatefulWidget {
-  const AddCommentView(
-      {super.key,
-      required this.author,
-      required this.permlink,
-      required this.depth});
+  const AddCommentView({
+    super.key,
+    required this.author,
+    required this.permlink,
+    required this.depth,
+  });
 
-  final String author;
-  final String permlink;
-  final int depth;
+  final String? author;
+  final String? permlink;
+  final int? depth;
 
   @override
   State<AddCommentView> createState() => _AddCommentViewState();
 }
 
 class _AddCommentViewState extends State<AddCommentView> {
-  final TextEditingController commentTextEditingController =
-      TextEditingController();
+  final TextEditingController commentTextEditingController = TextEditingController();
+  late final bool isRoot;
+  final FocusNode _nodeText = FocusNode();
+
+  KeyboardActionsConfig _buildConfig(BuildContext context) {
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+      keyboardBarColor: Colors.black,
+      actions: [
+        KeyboardActionsItem(
+          focusNode: _nodeText,
+          toolbarButtons: [
+            (node) {
+              return GestureDetector(
+                onTap: () => node.unfocus(),
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "Done",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              );
+            }
+          ],
+        ),
+      ],
+    );
+  }
+
+  @override
+  void initState() {
+    if (widget.author == null && widget.permlink == null) {
+      isRoot = true;
+    } else {
+      isRoot = false;
+    }
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final UserAuthModel userData = context.read<UserController>().userData!;
     return Scaffold(
-      appBar: AppBar(
-        title:  Text(LocaleText.addAComment),
-      ),
-      body: SafeArea(
+      appBar: _appBar(),
+      body: KeyboardActions(
+        config: _buildConfig(context),
+        child: SafeArea(
           child: Padding(
-        padding: kScreenPadding,
-        child: TextField(
-          controller: commentTextEditingController,
-          expands: true,
-          maxLines: null,
-          minLines: null,
-          decoration:  InputDecoration(
-              hintText: LocaleText.addYourReply, border: InputBorder.none),
+            padding: kScreenPadding,
+            child: TextField(
+              keyboardType: TextInputType.multiline,
+              controller: commentTextEditingController,
+              // expands: true,
+              maxLines: 5,
+              minLines: 1,
+              focusNode: _nodeText,
+              textInputAction: TextInputAction.newline,
+              decoration: InputDecoration(hintText: hintText, border: InputBorder.none),
+            ),
+          ),
         ),
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          String comment = commentTextEditingController.text.trim();
-          // Navigator.pop(
-          //     context,
-          //     ThreadFeedModel(
-          //         postId: Act.generateRandomNumber(6),
-          //         parentAuthor: widget.author,
-          //         parentPermlink: widget.permlink,
-          //         author: userData.accountName,
-          //         permlink: Act.generatePermlink(userData.accountName),
-          //         category: "",
-          //         depth: widget.depth + 1,
-          //         title: '',
-          //         children: 0,
-          //         body: commentTextEditingController.text.trim(),
-          //         created: DateTime.now()));
-          if (comment.isEmpty) {
-            context.showSnackBar(LocaleText.replyCannotBeEmpty);
-          } else if (userData.isPostingKeyLogin) {
-            _postingKeyCommentTransaction(comment, userData, context);
-          } else {
-            _dialogForHiveTransaction(context, comment,userData);
-          }
-        },
-        child: const Icon(Icons.reply),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: AddCommentBottomActionBar(
+            commentTextEditingController: commentTextEditingController,
+            isRoot: isRoot,
+            authorParam: widget.author,
+            permlinkParam: widget.permlink,
+            depthParam: widget.depth),
       ),
     );
   }
 
-  void _postingKeyCommentTransaction(String comment,
-      UserAuthModel<dynamic> userData, BuildContext context) async {
-    context.showLoader();
-    await SignTransactionPostingKeyController().initCommentProcess(comment,
-        author: widget.author,
-        parentPermlink: widget.permlink,
-        authdata: userData as UserAuthModel<PostingAuthModel>,
-        onSuccess: (generatedPermlink) {
-          Navigator.pop(context,
-              generateCommentModel(generatedPermlink, userData.accountName));
-        },
-        showToast: (message) => context.showSnackBar(message));
-    // ignore: use_build_context_synchronously
-    context.hideLoader();
+  AppBar _appBar() {
+    return isRoot
+        ? AppBar(
+            title: const Text("Publish"),
+          )
+        : AppBar(
+            leadingWidth: 30,
+            title: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: UserProfileImage(
+                url: widget.author,
+              ),
+              title: AutoSizeText(
+                "Reply to ${widget.author!}",
+                minFontSize: 14,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                widget.permlink!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
   }
 
-  Future<dynamic> _dialogForHiveTransaction(
-      BuildContext context, String comment, UserAuthModel userData) {
-    return showDialog(
-      context: context,
-      builder: (context) => TransactionDecisionDialog(
-        onContinue: (authType) {
-          _onTransactionDecision(comment, authType, context, userData);
-        },
-      ),
-    );
-  }
-
-  void _onTransactionDecision(String comment, AuthType authType,
-      BuildContext context, UserAuthModel userData) async {
-    SignTransactionNavigationModel navigationData =
-        SignTransactionNavigationModel(
-            transactionType: SignTransactionType.comment,
-            author: widget.author,
-            permlink: widget.permlink,
-            comment: comment,
-            ishiveKeyChainMethod: authType == AuthType.hiveKeyChain);
-    context
-        .pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
-        .then((generatedPermlink) {
-      Navigator.pop(
-        context,
-        generateCommentModel(generatedPermlink, userData.accountName),
-      );
-    });
-  }
-
-  ThreadFeedModel? generateCommentModel(Object? permlink, String userName) {
-    if (permlink != null && permlink is String) {
-      return ThreadFeedModel(
-          postId: Act.generateRandomNumber(6),
-          parentAuthor: widget.author,
-          parentPermlink: widget.permlink,
-          author: userName,
-          permlink: permlink,
-          category: "",
-          depth: widget.depth + 1,
-          title: '',
-          body: commentTextEditingController.text.trim(),
-          created: DateTime.now());
-    }
-    return null;
+  String get hintText {
+    return isRoot ? "What's happening?" : "Reply, engage, exchange ideas";
   }
 }

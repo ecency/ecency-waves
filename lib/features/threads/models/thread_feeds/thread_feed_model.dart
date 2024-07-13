@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 import 'package:waves/core/utilities/save_convert.dart';
-import 'package:waves/features/threads/models/post_detail/post_detail_model.dart';
+import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/beneficiary_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 
@@ -176,6 +176,41 @@ class ThreadFeedModel extends Equatable {
         percentHBD: json["percent_hbd"],
       );
 
+  Map<String, dynamic> toJson() {
+    return {
+      'post_id': postId,
+      'author': author,
+      'permlink': permlink,
+      'category': category,
+      'title': title,
+      'body': body,
+      'json_metadata': jsonMetadata?.toJson(),
+      'created': created.toUtc().toIso8601String(),
+      'last_update': lastUpdate?.toIso8601String(),
+      'depth': depth,
+      'children': children,
+      'net_rshares': netRshares,
+      'last_payout': lastPayout?.toIso8601String(),
+      'cashout_time': cashoutTime?.toIso8601String(),
+      'total_payout_value': totalPayoutValue,
+      'curator_payout_value': curatorPayoutValue,
+      'pending_payout_value': pendingPayoutValue,
+      'promoted': promoted,
+      'replies': replies,
+      'body_length': bodyLength,
+      'author_reputation': authorReputation,
+      'active_votes': activeVotes?.map((vote) => vote.toJson()).toList(),
+      'parent_author': parentAuthor,
+      'parent_permlink': parentPermlink,
+      'url': url,
+      'root_title': rootTitle,
+      'beneficiaries':
+          beneficiaries?.map((beneficiary) => beneficiary.toJson()).toList(),
+      'max_accepted_payout': maxAcceptedPayout,
+      'percent_hbd': percentHBD,
+    };
+  }
+
   static ThreadJsonMetadata? parseJsonMetaData(dynamic data) {
     if (data != null) {
       if (data is String) {
@@ -209,6 +244,8 @@ class ThreadFeedModel extends Equatable {
     return null;
   }
 
+  String get identifier => "$author-$permlink";
+
   List<String>? _extractImages() {
     String pattern =
         r"https?:\/\/(?!(?:.*?\/@[a-zA-Z0-9]+\/[a-zA-Z0-9]+))(?:[^)\s]+)";
@@ -221,18 +258,20 @@ class ThreadFeedModel extends Equatable {
     return validUrls.isNotEmpty ? validUrls : null;
   }
 
-  static void sortList(List<ThreadFeedModel> list, {bool isAscending = false}) {
-    list.sort((a, b) {
-      var bTime = isAscending ? a.created : b.created;
-      var aTime = isAscending ? b.created : a.created;
-      if (aTime.isAfter(bTime)) {
-        return -1;
-      } else if (bTime.isAfter(aTime)) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
+  static List<ThreadFeedModel> fromRawJson(String str) =>
+      ThreadFeedModel.parseThreads(json.decode(str));
+
+  static String toRawJson(List<ThreadFeedModel> threads) {
+    return json.encode(threads.map((e) => e.toJson()).toList());
+  }
+
+  static List<ThreadFeedModel> parseThreads(List? data) {
+    try {
+      if (data == null) return [];
+      return data.map((e) => ThreadFeedModel.fromJson(e)).toList();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   String get idString => postId.toString();
@@ -245,6 +284,7 @@ class ThreadFeedModel extends Equatable {
         parentAuthor,
         parentPermlink,
         depth,
+        activeVotes,
         children,
         body,
         title

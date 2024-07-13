@@ -14,19 +14,30 @@ class SignTransactionPostingKeyController {
     String comment, {
     required String author,
     required String parentPermlink,
-    required UserAuthModel<PostingAuthModel> authdata,
+    required UserAuthModel<PostingAuthModel> authData,
     required Function(String) onSuccess,
+    required VoidCallback onFailure,
     required Function(String) showToast,
+    required List<String> imageLinks,
   }) async {
-    String generatedPermlink = Act.generatePermlink(authdata.accountName);
+    String generatedPermlink = Act.generatePermlink(authData.accountName);
+    String commentWithImages = Act.commentWithImages(comment, imageLinks);
     ActionSingleDataResponse<String> commentResponse =
-        await _threadRepository.commentOnContent(authdata.accountName, author,
-            parentPermlink,generatedPermlink, comment, authdata.auth.postingKey, null, null);
+        await _threadRepository.commentOnContent(
+            authData.accountName,
+            author,
+            parentPermlink,
+            generatedPermlink,
+            commentWithImages,
+            authData.auth.postingKey,
+            null,
+            null);
     if (commentResponse.isSuccess) {
       showToast(LocaleText.smCommentPublishMessage);
       onSuccess(generatedPermlink);
     } else {
       showToast(LocaleText.emCommentDeclineMessage);
+      onFailure();
     }
   }
 

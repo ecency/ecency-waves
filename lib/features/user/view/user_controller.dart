@@ -35,6 +35,10 @@ class UserController extends ChangeNotifier {
     return userData?.accountName;
   }
 
+  String get imageUploadToken {
+    return userData!.imageUploadToken;
+  }
+
   Future<void> _readUserFromLocal() async {
     userData = await _localRepository.readCurrentUser();
     if (userData != null) notifyListeners();

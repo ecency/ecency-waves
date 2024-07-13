@@ -33,7 +33,7 @@ class _UpvoteSliderState extends State<UpvoteSlider> {
       children: [
         Slider(
           value: sliderValue,
-          min: 0.1,
+          min: 0.01,
           inactiveColor: theme.colorScheme.tertiary ,
           label: '${(sliderValue * 100).round()} %',
           onChanged: (value) {

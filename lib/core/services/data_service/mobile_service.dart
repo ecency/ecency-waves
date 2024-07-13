@@ -88,10 +88,25 @@ Future<String> voteContentFromPlatform(
     'username': username,
     'author': author,
     'permlink': permlink,
-    'weight': weight,
+    'weight': weight.toInt(),
     'postingKey': postingKey ?? '',
     'token': token ?? '',
     'authKey': authKey ?? '',
   });
   return response;
 }
+
+Future<String> getImageUploadProofWithPostingKeyFromPlatform(
+  String username,
+  String postingKey,
+) async {
+  final String id = 'getImageUploadProofWithPostingKey${DateTime.now().toIso8601String()}';
+  final String response = await platform.invokeMethod('getImageUploadProofWithPostingKey', {
+    'id': id,
+    'username': username,
+    'postingKey': postingKey,
+  });
+  return response;
+}
+
+

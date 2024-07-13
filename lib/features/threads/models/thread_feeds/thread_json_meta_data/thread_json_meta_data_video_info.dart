@@ -1,6 +1,5 @@
 import 'package:waves/core/utilities/save_convert.dart';
 
-
 class PostJsonVideoInfo {
   final String? videoV2;
   PostJsonVideoInfo({
@@ -11,4 +10,10 @@ class PostJsonVideoInfo {
       PostJsonVideoInfo(
         videoV2: asString(json, 'videoV2'),
       );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'videoV2': videoV2,
+    };
+  }
 }

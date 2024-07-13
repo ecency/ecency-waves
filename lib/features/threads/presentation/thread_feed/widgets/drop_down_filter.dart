@@ -1,8 +1,10 @@
 import 'package:cool_dropdown/cool_dropdown.dart';
 import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 
 class DropDownFilter extends StatefulWidget {
@@ -16,11 +18,9 @@ class DropDownFilter extends StatefulWidget {
 
 class _DropDownFilterState extends State<DropDownFilter> {
   final DropdownController _dropdownController = DropdownController();
-  final PageController _pageController = PageController();
 
   @override
   void dispose() {
-    _pageController.dispose();
     _dropdownController.dispose();
     super.dispose();
   }
@@ -29,14 +29,12 @@ class _DropDownFilterState extends State<DropDownFilter> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = context.read<ThreadFeedController>();
-    String defaultTypeString =
-        controller.gethreadName(type: controller.threadType);
+    final List types = ThreadFeedType.values.sublist(1);
+    String defaultTypeString = Thread.gethreadName(type: controller.threadType);
     return AnimatedContainer(
-      margin: const EdgeInsets.only(right: 10),
       key: const ValueKey('dropdown'),
       duration: const Duration(milliseconds: 200),
-      width: 150,
-      height: 30,
+      width: 175,
       child: Stack(
         children: [
           CoolDropdown<ThreadFeedType>(
@@ -47,8 +45,7 @@ class _DropDownFilterState extends State<DropDownFilter> {
                 value: controller.threadType),
             dropdownItemOptions: DropdownItemOptions(
               render: DropdownItemRender.all,
-              selectedBoxDecoration:
-                  BoxDecoration(color: theme.colorScheme.tertiaryContainer),
+              selectedBoxDecoration: BoxDecoration(color: Colors.grey.shade600),
               textStyle: TextStyle(color: theme.primaryColorDark),
               selectedTextStyle: TextStyle(color: theme.primaryColorDark),
             ),
@@ -57,19 +54,19 @@ class _DropDownFilterState extends State<DropDownFilter> {
             ),
             dropdownTriangleOptions:
                 const DropdownTriangleOptions(height: 5, width: 0),
-            dropdownList: ThreadFeedType.values
+            dropdownList: types
                 .map(
                   (e) => CoolDropdownItem<ThreadFeedType>(
                       isSelected: e == controller.threadType,
-                      label: controller.gethreadName(type: e),
+                      label: Thread.gethreadName(type: e),
                       value: e),
                 )
                 .toList(),
             onChange: (type) {
-              widget.onChanged(type);
-              _animateToPage(ThreadFeedType.values
-                  .indexWhere((element) => element == type));
-              setState(() {});
+              if (controller.threadType != type) {
+                widget.onChanged(type);
+                setState(() {});
+              }
               _dropdownController.close();
             },
             resultOptions: ResultOptions(
@@ -87,25 +84,25 @@ class _DropDownFilterState extends State<DropDownFilter> {
             ),
           ),
           Positioned.fill(
-            top: 5,
-            left: 10,
+            top: 0,
+            left: 0,
+            right: 0,
             child: IgnorePointer(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 24.0),
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: List.generate(
-                    ThreadFeedType.values.length,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(right: 5.0),
-                      child: Text(
-                        controller.gethreadName(
-                            type: ThreadFeedType.values[index]),
-                        textAlign: TextAlign.right,
-                      ),
+              child: Container(
+                color: theme.cardColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      Thread.gethreadName(type: controller.threadType),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
+                    const Gap(2),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4.0),
+                      child: Icon(Icons.arrow_drop_down),
+                    )
+                  ],
                 ),
               ),
             ),
@@ -113,10 +110,5 @@ class _DropDownFilterState extends State<DropDownFilter> {
         ],
       ),
     );
-  }
-
-  void _animateToPage(int index) {
-    _pageController.animateToPage(index,
-        duration: const Duration(milliseconds: 150), curve: Curves.easeIn);
   }
 }

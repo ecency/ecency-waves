@@ -37,10 +37,15 @@ class InteractionTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 4),
       child: Row(
-        mainAxisAlignment: hideCommentInfo
-            ? MainAxisAlignment.start
-            : MainAxisAlignment.spaceBetween,
+        mainAxisAlignment:  MainAxisAlignment.spaceBetween,
         children: [
+          VoteIconButton(
+            item: item,
+            iconColor: iconColor,
+            iconGap: iconGap,
+            textStyle: style(theme),
+          ),
+          gap(),
           ThreadEarnings(
             pendingPayoutvalue: item.pendingPayoutValue,
             iconColor: iconColor,
@@ -48,14 +53,6 @@ class InteractionTile extends StatelessWidget {
             textStyle: style(theme),
           ),
           gap(),
-          VoteIconButton(
-            item: item,
-            iconColor: iconColor,
-            iconGap: iconGap,
-            textStyle: style(theme),
-          ),
-          if (!hideCommentInfo) gap(),
-          if (!hideCommentInfo)
             IconWithText(
               onTap: () {
                 if (!removeCommentGesture) {

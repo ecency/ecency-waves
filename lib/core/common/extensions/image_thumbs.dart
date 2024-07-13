@@ -8,4 +8,8 @@ extension ImageThumb on BuildContext {
   String resizedImage(String value, {int? width, int? height}) {
     return "https://images.hive.blog/${width ?? 320}x${height ?? 160}/$value";
   }
+
+  String proxyImage(String value) {
+    return "https://images.hive.blog/1000x0/$value";
+  }
 }

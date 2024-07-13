@@ -37,16 +37,22 @@ class CommentDetailView extends StatelessWidget {
         return Selector<CommentDetailController, ThreadFeedModel>(
           selector: (_, myType) => myType.mainThread,
           builder: (context, item, child) {
-            return Scaffold(
-              appBar: AppBar(),
-              bottomNavigationBar: _bottomBar(theme, item),
-              body: Padding(
-                padding: kScreenVerticalPadding,
-                child: CustomScrollView(
-                  slivers: [
-                    _mainThread(item, userController, context, theme),
-                    _comments()
-                  ],
+            return SafeArea(
+              child: Scaffold(
+                appBar: AppBar(
+                  title: const Text("Post"),
+                ),
+                bottomNavigationBar: _bottomBar(theme, item),
+                body: SafeArea(
+                  child: Padding(
+                    padding: kScreenVerticalPadding,
+                    child: CustomScrollView(
+                      slivers: [
+                        _mainThread(item, userController, context, theme),
+                        _comments()
+                      ],
+                    ),
+                  ),
                 ),
               ),
             );
@@ -70,7 +76,6 @@ class CommentDetailView extends StatelessWidget {
                   itemCount: replies.length,
                   itemBuilder: (context, index) {
                     final ThreadFeedModel reply = replies[index];
-                    print(reply.depth);
                     return ThreadTile(
                       item: reply,
                       hideCommentInfo: true,
@@ -141,7 +146,7 @@ class CommentDetailView extends StatelessWidget {
                                 Border.all(color: theme.colorScheme.tertiary),
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(20))),
-                        child:  Text("${LocaleText.addAComment}..."),
+                        child: Text("${LocaleText.addAComment}..."),
                       ),
                     ),
                   )
@@ -184,9 +189,7 @@ class CommentDetailView extends StatelessWidget {
         },
       ).then((data) {
         if (data != null && data is ThreadFeedModel) {
-          // Navigator.pop(context);
-          print(data);
-          // context.read<CommentDetailController>().onCommentAdded(data);
+          context.read<CommentDetailController>().onCommentAdded(data);
         }
       });
     }

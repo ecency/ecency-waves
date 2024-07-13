@@ -7,7 +7,7 @@ import 'package:waves/core/common/widgets/inkwell_wrapper.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
-import 'package:waves/features/user/presentation/view/multi_account_dialog_view.dart';
+import 'package:waves/features/user/presentation/multi_account/view/multi_account_dialog_view.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class MyDrawerHeader extends StatelessWidget {
