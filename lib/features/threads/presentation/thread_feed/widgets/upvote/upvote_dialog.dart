@@ -127,9 +127,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   percentageButtons(0.1),
+                  const Gap(15),
                   percentageButtons(0.25),
+                  const Gap(15),
                   percentageButtons(0.5),
+                  const Gap(15),
                   percentageButtons(0.75),
+                  const Gap(15),
                   percentageButtons(1),
                 ],
               ),

@@ -28,6 +28,7 @@ class VoteIconButton extends StatefulWidget {
 class _VoteIconButtonState extends State<VoteIconButton> {
   late bool isVoted;
   late List<ActiveVoteModel> items;
+  late ThemeData theme;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _VoteIconButtonState extends State<VoteIconButton> {
 
   @override
   void didChangeDependencies() {
+    theme = Theme.of(context);
     var userController = Provider.of<UserController>(context);
     isVoted = isVotedByUser(context, userController);
     super.didChangeDependencies();
@@ -52,7 +54,7 @@ class _VoteIconButtonState extends State<VoteIconButton> {
       ),
       icon: isVoted ? Icons.favorite : Icons.favorite_border_outlined,
       text: "${items.length}",
-      iconColor: widget.iconColor,
+      iconColor: isVoted ? theme.primaryColor : widget.iconColor,
       iconGap: widget.iconGap,
       borderRadius: const BorderRadius.all(Radius.circular(40)),
       textStyle: widget.textStyle,
