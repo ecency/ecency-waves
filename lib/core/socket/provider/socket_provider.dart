@@ -56,10 +56,16 @@ class SocketProvider {
           case "sign_err":
             _controller
                 .add(SocketResponse(type: SocketType.signErr, value: null));
-          
         }
       }
-    });
+    }, onError: (e) => _reconnect(), onDone: _reconnect, cancelOnError: true);
+  }
+
+  Future<void> _reconnect() async {
+    await Future.delayed(const Duration(seconds: 2));
+    _socket = WebSocketChannel.connect(
+      Uri.parse(_connectedServer),
+    );
   }
 
   void sendDataToSocket(String jsonString) {

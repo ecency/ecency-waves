@@ -36,12 +36,15 @@ class Act {
   }
 
   static String generatePermlink(String username) {
-    String permlink2 = DateTime.now()
-        .toIso8601String()
-        .replaceAll(RegExp(r'[^a-zA-Z0-9]+'), '')
-        .toLowerCase();
-    permlink2 = 're-$username-$permlink2';
-    return permlink2;
+    final t = DateTime.now();
+    final timeFormat = '${t.year}'
+        '${t.month.toString()}'
+        '${t.day.toString()}'
+        't${t.hour.toString()}'
+        '${t.minute.toString()}'
+        '${t.second.toString()}'
+        '${t.millisecond.toString()}z';
+    return 're-${username.replaceAll('.', '')}-$timeFormat';
   }
 
   static int generateRandomNumber(int numberOfDigits) {

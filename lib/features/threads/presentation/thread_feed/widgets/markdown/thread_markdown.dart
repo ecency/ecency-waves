@@ -26,8 +26,6 @@ class ThreadMarkDown extends StatelessWidget {
       ),
       inlineSyntaxes: [HashtagSyntax(),RawImageSyntax()],
       data: Parser.removeAllHtmlTags(item.body),
-      // data:
-      //     "![image](https://img.inleo.io/DQmVABFnMDwPhMe6ZnRN7nG8RAo37uk9v9QMQyiaQpd64bk/Screenshot_20240627-081817.jpg)",
       builders: {
         'hashtag': HashTagBuilder(theme: theme),
         'rawImage': RawImageElementBuilder(theme: theme, item: item)

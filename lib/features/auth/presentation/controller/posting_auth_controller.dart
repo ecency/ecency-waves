@@ -24,20 +24,30 @@ class PostingAuthController extends ChangeNotifier {
       required VoidCallback showLoader,
       required VoidCallback hideLoader}) async {
     showLoader();
-    ActionSingleDataResponse response =
+    ActionSingleDataResponse<String> response =
         await _authRepository.validatePostingKey(accountName, postingKey);
-    ActionSingleDataResponse<String> proofResponse = await _authRepository
-        .getImageUploadProofWithPostingKey(accountName, postingKey);
-    if (response.isSuccess && proofResponse.isSuccess) {
-      await _saveToLocal(accountName, postingKey, proofResponse.data!);
-      showToast(LocaleText.smPostingLoginMessage);
-      hideLoader();
-      onSuccess();
+    if (response.isSuccess) {
+      postingKey =
+          _isKeyFromResponse(response.data) ? response.data! : postingKey;
+      ActionSingleDataResponse<String> proofResponse = await _authRepository
+          .getImageUploadProofWithPostingKey(accountName, postingKey);
+      if (proofResponse.isSuccess) {
+        await _saveToLocal(accountName, postingKey, proofResponse.data!);
+        showToast(LocaleText.smPostingLoginMessage);
+        hideLoader();
+        onSuccess();
+      } else {
+        showToast(response.errorMessage);
+        hideLoader();
+      }
     } else {
       showToast(response.errorMessage);
       hideLoader();
     }
   }
+
+  bool _isKeyFromResponse(String? data) =>
+      data != null && data != 'true' && data != 'false' && data.isNotEmpty;
 
   Future<void> _saveToLocal(
       String accountName, String postingKey, String token) async {
@@ -45,7 +55,9 @@ class PostingAuthController extends ChangeNotifier {
         accountName: accountName,
         authType: AuthType.postingKey,
         imageUploadToken: token,
-        auth: PostingAuthModel(postingKey: postingKey,));
+        auth: PostingAuthModel(
+          postingKey: postingKey,
+        ));
     await Future.wait([
       _userLocalRepository.writeCurrentUser(data),
       MultiAccountProvider().addUserAccount(data)

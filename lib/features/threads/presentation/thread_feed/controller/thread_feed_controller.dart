@@ -246,6 +246,7 @@ class ThreadFeedController extends ChangeNotifier
       viewState = ViewState.loading;
       notifyListeners();
     }
+    _reset();
     await init();
   }
 
@@ -265,13 +266,7 @@ class ThreadFeedController extends ChangeNotifier
 
   void onTapFilter(ThreadFeedType type) {
     if (threadType != type) {
-      isDataDisplayedFromServer = false;
-      super.isNextPageLoading = false;
-      super.isPageEnded = false;
-      currentPage = 0;
-      pages = [];
-      items = [];
-      newFeeds = [];
+      _reset();
       viewState = ViewState.loading;
       threadType = type;
       notifyListeners();
@@ -281,6 +276,16 @@ class ThreadFeedController extends ChangeNotifier
         _loadSingleFeedType(type);
       }
     }
+  }
+
+  void _reset() {
+    isDataDisplayedFromServer = false;
+    super.isNextPageLoading = false;
+    super.isPageEnded = false;
+    currentPage = 0;
+    pages = [];
+    items = [];
+    newFeeds = [];
   }
 
   String _getThreadAccountName({ThreadFeedType? type}) {

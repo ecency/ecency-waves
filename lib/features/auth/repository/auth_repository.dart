@@ -20,7 +20,7 @@ class AuthRepository {
         accountName, encryptedData, authKey);
   }
 
-  Future<ActionSingleDataResponse<bool>> validatePostingKey(
+  Future<ActionSingleDataResponse<String>> validatePostingKey(
       String accountName, String postingKey) async {
     return await _apiService.validatePostingKey(accountName, postingKey);
   }
