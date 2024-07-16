@@ -9,6 +9,7 @@ import 'package:waves/core/providers/global_providers.dart';
 import 'package:waves/core/routes/app_router.dart';
 import 'package:waves/core/services/user_local_service.dart';
 import 'package:waves/core/utilities/theme/theme_mode.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'core/dependency_injection/dependency_injection.dart' as get_it;
 
 void main() async {
