@@ -114,7 +114,9 @@ jobs:   #here we specify the jobs - We could have multiple jobs
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: | 
+          flutter pub get
+          dart pub add build_runner --dev
 
       - name: Run build_runner build
         run: dart run build_runner build --delete-conflicting-outputs
