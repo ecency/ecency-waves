@@ -23,7 +23,7 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       - name: Upload-keystore generator
         run: |
           echo "${{secrets.UPLOAD_KEYSTORE}}" > upload.keystore.asc
-          base64 -d --input upload.keystore.asc --output android/upload.keystore
+          base64 -d --input upload.keystore.asc --output android/app/upload.keystore
 
       - name: Install dependencies
         run: flutter pub get # action
@@ -40,10 +40,10 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       #- name: Build ios
       #  run: flutter build ios --release --no-codesign
 
-      - name: Upload artifact to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        with:
-          appId: ${{secrets.FIREBASE_APP_ID}}
-          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          groups: testers
-          file: build/app/outputs/bundle/release/app-release.aab
+      #- name: Upload artifact to Firebase App Distribution
+      #  uses: wzieba/Firebase-Distribution-Github-Action@v1
+      #  with:
+      #    appId: ${{secrets.FIREBASE_APP_ID}}
+      #    serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+      #    groups: testers
+      #    file: build/app/outputs/bundle/release/app-release.aab
