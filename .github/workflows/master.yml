@@ -47,16 +47,6 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       #- name: Build ios
       #  run: flutter build ios --release --no-codesign
 
-      - name: Sign AAB
-        id: sign
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: build/app/outputs/bundle/release/app-release.aab
-          signingKeyBase64: ${{ secrets.UPLOAD_KEYSTORE }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }}
-          keyPassword: ${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }}
-
       - name: Upload AAB
         id: uploadArtifact
         uses: actions/upload-artifact@v1
