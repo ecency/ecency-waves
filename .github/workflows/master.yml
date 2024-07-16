@@ -6,6 +6,8 @@ on:  #events (push and pull_request)
   #pull_request:
   #  branches: [ "main" ]
 
+env:
+  PROPERTIES_PATH: "android/key.properties"
 
 jobs:   #here we specify the jobs - We could have multiple jobs
   build:  #name it something meaningful
@@ -29,8 +31,13 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       - name: Upload-keystore generator
         run: |
           echo "${{secrets.UPLOAD_KEYSTORE}}" > upload.keystore.asc
-          base64 -d --input upload.keystore.asc --output android/app/upload.key
+          base64 -d --input upload.keystore.asc --output android/app/key.jks
 
+      - name: Key.Properties
+        run: |
+          echo keyPassword=\${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }} > ${{env.PROPERTIES_PATH}}
+          echo storePassword=\${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }} >> ${{env.PROPERTIES_PATH}}
+          echo keyAlias=\${{ secrets.ALIAS }} >> ${{env.PROPERTIES_PATH}}
       #- name: Run tests
       #  run: flutter test
 
