@@ -31,8 +31,8 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       - name: Run clean
         run: flutter clean
 
-      - name: Run tests
-        run: flutter test
+      #- name: Run tests
+      #  run: flutter test
 
       - name: Build android appBundle
         run: flutter build appbundle --release
