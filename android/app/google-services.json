@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "55254149299",
+    "project_id": "waves-50603",
+    "storage_bucket": "waves-50603.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:55254149299:android:85f6bd56422a02a02c28c6",
+        "android_client_info": {
+          "package_name": "com.ecency.waves"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYgupZ1DC5gSdenqMg5SJrtL9OD8NBLeI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

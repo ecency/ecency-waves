@@ -1,4 +1,4 @@
-# Ecency
+# Waves
 
 ## Overview
 This is a Flutter project to demonstrate [your project description]. Follow the steps below to set up Flutter and run the application on your mobile device.
