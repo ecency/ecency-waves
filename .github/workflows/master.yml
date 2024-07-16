@@ -23,7 +23,7 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       - name: Upload-keystore generator
         run: |
           echo "${{secrets.UPLOAD_KEYSTORE}}" > upload.keystore.asc
-          base64 -d --input upload.keystore.asc --output app/upload.keystore
+          base64 -d --input upload.keystore.asc --output android/app/upload.keystore
 
       - name: Install dependencies
         run: flutter pub get # action
