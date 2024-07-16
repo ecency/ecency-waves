@@ -56,15 +56,11 @@ jobs:   #here we specify the jobs - We could have multiple jobs
           name: waves-android
           path: build/app/outputs/bundle/release/app-release.aab
 
-      - name: Create service_account.json
-        id: createServiceAccount
-        run: echo "${{ secrets.CREDENTIAL_FILE_CONTENT }}" > service_account.json
-
       - name: Deploy to Play Store (BETA)
         id: deploy
-        uses: r0adkll/upload-google-play@v1
+        uses: r0adkll/upload-google-play@v3
         with:
-          serviceAccountJson: service_account.json
+          serviceAccountJsonPlainText: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           packageName: com.ecency.waves
           releaseFiles: "build/app/outputs/bundle/release/app-release.aab"
           track: internal
