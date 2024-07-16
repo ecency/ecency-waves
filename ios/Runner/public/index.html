@@ -151,22 +151,29 @@
           const accounts = await client.database.getAccounts([accountName]);
           const successObj = { valid: true, error: "", data: "true" };
           const pubWif = accounts[0].posting.key_auths[0][0];
-          const pKey = dhive.PrivateKey.fromString(postingKey)
-            .createPublic()
-            .toString();
-          if (pKey === pubWif) {
-            return replyToNative(successObj, id);
-          }
           const pubActive = accounts[0].active.key_auths[0][0];
-          if (pKey === pubActive) {
-            return replyToNative(successObj, id);
-          }
-          const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
-          const publicKeyFromPasswordBasedPostingKey = keyFromPassword.createPublic().toString();
-          if (publicKeyFromPasswordBasedPostingKey === pubWif) {
-            return replyToNative(successObj, id);
-          } else {
-            return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
+          const pubOwner = accounts[0].active.key_auths[0][0];
+          try {
+            const pKey = dhive.PrivateKey.fromString(postingKey)
+              .createPublic()
+              .toString();
+            if (pKey === pubWif) {
+              return replyToNative(successObj, id);
+            } else if (pKey === pubActive) {
+              return replyToNative(successObj, id);
+            } else if (pKey === pubOwner) {
+              return replyToNative(successObj, id);
+            } else {
+              return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
+            }
+          } catch (e) {
+            const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
+            const publicKeyFromPasswordBasedPostingKey = keyFromPassword.createPublic().toString();
+            if (publicKeyFromPasswordBasedPostingKey === pubWif) {
+              return replyToNative({ valid: true, error: "", data: keyFromPassword.toString() }, id);
+            } else {
+              return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
+            }
           }
         } catch (error) {
           console.log("Error: ", error);
