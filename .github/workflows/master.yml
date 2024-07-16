@@ -3,8 +3,8 @@ name: Distribution
 on:  #events (push and pull_request)
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  #pull_request:
+  #  branches: [ "main" ]
 
 
 jobs:   #here we specify the jobs - We could have multiple jobs
