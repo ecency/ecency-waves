@@ -54,7 +54,7 @@ android {
     }
     signingConfigs {
           release {
-              keyAlias 'upload'
+              keyAlias System.getenv('ALIAS')
               keyPassword System.getenv('UPLOAD_KEYSTORE_PASSPHRASE')
               storeFile file('upload.keystore')
               storePassword System.getenv('UPLOAD_KEYSTORE_PASSPHRASE')

@@ -40,6 +40,36 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       #- name: Build ios
       #  run: flutter build ios --release --no-codesign
 
+      - name: Sign AAB
+        id: sign
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: build/app/outputs/bundle/release/app-release.aab
+          signingKeyBase64: ${{ secrets.UPLOAD_KEYSTORE }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }}
+          keyPassword: ${{ secrets.UPLOAD_KEYSTORE_PASSPHRASE }}
+
+      - name: Upload AAB
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: waves-android
+          path: build/app/outputs/bundle/release/app-release.aab
+
+      - name: Create service_account.json
+        id: createServiceAccount
+        run: echo '${{ secrets.CREDENTIAL_FILE_CONTENT }}' > service_account.json
+
+      - name: Deploy to Play Store (BETA)
+        id: deploy
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: service_account.json
+          packageName: com.ecency.waves
+          releaseFile: build/app/outputs/bundle/release/app-release.aab
+          track: alpha
+
       #- name: Upload artifact to Firebase App Distribution
       #  uses: wzieba/Firebase-Distribution-Github-Action@v1
       #  with:
