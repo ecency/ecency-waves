@@ -145,13 +145,13 @@ class ApiService {
     }
   }
 
-  Future<ActionSingleDataResponse<bool>> validatePostingKey(
+  Future<ActionSingleDataResponse<String>> validatePostingKey(
       String accountName, String postingKey) async {
     try {
       String jsonString =
           await validatePostingKeyFromPlatform(accountName, postingKey);
-      ActionSingleDataResponse<bool> response =
-          ActionSingleDataResponse.fromJsonString(jsonString, null);
+      ActionSingleDataResponse<String> response =
+          ActionSingleDataResponse.fromJsonString(jsonString, null,ignoreFromJson: true);
       return response;
     } catch (e) {
       return ActionSingleDataResponse(

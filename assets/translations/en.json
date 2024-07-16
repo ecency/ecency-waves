@@ -33,7 +33,7 @@
     "em_time_out_message": "Server timed out, please try again",
     "em_vote_failure_message": "Voting failed",
     "sm_hive_auth_login_message": "You have successfully logged in with Hive Auth with user",
-    "sm_posting_login_message": "You have successfully logged in with posting key",
+    "sm_posting_login_message": "You have successfully logged in with key",
     "sm_comment_publish_message": "Comment is published successfully",
     "sm_vote_success_message": "You have successfully voted the user",
     "something_went_wrong":"Something went wrong",
