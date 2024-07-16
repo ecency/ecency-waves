@@ -172,32 +172,28 @@
       async function validatePostingKey(id, accountName, postingKey) {
         try {
           const accounts = await client.database.getAccounts([accountName]);
+          const successObj = { valid: true, error: "", data: "true" };
           const pubWif = accounts[0].posting.key_auths[0][0];
-          console.log("PubWif: ", pubWif);
           const pKey = dhive.PrivateKey.fromString(postingKey)
             .createPublic()
             .toString();
-          console.log("PubWif from pKey = ", pubWif);
-          const valid = pKey === pubWif;
-          console.log(`is valid ${valid}`);
-          replyToNative(
-            {
-              valid: valid,
-              error: "",
-              data: valid.toString,
-            },
-            id
-          );
+          if (pKey === pubWif) {
+            return replyToNative(successObj, id);
+          }
+          const pubActive = accounts[0].active.key_auths[0][0];
+          if (pKey === pubActive) {
+            return replyToNative(successObj, id);
+          }
+          const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
+          const publicKeyFromPasswordBasedPostingKey = keyFromPassword.createPublic().toString();
+          if (publicKeyFromPasswordBasedPostingKey === pubWif) {
+            return replyToNative(successObj, id);
+          } else {
+            return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
+          }
         } catch (error) {
           console.log("Error: ", error);
-          replyToNative(
-            {
-              valid: false,
-              error: error.message,
-              data: null,
-            },
-            id
-          );
+          return replyToNative({ valid: false, error: error.message, data: null }, id);
         }
       }
 
