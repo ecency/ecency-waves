@@ -54,17 +54,13 @@ class CommentBroadCastModel {
       'body': comment,
       'json_metadata': json.encode({
         'tags': [
+          "hive-125125",
+          "waves",
           "ecency",
-          "ios",
-          "android",
           "mobile",
-          "app",
-          "spknetwork",
-          "sagarkothari88",
-          "comment",
-          "reply",
+          "thread"
         ],
-        'app': "Ecency-Waves",
+        'app': "ecency-waves",
         'format': "markdown+html",
       }),
     };
