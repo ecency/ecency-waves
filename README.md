@@ -1,7 +1,9 @@
 # Waves
 
 ## Overview
-This is a Flutter project to demonstrate [your project description]. Follow the steps below to set up Flutter and run the application on your mobile device.
+Waves in the ocean, short form social networking app powered by [Hive blockchain](https://hive.io) and [Flutter](https://flutter.dev).
+
+Follow the steps below to set up Flutter and run the application on your mobile device.
 
 ## Prerequisites
 
