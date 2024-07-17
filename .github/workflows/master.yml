@@ -63,7 +63,7 @@ jobs:   #here we specify the jobs - We could have multiple jobs
           serviceAccountJsonPlainText: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           packageName: com.ecency.waves
           releaseFiles: "build/app/outputs/bundle/release/app-release.aab"
-          track: internal
+          track: qa
 
 
   build-ios:
