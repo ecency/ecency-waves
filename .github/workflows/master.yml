@@ -64,6 +64,7 @@ jobs:   #here we specify the jobs - We could have multiple jobs
           packageName: com.ecency.waves
           releaseFiles: "build/app/outputs/bundle/release/app-release.aab"
           track: internal
+          changesNotSentForReview: true
           status: completed
 
 
