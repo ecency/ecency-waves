@@ -73,10 +73,11 @@ class _UserProfileViewWidgetState extends State<UserProfileViewWidget> {
             ImageContainer(
                 width: double.infinity,
                 url: widget.data.postingJsonMetadata?.profile?.coverImage),
-              const Positioned(
+               Positioned(
                 bottom: 10,
                 right: 10,
                 child: UserProfileFollowMuteButtons(
+                  author: widget.data.name,
                   buttonHeight: 30,
                 ),
               ),

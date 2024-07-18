@@ -103,6 +103,12 @@ class MainActivity: FlutterActivity() {
                     "getImageUploadProofWithPostingKey('$id', '$username', '$postingKey');",
                     null
                 )
+            } else if (call.method == "muteUser" && username != null && author != null
+                && postingKey != null && token != null && authKey != null ) {
+                webView?.evaluateJavascript(
+                    "muteUser('$id','$username', '$author', '$postingKey', '$token', '$authKey');",
+                    null
+                )
             } 
     }
 }

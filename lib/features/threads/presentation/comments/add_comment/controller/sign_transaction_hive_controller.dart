@@ -16,7 +16,7 @@ class SignTransactionHiveController extends HiveTransactionController {
   final ThreadRepository _threadRepository = getIt<ThreadRepository>();
   late final StreamSubscription<SocketResponse> _socketSubscription;
   final String author;
-  final String permlink;
+  final String? permlink;
   final UserAuthModel<HiveAuthModel> authData;
   final String? comment;
   final List<String>? imageLinks;
@@ -27,21 +27,23 @@ class SignTransactionHiveController extends HiveTransactionController {
   SignTransactionHiveController({
     required this.transactionType,
     required this.author,
-    required this.permlink,
     required this.authData,
     required super.showError,
     required super.onSuccess,
     required super.onFailure,
     required super.ishiveKeyChainMethod,
+    this.permlink,
     this.comment,
     this.imageLinks,
     this.weight,
   })  : assert(
             !(transactionType == SignTransactionType.comment &&
-                (comment == null || imageLinks == null)),
-            "comment and imageLinks parameters are required"),
-        assert(!(transactionType == SignTransactionType.vote && weight == null),
-            "weight parameter is required") {
+                (comment == null || imageLinks == null || permlink == null)),
+            "comment,permlink and imageLinks parameters are required"),
+        assert(
+            !(transactionType == SignTransactionType.vote &&
+                (weight == null || permlink == null)),
+            "weight and permlink parameters are required") {
     _initSignTransactionSocketSubscription();
   }
 
@@ -68,18 +70,24 @@ class SignTransactionHiveController extends HiveTransactionController {
   }
 
   String get successMessage {
-    if (transactionType == SignTransactionType.vote) {
-      return LocaleText.smVoteSuccessMessage;
-    } else {
-      return LocaleText.smCommentPublishMessage;
+    switch (transactionType) {
+      case SignTransactionType.vote:
+        return LocaleText.smVoteSuccessMessage;
+      case SignTransactionType.comment:
+        return LocaleText.smCommentPublishMessage;
+      case SignTransactionType.mute:
+        return "User is muted successfully";
     }
   }
 
   String get failureMessage {
-    if (transactionType == SignTransactionType.vote) {
-      return LocaleText.emVoteFailureMessage;
-    } else {
-      return LocaleText.emCommentDeclineMessage;
+    switch (transactionType) {
+      case SignTransactionType.vote:
+        return LocaleText.emVoteFailureMessage;
+      case SignTransactionType.comment:
+        return LocaleText.emCommentDeclineMessage;
+      case SignTransactionType.mute:
+        return "Mute operation is failed";
     }
   }
 
@@ -110,7 +118,7 @@ class SignTransactionHiveController extends HiveTransactionController {
         return _threadRepository.commentOnContent(
             authData.accountName,
             author,
-            permlink, //parentPermlink
+            permlink!, //parentPermlink
             _generatedPermlink!,
             Act.commentWithImages(comment!, imageLinks!),
             null,
@@ -120,8 +128,16 @@ class SignTransactionHiveController extends HiveTransactionController {
         return _threadRepository.votecontent(
           authData.accountName,
           author,
-          permlink,
+          permlink!,
           weight!,
+          null,
+          authData.auth.authKey,
+          authData.auth.token,
+        );
+      case SignTransactionType.mute:
+        return _threadRepository.muteUser(
+          authData.accountName,
+          author,
           null,
           authData.auth.authKey,
           authData.auth.token,

@@ -2,7 +2,7 @@ import 'package:waves/core/utilities/enum.dart';
 
 class SignTransactionNavigationModel {
   final String author;
-  final String permlink;
+  final String? permlink;
   final String? comment;
   final List<String>? imageLinks;
   final double? weight;
@@ -11,7 +11,7 @@ class SignTransactionNavigationModel {
 
   SignTransactionNavigationModel({
     required this.author,
-    required this.permlink,
+    this.permlink,
     this.imageLinks,
     this.comment,
     this.weight,

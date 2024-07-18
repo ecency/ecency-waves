@@ -25,7 +25,7 @@ class DialogTemplate extends StatelessWidget {
     final theme = Theme.of(context);
     return AlertDialog(
       contentPadding: EdgeInsets.zero,
-      backgroundColor: theme.primaryColorLight,
+      backgroundColor: theme.colorScheme.tertiary,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12))),
       title: Row(
@@ -45,7 +45,10 @@ class DialogTemplate extends StatelessWidget {
               icon: const Icon(Icons.cancel))
         ],
       ),
-      content: content,
+      content: Padding(
+        padding: const EdgeInsets.only(left: 24, right: 15, bottom: 20),
+        child: content,
+      ),
       actions: [
         if (declineButtonText != null)
           DialogButton(

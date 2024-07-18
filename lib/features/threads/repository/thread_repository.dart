@@ -2,6 +2,7 @@ import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/models/broadcast_model.dart';
 import 'package:waves/core/services/data_service/api_service.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/threads/models/thread_feeds/reported/report_reponse.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 
 class ThreadRepository {
@@ -29,8 +30,8 @@ class ThreadRepository {
   }
 
   Future<ActionListDataResponse<ThreadFeedModel>> getcomments(
-      String accountName, String permlink) async {
-    return await _apiService.getComments(accountName, permlink);
+      String accountName, String permlink, String? observer) async {
+    return await _apiService.getComments(accountName, permlink, observer);
   }
 
   Future<ActionSingleDataResponse<String>> commentOnContent(
@@ -60,13 +61,24 @@ class ThreadRepository {
         username, author, permlink, weight, postingKey, authKey, token);
   }
 
-  Future<ActionSingleDataResponse> voteUsingHiveSigner(
-      String token, BroadcastModel<VoteBroadCastModel> data) async {
+  Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(
+      String token, BroadcastModel<T> data) async {
     return await _apiService.broadcastTransactionUsingHiveSigner(token, data);
   }
 
-   Future<ActionSingleDataResponse> commentUsingHiveSigner(
-      String token, BroadcastModel<CommentBroadCastModel> data) async {
-    return await _apiService.broadcastTransactionUsingHiveSigner(token, data);
+  Future<ActionSingleDataResponse<String>> muteUser(
+    String username,
+    String author,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    return await _apiService.muteUser(
+        username, author, postingKey, authKey, token);
+  }
+
+  Future<ActionSingleDataResponse<ReportResponse>> reportThread(
+      String author, String permlink) async {
+    return await _apiService.reportThread(author, permlink);
   }
 }

@@ -265,6 +265,37 @@
       );
     }
 
+    function muteUser(
+      id,
+      username,
+      author,
+      postingKey,
+      token,
+      authKey
+    ) {
+      let op = [
+        "custom_json",
+        {
+          "id": "follow",
+          "required_auths": [],
+          "required_posting_auths": [
+            username
+          ],
+          "json": JSON.stringify(["follow", { "follower": username, "following": author, "what": ["ignore"] }])
+        }
+
+      ];
+      performOperations(
+        id,
+        [op],
+        "mute",
+        username,
+        postingKey,
+        token,
+        authKey
+      );
+    }
+
     function performOperations(
       id,
       operations,

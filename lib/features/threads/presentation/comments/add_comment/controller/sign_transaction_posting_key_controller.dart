@@ -59,4 +59,23 @@ class SignTransactionPostingKeyController {
       showToast(LocaleText.emVoteFailureMessage);
     }
   }
+
+  Future<void> initMuteProcess({
+    required String author,
+    required UserAuthModel<PostingAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required VoidCallback onFailure,
+    required Function(String) showToast,
+  }) async {
+    ActionSingleDataResponse<String> response =
+        await _threadRepository.muteUser(
+            authdata.accountName, author, authdata.auth.postingKey, null, null);
+    if (response.isSuccess) {
+      showToast("User is muted successfully");
+      onSuccess();
+    } else {
+      showToast("Mute operation is failed");
+      onFailure();
+    }
+  }
 }

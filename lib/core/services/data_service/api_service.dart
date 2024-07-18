@@ -16,16 +16,17 @@ import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/threads/models/comment/image_upload_error_response.dart';
 import 'package:waves/features/threads/models/comment/image_upload_response.dart';
 import 'package:waves/features/threads/models/post_detail/comment_model.dart';
+import 'package:waves/features/threads/models/thread_feeds/reported/report_reponse.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 
 class ApiService {
   Future<ActionListDataResponse<ThreadFeedModel>> getComments(
-      String accountName, String permlink) async {
+      String accountName, String permlink, String? observer) async {
     try {
       var url = Uri.parse(
-          'https://hivexplorer.com/api/get_discussion?author=$accountName&permlink=$permlink');
+          'https://hivexplorer.com/api/get_discussion?author=$accountName&permlink=$permlink&observer=$observer');
 
       var response = await http.get(
         url,
@@ -151,7 +152,8 @@ class ApiService {
       String jsonString =
           await validatePostingKeyFromPlatform(accountName, postingKey);
       ActionSingleDataResponse<String> response =
-          ActionSingleDataResponse.fromJsonString(jsonString, null,ignoreFromJson: true);
+          ActionSingleDataResponse.fromJsonString(jsonString, null,
+              ignoreFromJson: true);
       return response;
     } catch (e) {
       return ActionSingleDataResponse(
@@ -214,12 +216,7 @@ class ApiService {
     };
     final body = json.encode({
       'operations': [
-        [
-          enumToString(args.type),
-          (args.data is VoteBroadCastModel
-              ? (args.data as VoteBroadCastModel).toJson()
-              : (args.data as CommentBroadCastModel).toJson())
-        ]
+        [enumToString(args.type), args.toJson()]
       ]
     });
 
@@ -368,6 +365,52 @@ class ApiService {
                         .error
                         ?.message ??
                     "Something went wrong");
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<String>> muteUser(
+    String username,
+    String author,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    try {
+      String jsonString = await muteUserFromPlatform(
+          username, author, postingKey, authKey, token);
+      ActionSingleDataResponse<String> response =
+          ActionSingleDataResponse.fromJsonString(jsonString, null,
+              ignoreFromJson: true);
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+  Future<ActionSingleDataResponse<ReportResponse>> reportThread(
+      String author, String permlink) async {
+    try {
+      var url = Uri.parse("https://ecency.com/private-api/report");
+
+      http.Response response = await http.post(url,
+          body: json.encode({
+            "type": "content",
+            "data": "https://ecency.com/@$author/$permlink"
+          }));
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<ReportResponse>(
+            data: ReportResponse.fromRawJson(response.body),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
       }
     } catch (e) {
       return ActionSingleDataResponse(

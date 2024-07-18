@@ -50,6 +50,16 @@ Future<String> getImageUploadProofWithPostingKeyFromPlatform(
   return _error();
 }
 
+Future<String> muteUserFromPlatform(
+  String username,
+  String author,
+  String? postingKey,
+  String? authKey,
+  String? token,
+){
+  return _error();
+}
+
 Future<String> _error() {
   return Future.value('error');
 }
