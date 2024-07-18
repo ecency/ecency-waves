@@ -55,7 +55,7 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
                     textEditingController: postingKeyController),
                 const Gap(20),
                 AuthButton(
-                    authType: AuthType.postingKey, onTap: onPostingLoginTap, "Login"),
+                    authType: AuthType.postingKey, onTap: onPostingLoginTap, label: "Login"),
               ],
             ),
           ),
