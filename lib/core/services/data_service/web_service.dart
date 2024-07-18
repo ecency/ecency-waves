@@ -85,3 +85,13 @@ Future<String> getImageUploadProofWithPostingKeyFromPlatform(
 ) {
   throw UnimplementedError();
 }
+
+Future<String> muteUserFromPlatform(
+  String username,
+  String author,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}

@@ -109,4 +109,23 @@ Future<String> getImageUploadProofWithPostingKeyFromPlatform(
   return response;
 }
 
+Future<String> muteUserFromPlatform(
+  String username,
+  String author,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) async {
+  final String id = 'muteUser${DateTime.now().toIso8601String()}';
+  final String response = await platform.invokeMethod('muteUser', {
+    'id': id,
+    'username': username,
+    'author': author,
+    'postingKey': postingKey ?? '',
+    'token': token ?? '',
+    'authKey': authKey ?? '',
+  });
+  return response;
+}
+
 

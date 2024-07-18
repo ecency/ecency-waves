@@ -6,6 +6,22 @@ class BroadcastModel<T> {
   final T data;
 
   const BroadcastModel({required this.type, required this.data});
+
+  Map<String, dynamic> toJson() {
+    return _toJson(data);
+  }
+
+  Map<String, dynamic> _toJson(T model) {
+    if (model is VoteBroadCastModel) {
+      return model.toJson();
+    } else if (model is CommentBroadCastModel) {
+      return model.toJson();
+    } else if (model is MuteBroadcastModel) {
+      return model.toJson();
+    } else {
+      throw Exception('Unknown type');
+    }
+  }
 }
 
 class VoteBroadCastModel {
@@ -53,16 +69,35 @@ class CommentBroadCastModel {
       'title': "",
       'body': comment,
       'json_metadata': json.encode({
-        'tags': [
-          "hive-125125",
-          "waves",
-          "ecency",
-          "mobile",
-          "thread"
-        ],
+        'tags': ["hive-125125", "waves", "ecency", "mobile", "thread"],
         'app': "ecency-waves",
         'format': "markdown+html",
       }),
+    };
+  }
+}
+
+class MuteBroadcastModel {
+  final String username;
+  final String author;
+
+  const MuteBroadcastModel({
+    required this.username,
+    required this.author,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": "follow",
+      "required_posting_auths": [username],
+      "json": json.encode([
+        "follow",
+        {
+          "follower": username,
+          "following": author,
+          "what": ["ignore"]
+        }
+      ])
     };
   }
 }

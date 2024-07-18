@@ -11,12 +11,7 @@ class LogInDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return DialogTemplate(
       title: LocaleText.notLoggedIn,
-      content: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-        ).copyWith(bottom: 20),
-        child: Text(LocaleText.pleaseLoginFirst),
-      ),
+      content: Text(LocaleText.pleaseLoginFirst),
       declineButtonText: LocaleText.cancel,
       proceedButtonText: LocaleText.login,
       onProceedTap: () {

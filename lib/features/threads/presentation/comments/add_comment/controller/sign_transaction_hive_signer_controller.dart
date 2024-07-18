@@ -12,20 +12,18 @@ import 'package:waves/features/threads/repository/thread_repository.dart';
 class SignTransactionHiveSignerController {
   final ThreadRepository _threadRepository = getIt<ThreadRepository>();
 
-  Future<void> initCommentProcess(
-    String comment, {
-    required String parentAuthor,
-    required String parentPermlink,
-    required UserAuthModel<HiveSignerAuthModel> authData,
-    required Function(String) onSuccess,
-    required VoidCallback onFailure,
-    required Function(String) showToast,
-    required List<String> imageLinks
-  }) async {
+  Future<void> initCommentProcess(String comment,
+      {required String parentAuthor,
+      required String parentPermlink,
+      required UserAuthModel<HiveSignerAuthModel> authData,
+      required Function(String) onSuccess,
+      required VoidCallback onFailure,
+      required Function(String) showToast,
+      required List<String> imageLinks}) async {
     String generatedPermlink = Act.generatePermlink(authData.accountName);
     String commentWithImages = Act.commentWithImages(comment, imageLinks);
-    ActionSingleDataResponse commentResponse =
-        await _threadRepository.commentUsingHiveSigner(
+    ActionSingleDataResponse commentResponse = await _threadRepository
+        .broadcastTransactionUsingHiveSigner<CommentBroadCastModel>(
       authData.auth.token,
       BroadcastModel(
         type: BroadCastType.comment,
@@ -54,8 +52,8 @@ class SignTransactionHiveSignerController {
     required VoidCallback onSuccess,
     required Function(String) showToast,
   }) async {
-    ActionSingleDataResponse response =
-        await _threadRepository.voteUsingHiveSigner(
+    ActionSingleDataResponse response = await _threadRepository
+        .broadcastTransactionUsingHiveSigner<VoteBroadCastModel>(
       authdata.auth.token,
       BroadcastModel(
           type: BroadCastType.vote,
@@ -70,6 +68,33 @@ class SignTransactionHiveSignerController {
       onSuccess();
     } else {
       showToast(LocaleText.emVoteFailureMessage);
+    }
+  }
+
+  Future<void> initMuteProcess({
+    required String author,
+    required UserAuthModel<HiveSignerAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required VoidCallback onFailure,
+    required Function(String) showToast,
+  }) async {
+    ActionSingleDataResponse response = await _threadRepository
+        .broadcastTransactionUsingHiveSigner<MuteBroadcastModel>(
+      authdata.auth.token,
+      BroadcastModel(
+        type: BroadCastType.custom_json,
+        data: MuteBroadcastModel(
+          username: authdata.accountName,
+          author: author,
+        ),
+      ),
+    );
+    if (response.isSuccess) {
+      showToast("User is muted successfully");
+      onSuccess();
+    } else {
+      showToast("Mute operation is failed");
+      onFailure();
     }
   }
 }

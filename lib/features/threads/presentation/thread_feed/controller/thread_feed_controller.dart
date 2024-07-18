@@ -7,6 +7,8 @@ import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
 import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
+import 'package:waves/features/threads/models/thread_feeds/reported/report_reponse.dart';
+import 'package:waves/features/threads/models/thread_feeds/reported/thread_info_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_bookmark_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
@@ -22,6 +24,7 @@ class ThreadFeedController extends ChangeNotifier
   final AccountPostType _postType = AccountPostType.posts;
   final BookmarkProvider bookmarkProvider =
       BookmarkProvider<ThreadBookmarkModel>(type: BookmarkType.thread);
+  String? observer;
   int currentPage = 0;
   bool isDataDisplayedFromServer = false;
   List<ThreadInfo> pages = [];
@@ -33,7 +36,7 @@ class ThreadFeedController extends ChangeNotifier
   @override
   ViewState viewState = ViewState.loading;
 
-  ThreadFeedController() {
+  ThreadFeedController({required this.observer}) {
     threadType = _localRepository.readDefaultThread();
     super.pageLimit = 10;
     init();
@@ -46,6 +49,11 @@ class ThreadFeedController extends ChangeNotifier
     } else {
       await _loadSingleFeedType(threadType);
     }
+  }
+
+  Future<void> updateObserver(String? newObserver) async {
+    observer = newObserver;
+    await refresh();
   }
 
   Future<void> _loadSingleFeedType(ThreadFeedType type) async {
@@ -63,13 +71,18 @@ class ThreadFeedController extends ChangeNotifier
         ActionListDataResponse<ThreadFeedModel> response =
             await _repository.getcomments(
                 accountPostResponse.data!.first.author,
-                accountPostResponse.data!.first.permlink);
+                accountPostResponse.data!.first.permlink,
+                observer);
         if (response.isSuccess && response.data != null) {
           if (type == threadType) {
             List<ThreadFeedModel> items = response.data!;
             items = filterTopLevelComments(
                 accountPostResponse.data!.first.permlink,
                 items: items);
+            items = Thread.filterReportedThreads(
+                items: items,
+                reportedThreads: _localRepository.readReportedThreads());
+
             if (items.isEmpty && viewState != ViewState.data) {
               viewState = ViewState.empty;
             } else if (items.isNotEmpty) {
@@ -141,8 +154,9 @@ class ThreadFeedController extends ChangeNotifier
     ActionSingleDataResponse<ThreadFeedModel> postResponse = await _repository
         .getFirstAccountPost(_getThreadAccountName(type: type), _postType, 1);
     if (postResponse.isSuccess) {
-      ActionListDataResponse<ThreadFeedModel> response = await _repository
-          .getcomments(postResponse.data!.author, postResponse.data!.permlink);
+      ActionListDataResponse<ThreadFeedModel> response =
+          await _repository.getcomments(
+              postResponse.data!.author, postResponse.data!.permlink, observer);
       if (response.isSuccess) {
         return filterTopLevelComments(postResponse.data!.permlink,
             items: response.data);
@@ -219,8 +233,8 @@ class ThreadFeedController extends ChangeNotifier
       if (!super.isPageEnded && currentPage < pages.length) {
         notifyListeners();
         ActionListDataResponse<ThreadFeedModel> response =
-            await _repository.getcomments(
-                pages[currentPage].author, pages[currentPage].permlink);
+            await _repository.getcomments(pages[currentPage].author,
+                pages[currentPage].permlink, observer);
         if (response.isSuccess && response.data != null && type == threadType) {
           List<ThreadFeedModel> newItems = filterTopLevelComments(
               pages[currentPage].permlink,
@@ -237,6 +251,19 @@ class ThreadFeedController extends ChangeNotifier
         notifyListeners();
       }
       super.isNextPageLoading = false;
+    }
+  }
+
+  Future<bool> reportThread(String author, String permlink) async {
+    ActionSingleDataResponse<ReportResponse> response =
+        await _repository.reportThread(author, permlink);
+    if (response.isSuccess && response.data!.isSuccess) {
+      _localRepository.writeReportedThreads(
+          ThreadInfoModel(author: author, permlink: permlink));
+      refresh();
+      return true;
+    } else {
+      return false;
     }
   }
 

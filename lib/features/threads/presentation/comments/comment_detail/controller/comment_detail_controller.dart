@@ -11,21 +11,21 @@ class CommentDetailController extends ChangeNotifier {
 
   final String author;
   final String permlink;
+  final String? observer;
   ThreadFeedModel mainThread;
 
   List<ThreadFeedModel> items = [];
   ViewState viewState = ViewState.loading;
 
-  CommentDetailController({
-    required this.mainThread,
-  })  : author = mainThread.author,
+  CommentDetailController({required this.mainThread, required this.observer})
+      : author = mainThread.author,
         permlink = mainThread.permlink {
     _init();
   }
 
   void _init() async {
     ActionListDataResponse<ThreadFeedModel> response =
-        await _repository.getcomments(author, permlink);
+        await _repository.getcomments(author, permlink, observer);
     if (response.isSuccess) {
       if (response.data!.isNotEmpty) {
         List<ThreadFeedModel>? thread = response.data!
@@ -36,7 +36,8 @@ class CommentDetailController extends ChangeNotifier {
           response.data!.remove(thread.first);
         }
         items = response.data!;
-        items =  Thread.filterTopLevelComments(permlink,items: items,depth: mainThread.depth+1 );
+        items = Thread.filterTopLevelComments(permlink,
+            items: items, depth: mainThread.depth + 1);
         if (items.isNotEmpty) {
           viewState = ViewState.data;
         } else {
@@ -59,7 +60,7 @@ class CommentDetailController extends ChangeNotifier {
 
   void onCommentAdded(ThreadFeedModel thread) {
     mainThread = mainThread.copyWith(children: mainThread.children! + 1);
-    items = [thread,...items];
+    items = [thread, ...items];
     if (viewState == ViewState.empty) {
       viewState = ViewState.data;
     }

@@ -6,6 +6,7 @@ import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_pop_up_menu.dart';
 
 class ThreadUserInfoTile extends StatelessWidget {
   const ThreadUserInfoTile({
@@ -34,26 +35,37 @@ class ThreadUserInfoTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: () => _pushToUserProfile(context),
-                  child: Text(
-                    item.author,
-                    style: theme.textTheme.bodyMedium!
-                        .copyWith(fontWeight: FontWeight.bold),
+                  child: Row(
+                children: [
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: () => _pushToUserProfile(context),
+                      child: Text(
+                        item.author,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium!
+                            .copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                  const Gap(10),
+                  Text(
+                    timeInString,
+                    textAlign: TextAlign.end,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: theme.textTheme.labelLarge!.copyWith(
+                        color: theme.primaryColorDark.withOpacity(0.8)),
+                  ),
+                ],
+              )),
               const Gap(
                 12,
               ),
-              Text(
-                timeInString,
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: theme.textTheme.labelLarge!
-                    .copyWith(color: theme.primaryColorDark.withOpacity(0.8)),
-              ),
+              ThreadPopUpMenu(
+                item: item,
+              )
             ],
           ),
         )

@@ -9,12 +9,20 @@ class GlobalProviders {
     ChangeNotifierProvider(
       create: (context) => ThemeController(),
     ),
-     ChangeNotifierProvider(
+    ChangeNotifierProvider(
       lazy: false,
       create: (context) => UserController(),
     ),
-    ChangeNotifierProvider(
-      create: (context) => ThreadFeedController(),
+    ChangeNotifierProxyProvider<UserController, ThreadFeedController>(
+      create: (context) => ThreadFeedController(observer: null),
+      update: (context, userController, previousThreadFeedController) {
+        if (previousThreadFeedController == null) {
+          return ThreadFeedController(observer: userController.userName);
+        } else {
+          previousThreadFeedController.updateObserver(userController.userName);
+          return previousThreadFeedController;
+        }
+      },
     )
   ];
 }

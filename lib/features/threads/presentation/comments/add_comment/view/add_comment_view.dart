@@ -22,7 +22,8 @@ class AddCommentView extends StatefulWidget {
 }
 
 class _AddCommentViewState extends State<AddCommentView> {
-  final TextEditingController commentTextEditingController = TextEditingController();
+  final TextEditingController commentTextEditingController =
+      TextEditingController();
   late final bool isRoot;
   final FocusNode _nodeText = FocusNode();
 
@@ -37,7 +38,7 @@ class _AddCommentViewState extends State<AddCommentView> {
             (node) {
               return GestureDetector(
                 onTap: () => node.unfocus(),
-                child: Padding(
+                child: const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
                     "Done",
@@ -79,7 +80,8 @@ class _AddCommentViewState extends State<AddCommentView> {
               minLines: 1,
               focusNode: _nodeText,
               textInputAction: TextInputAction.newline,
-              decoration: InputDecoration(hintText: hintText, border: InputBorder.none),
+              decoration:
+                  InputDecoration(hintText: hintText, border: InputBorder.none),
             ),
           ),
         ),

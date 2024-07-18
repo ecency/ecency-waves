@@ -32,7 +32,8 @@ class CommentDetailView extends StatelessWidget {
     final theme = Theme.of(context);
     final userController = context.read<UserController>();
     return ChangeNotifierProvider(
-      create: (context) => CommentDetailController(mainThread: item),
+      create: (context) => CommentDetailController(
+          mainThread: item, observer: userController.userName),
       builder: (context, child) {
         return Selector<CommentDetailController, ThreadFeedModel>(
           selector: (_, myType) => myType.mainThread,
