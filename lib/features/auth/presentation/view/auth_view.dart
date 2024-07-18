@@ -28,22 +28,26 @@ class AuthView extends StatelessWidget {
             children: [
               AuthButton(
                   authType: AuthType.postingKey,
-                  onTap: () => context.pushNamed(Routes.postingKeyAuthView)),
+                  onTap: () => context.pushNamed(Routes.postingKeyAuthView),
+                  label: "Private Key"),
               const Gap(15),
               AuthButton(
                   authType: AuthType.hiveSign,
-                  onTap: () => onHiveSignLoginTap(context)),
+                  onTap: () => onHiveSignLoginTap(context),
+                  label: "Hivesigner"),
               const Gap(15),
               AuthButton(
                 authType: AuthType.hiveKeyChain,
                 onTap: () => context.pushNamed(Routes.hiveKeyChainAuthView,
                     extra: AuthType.hiveKeyChain),
+                label: "HiveKeychain"
               ),
               const Gap(15),
               AuthButton(
                 authType: AuthType.hiveAuth,
                 onTap: () => context.pushNamed(Routes.hiveKeyChainAuthView,
                     extra: AuthType.hiveAuth),
+                label: "HiveAuth"
               ),
               const Spacer(),
               Column(

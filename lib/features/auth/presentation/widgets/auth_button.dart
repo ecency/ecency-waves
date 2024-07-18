@@ -3,10 +3,11 @@ import 'package:gap/gap.dart';
 import 'package:waves/core/utilities/enum.dart';
 
 class AuthButton extends StatelessWidget {
-  const AuthButton({super.key, required this.authType, required this.onTap});
+  const AuthButton({super.key, required this.authType, required this.onTap, required this.label});
 
   final AuthType authType;
   final VoidCallback onTap;
+  final String label;
 
   static double buttonHeight = 45;
 
@@ -27,24 +28,24 @@ class AuthButton extends StatelessWidget {
                   borderRadius: const BorderRadius.all(Radius.circular(40))),
               surfaceTintColor: theme.primaryColorLight,
               backgroundColor: theme.primaryColorLight),
-          child: child(theme),
+          child: child(theme, label),
         ),
       ),
     );
   }
 
-  Widget child(ThemeData theme) {
+  Widget child(ThemeData theme, String? label) {
     if (authType == AuthType.hiveKeyChain) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hive-keychain-logo.png', "HiveKeychain");
+          theme, 'assets/images/auth/hive-keychain-logo.png', label);
     } else if (authType == AuthType.hiveAuth) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hiveauth_icon.png', "HiveAuth");
+          theme, 'assets/images/auth/hiveauth_icon.png', label);
     } else if (authType == AuthType.hiveSign) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hive-signer-logo.png', "Hivesigner");
+          theme, 'assets/images/auth/hive-signer-logo.png', label);
     } else {
-      return _buttonChildren(theme, null, "Private Key");
+      return _buttonChildren(theme, null, label);
     }
   }
 

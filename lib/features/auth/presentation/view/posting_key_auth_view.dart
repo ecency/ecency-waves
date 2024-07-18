@@ -32,7 +32,7 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Key login"),
+        title: const Text("PrivateKey Login"),
       ),
       body: SafeArea(
         child: Padding(
@@ -46,7 +46,7 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
                     textEditingController: accountNameController),
                 const Gap(15),
                 AuthTextField(
-                    hintText: "Key",
+                    hintText: "password or private key",
                     isPassword: true,
                     leading: const Padding(
                       padding: EdgeInsets.only(left: 8.0),
@@ -55,7 +55,7 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
                     textEditingController: postingKeyController),
                 const Gap(20),
                 AuthButton(
-                    authType: AuthType.postingKey, onTap: onPostingLoginTap),
+                    authType: AuthType.postingKey, onTap: onPostingLoginTap, "Login"),
               ],
             ),
           ),

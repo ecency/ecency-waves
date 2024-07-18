@@ -35,7 +35,7 @@ class _HiveKeyChainAuthViewState extends State<HiveKeyChainAuthView> {
     return Scaffold(
       appBar: AppBar(
         title: AutoSizeText(
-          "${widget.authType == AuthType.hiveAuth ? "HiveAuth" : "Hive KeyChain"} login",
+          "${widget.authType == AuthType.hiveAuth ? "HiveAuth" : "HiveKeyChain"} Login",
           minFontSize: 16,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -56,11 +56,13 @@ class _HiveKeyChainAuthViewState extends State<HiveKeyChainAuthView> {
                   AuthButton(
                     authType: AuthType.hiveKeyChain,
                     onTap: () => onHiveAuthLoginTap(AuthType.hiveKeyChain),
+                    label: "HiveKeychain"
                   ),
                 if (widget.authType == AuthType.hiveAuth)
                   AuthButton(
                     authType: AuthType.hiveAuth,
                     onTap: () => onHiveAuthLoginTap(AuthType.hiveAuth),
+                    label: "HiveAuth"
                   ),
               ],
             ),

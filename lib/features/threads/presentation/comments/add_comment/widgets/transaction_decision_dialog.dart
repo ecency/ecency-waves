@@ -26,10 +26,12 @@ class TransactionDecisionDialog extends StatelessWidget {
           AuthButton(
               authType: AuthType.hiveKeyChain,
               onTap: () => onTap(context, AuthType.hiveKeyChain)),
+              label: "HiveKeychain"
           const Gap(15),
           AuthButton(
               authType: AuthType.hiveAuth,
               onTap: () => onTap(context, AuthType.hiveAuth)),
+              label: "HiveAuth"
         ],
       ),
     );
