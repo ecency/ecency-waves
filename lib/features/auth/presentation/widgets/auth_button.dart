@@ -34,7 +34,7 @@ class AuthButton extends StatelessWidget {
     );
   }
 
-  Widget child(ThemeData theme, String? label) {
+  Widget child(ThemeData theme, String label) {
     if (authType == AuthType.hiveKeyChain) {
       return _buttonChildren(
           theme, 'assets/images/auth/hive-keychain-logo.png', label);
