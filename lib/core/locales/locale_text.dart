@@ -45,4 +45,9 @@ class LocaleText {
   static const String username = "username";
   static const String postingKey = "posting_key";
   static const String noThreadsFound = "no_threads_found";
+
+  //polls realted texts
+  static String ageLimit (int days) => "age_limit".tr(args: [days.toString()]);
+  static String get interpretationToken => "interpretation_token".tr();
+  static String maxChoices (int choices) => "max_choices".tr(args: [choices.toString()]);
 }

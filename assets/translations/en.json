@@ -36,11 +36,14 @@
     "sm_posting_login_message": "You have successfully logged in with key",
     "sm_comment_publish_message": "Comment is published successfully",
     "sm_vote_success_message": "You have successfully voted the user",
-    "something_went_wrong":"Something went wrong",
-    "login_with_posting_key":"Login with posting key",
-    "please_enter_the_username":"Please enter the username",
-    "please_enter_the_posting_key":"Please enter the posting key",
-    "username":"username",
-    "posting_key":"posting key",
-    "no_threads_found":"No threads found"
+    "something_went_wrong": "Something went wrong",
+    "login_with_posting_key": "Login with posting key",
+    "please_enter_the_username": "Please enter the username",
+    "please_enter_the_posting_key": "Please enter the posting key",
+    "username": "username",
+    "posting_key": "posting key",
+    "no_threads_found": "No threads found",
+    "age_limit": "\u2022 Only accounts older than {} days allowed",
+    "interpretation_token": "\u2022 User HP based vote interpretation",
+    "max_choices": "\u2022 You may select upto {} choices"
 }
