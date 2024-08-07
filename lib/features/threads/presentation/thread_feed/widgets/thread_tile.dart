@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/interaction_tile.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/thread_markdown.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/post_poll.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_user_info_tile.dart';
 
 class ThreadTile extends StatelessWidget {
@@ -37,6 +39,7 @@ class ThreadTile extends StatelessWidget {
                     onTap: () => context.pushNamed(Routes.commentDetailView,
                         extra: item),
                     child: ThreadMarkDown(item: item)),
+                item.jsonMetadata?.contentType == ContentType.poll ? PostPoll(item: item) : Container() ,
                 const Gap(20),
                 InteractionTile(
                   item: item,
