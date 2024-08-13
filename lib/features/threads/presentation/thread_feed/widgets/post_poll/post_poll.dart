@@ -1,13 +1,11 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/services/poll_service/poll_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
-import 'package:flutter_polls/flutter_polls.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/poll_controller.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/poll_choices.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/poll_header.dart';
 
 class PostPoll extends StatefulWidget {
@@ -20,6 +18,9 @@ class PostPoll extends StatefulWidget {
 }
 
 class _PostPollState extends State<PostPoll> {
+  Map<int, bool> selection = {};
+  bool hasVoted = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -37,9 +38,33 @@ class _PostPollState extends State<PostPoll> {
     String author = widget.item.author;
     String permlink = widget.item.permlink;
 
-    Future<bool> onVoted(PollOption option, int total) {
-      print('voted options $option');
-      return Future.value(true);
+    PollModel? poll = context.select<PollController, PollModel?>(
+        (pollController) => pollController.getPollData(author, permlink));
+
+    bool hasEnded = poll?.endTime.isBefore(DateTime.now()) ?? false;
+
+    bool voteEnabled = poll != null &&
+        !hasEnded &&
+        !hasVoted &&
+        selection.entries
+            .fold(false, (prevVal, entry) => entry.value || prevVal);
+
+    onCastVote() async {
+      bool status = await Future.delayed(Duration(seconds: 2), () => true);
+
+      if (status) {
+        setState(() {
+          hasVoted = true;
+        });
+      }
+
+      return status;
+    }
+
+    onSelection(int id, bool value) {
+      setState(() {
+        selection = {...selection, id: value};
+      });
     }
 
     if (meta == null || meta.contentType != ContentType.poll) {
@@ -47,15 +72,12 @@ class _PostPollState extends State<PostPoll> {
     }
 
     List<PollOption> pollOptions() {
-      PollModel? poll = context.select<PollController, PollModel?>(
-          (pollController) => pollController.getPollData(author, permlink));
-
       List<PollChoice> choices =
           poll?.pollChoices ?? PollChoice.fromValues(meta.choices!);
 
       return choices
           .map((e) => PollOption(
-              id: e.choiceNum.toString(),
+              id: e.choiceNum,
               title: Text(e.choiceText, maxLines: 2),
               votes: e.votes?.totalVotes ?? 0))
           .toList();
@@ -65,16 +87,20 @@ class _PostPollState extends State<PostPoll> {
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
-          FlutterPolls(
+          PollChoices(
             pollId: widget.item.permlink,
-            onVoted: (pollOption, newTotalVotes) =>
-                onVoted(pollOption, newTotalVotes),
+            onSelection: (id, status) => onSelection(id, status),
             pollTitle: PollHeader(
               meta: meta,
             ),
             pollOptions: pollOptions(),
+            selectedIds: selection,
+            pollEnded: hasEnded,
+            hasVoted: hasVoted,
             heightBetweenOptions: 16,
             pollOptionsHeight: 40,
+            userVotedOptionIds: poll?.userVotedIds("tahir"), 
+            totalVotes: poll?.pollStats.totalVotingAccountsNum.toDouble() ?? 0,
             votedBackgroundColor: const Color(0xff2e3d51),
             pollOptionsFillColor: const Color(0xff2e3d51),
             leadingVotedProgessColor: const Color(0xff357ce6),
@@ -85,13 +111,12 @@ class _PostPollState extends State<PostPoll> {
           Align(
             alignment: Alignment.centerRight,
             child: ElevatedButton.icon(
-              onPressed: () => print("button pressed"),
+              onPressed: voteEnabled ? () => onCastVote() : null,
               icon: const Icon(Icons.bar_chart),
               label: const Text("Vote"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(horizontal: 32)
-              ),
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(horizontal: 32)),
             ),
           )
         ],

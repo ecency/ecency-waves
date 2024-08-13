@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:collection/collection.dart';
 import 'package:waves/core/utilities/enum.dart';
 
 class PollModel {
@@ -98,6 +98,11 @@ class PollModel {
       'poll_voters': pollVoters.map((e) => e.toJson()).toList(),
       'poll_stats': pollStats.toJson(),
     };
+  }
+
+  List<int> userVotedIds(String username) {
+    PollVoter? voter = pollVoters.firstWhereOrNull((item) => item.name == username);
+    return voter?.choices ?? []; // Filter for the correct name
   }
 }
 
