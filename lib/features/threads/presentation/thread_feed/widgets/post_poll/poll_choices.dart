@@ -355,9 +355,7 @@ class PollChoices extends HookWidget {
                               width: pollOptionsWidth,
                               padding: EdgeInsets.zero,
                               decoration: BoxDecoration(
-                                color: (userVotedOptionIds?.contains(pollOption.id) ?? false)
-                                    ? voteInProgressColor
-                                    : pollOptionsFillColor,
+                                color: pollOptionsFillColor,
                                 border: pollOptionsBorder ??
                                     Border.all(
                                       color: Colors.black,

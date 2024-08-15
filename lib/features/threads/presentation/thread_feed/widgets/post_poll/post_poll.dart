@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/services/poll_service/poll_model.dart';
+import 'package:waves/features/auth/presentation/controller/auth_controller.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/poll_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/poll_choices.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/poll_header.dart';
+import 'package:waves/features/user/view/user_controller.dart';
 
 class PostPoll extends StatefulWidget {
   const PostPoll({super.key, required this.item});
@@ -19,7 +21,8 @@ class PostPoll extends StatefulWidget {
 
 class _PostPollState extends State<PostPoll> {
   Map<int, bool> selection = {};
-  bool hasVoted = false;
+  bool enableRevote = false;
+  bool isVoting = false;
 
   @override
   void initState() {
@@ -38,32 +41,56 @@ class _PostPollState extends State<PostPoll> {
     String author = widget.item.author;
     String permlink = widget.item.permlink;
 
+    String? username = context.select<UserController, String?>(
+        (userController) => userController.userName);
     PollModel? poll = context.select<PollController, PollModel?>(
         (pollController) => pollController.getPollData(author, permlink));
 
     bool hasEnded = poll?.endTime.isBefore(DateTime.now()) ?? false;
 
+    List<int> userVotedIds = poll?.userVotedIds(username) ?? [];
+    bool hasVoted = userVotedIds.isNotEmpty;
+
     bool voteEnabled = poll != null &&
         !hasEnded &&
-        !hasVoted &&
+        (!hasVoted || enableRevote) &&
         selection.entries
             .fold(false, (prevVal, entry) => entry.value || prevVal);
 
     onCastVote() async {
-      bool status = await Future.delayed(Duration(seconds: 2), () => true);
+      PollController pollController = context.read<PollController>();
 
-      if (status) {
+      if (poll?.pollTrxId != null && selection.isNotEmpty) {
         setState(() {
-          hasVoted = true;
+          isVoting = true;
         });
-      }
 
-      return status;
+        List<int> selectedIds = selection.entries
+            .where((entry) => entry.value)
+            .map((entry) => entry.key)
+            .toList();
+
+        bool status = await pollController.castVote(
+            poll!.author, poll.permlink, selectedIds);
+
+        if (status) {
+          setState(() {
+            enableRevote = false;
+            isVoting = false;
+          });
+        }
+      }
     }
 
     onSelection(int id, bool value) {
       setState(() {
         selection = {...selection, id: value};
+      });
+    }
+
+    onRevote() {
+      setState(() {
+        enableRevote = true;
       });
     }
 
@@ -96,10 +123,10 @@ class _PostPollState extends State<PostPoll> {
             pollOptions: pollOptions(),
             selectedIds: selection,
             pollEnded: hasEnded,
-            hasVoted: hasVoted,
+            hasVoted: !enableRevote && hasVoted,
             heightBetweenOptions: 16,
             pollOptionsHeight: 40,
-            userVotedOptionIds: poll?.userVotedIds("tahir"), 
+            userVotedOptionIds: userVotedIds,
             totalVotes: poll?.pollStats.totalVotingAccountsNum.toDouble() ?? 0,
             votedBackgroundColor: const Color(0xff2e3d51),
             pollOptionsFillColor: const Color(0xff2e3d51),
@@ -109,14 +136,35 @@ class _PostPollState extends State<PostPoll> {
                 const Icon(Icons.check, color: Colors.white, size: 24),
           ),
           Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: voteEnabled ? () => onCastVote() : null,
-              icon: const Icon(Icons.bar_chart),
-              label: const Text("Vote"),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(horizontal: 32)),
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (hasVoted && !enableRevote)
+                  TextButton(
+                    onPressed: () => onRevote(),
+                    child: const Text("Revote"),
+                  ),
+                ElevatedButton.icon(
+                  onPressed: voteEnabled ? () => onCastVote() : null,
+                  icon: isVoting
+                      ? Container(
+                          width: 24.0,
+                          height: 24.0,
+                          padding: const EdgeInsets.all(4.0),
+                          child: const CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.bar_chart),
+                  label: const Text("Vote"),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(horizontal: 32)),
+                ),
+              ],
             ),
           )
         ],
