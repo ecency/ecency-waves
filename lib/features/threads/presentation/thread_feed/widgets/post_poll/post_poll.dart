@@ -77,6 +77,7 @@ class _PostPollState extends State<PostPoll> {
           setState(() {
             enableRevote = false;
             isVoting = false;
+            selection = {};
           });
         }
       }

@@ -322,13 +322,7 @@ class PollChoices extends HookWidget {
                         )
                       : Container(
                           key: UniqueKey(),
-                          decoration: (selectedIds[pollOption.id] ?? false) ? BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              width: 4,
-                              color: Colors.blue
-                            )
-                          ) : null,
+                   
                           margin: EdgeInsets.only(
                             bottom: heightBetweenOptions ?? 8,
                           ),
@@ -358,8 +352,8 @@ class PollChoices extends HookWidget {
                                 color: pollOptionsFillColor,
                                 border: pollOptionsBorder ??
                                     Border.all(
-                                      color: Colors.black,
-                                      width: 1,
+                                      color: (selectedIds[pollOption.id] ?? false) ? Colors.blue : pollOptionsFillColor!,
+                                      width: 2,
                                     ),
                                 borderRadius: pollOptionsBorderRadius ??
                                     BorderRadius.circular(
