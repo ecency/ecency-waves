@@ -109,19 +109,73 @@ class PollModel {
     return voter?.choices ?? []; // Filter for the correct name
   }
 
-
   void injectPollVoteCache(String username, List<int> selection) {
 
-    pollVoters.retainWhere((entry) => entry.name != username);
+    double userHp = 1; //TOOD: use real user hp
 
-    PollVoter voter = PollVoter(
-      name: username, 
-      choices: selection, 
-      hiveHp: 0, splSpsp: 0, hiveProxiedHp: 0, hiveHpInclProxied: 0);
+    //extract previously votes choices and new choices
 
+    final existingVote =
+        pollVoters.firstWhereOrNull((pv) => pv.name == username);
+    final previousUserChoices = pollChoices
+        .where((pc) => existingVote?.choices.contains(pc.choiceNum) ?? false)
+        .toList();
+    final selectedChoices =
+        pollChoices.where((pc) => selection.contains(pc.choiceNum)).toList();
+
+    // // filtered list to separate untoched multiple choice e.g from old [1,2,3] new [3,4,5], removed would be [1, 2] , new would be [4, 5]
+    final removedChoices = previousUserChoices
+        .where(
+            (pc) => !selectedChoices.any((sc) => sc.choiceNum == pc.choiceNum))
+        .toList();
+    final newChoices = selectedChoices
+        .where((pc) =>
+            !previousUserChoices.any((opc) => opc.choiceNum == pc.choiceNum))
+        .toList();
+
+    // // votes that were not affected by new vote
+
+    final notTouchedChoices = pollChoices
+        .where((pc) =>
+            !removedChoices.any((rc) => rc.choiceNum == pc.choiceNum) &&
+            !newChoices.any((nc) => nc.choiceNum == pc.choiceNum))
+        .toList();
+
+    final otherVoters = pollVoters.where((pv) => pv.name != username).toList();
+
+    //aggregate update poll choices list
+    pollChoices = [
+      ...notTouchedChoices,
+      ...removedChoices.map((pc) => pc.copyWith(
+        votes: Votes(
+          totalVotes: (pc.votes?.totalVotes ?? 0) - 1, 
+          hiveHp: (pc.votes?.hiveHp ?? 0) - userHp, 
+          hiveProxiedHp: 0, 
+          hiveHpInclProxied: (pc.votes?.hiveHpInclProxied ?? 0) - userHp, 
+          splSpsp: 0,
+        ),
+      )),
+      ...newChoices.map((pc) => pc.copyWith(
+        votes: Votes(
+          totalVotes: (pc.votes?.totalVotes ?? 0) + 1, 
+          hiveHp: (pc.votes?.hiveHp ?? 0) + userHp, 
+          hiveProxiedHp: 0, 
+          hiveHpInclProxied: (pc.votes?.hiveHpInclProxied ?? 0) + userHp, 
+          splSpsp: 0,
+        ),
+      )),
+    ]..sort((a, b) => a.choiceNum.compareTo(b.choiceNum));
+
+    //update poll voters with updated selection
     pollVoters = [
-      ...pollVoters,
-      voter,
+      ...otherVoters,
+      PollVoter(
+        name: username, 
+        choices: selection, 
+        hiveHp: userHp, 
+        splSpsp: 0, 
+        hiveProxiedHp: 0, 
+        hiveHpInclProxied: userHp)
     ];
   }
 }
@@ -166,6 +220,15 @@ class PollChoice {
       'votes': votes?.toJson(),
     };
   }
+
+
+    PollChoice copyWith({Votes? votes}) {
+    return PollChoice(
+      choiceNum: choiceNum, 
+      choiceText: choiceText,
+      votes: votes ?? this.votes
+    );
+  }
 }
 
 class Votes {
@@ -205,6 +268,18 @@ class Votes {
       'spl_spsp': splSpsp,
       'he_token': heToken,
     };
+  }
+
+    Votes copyWith({int? totalVotes, double? hiveHp, double? hiveHpInclProxied}) {
+    return Votes(
+      totalVotes: totalVotes ?? this.totalVotes, 
+      hiveHp: hiveHp ?? this.hiveHp, 
+      hiveProxiedHp: hiveProxiedHp, 
+      hiveHpInclProxied: hiveHpInclProxied ?? this.hiveHpInclProxied, 
+      splSpsp: splSpsp
+      );
+    
+    
   }
 }
 
