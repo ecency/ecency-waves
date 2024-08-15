@@ -25,6 +25,16 @@ class GlobalProviders {
         }
       },
     ),
-    ChangeNotifierProvider(create: (context) => PollController())
+    ChangeNotifierProxyProvider<UserController, PollController>(
+      create: (context) => PollController(userData: null),
+      update: (context, userController, prevPollController) {
+        if (prevPollController == null) {
+          return PollController(userData: userController.userData);
+        } else {
+          prevPollController.updateUserData(userController.userData);
+          return prevPollController;
+        }
+      },
+    )
   ];
 }
