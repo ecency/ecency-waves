@@ -100,6 +100,13 @@ class PollModel {
     };
   }
 
+  double get totalInterpretedVotes {
+
+    //TODO: return value based on selected interpretation;
+    return pollChoices.fold(0, (val, entry) => val + (entry.votes?.totalVotes ?? 0));
+
+  }
+
   List<int> userVotedIds(String? username) {
     if (username == null) {
       return [];

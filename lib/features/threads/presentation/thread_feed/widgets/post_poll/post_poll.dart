@@ -128,7 +128,7 @@ class _PostPollState extends State<PostPoll> {
             heightBetweenOptions: 16,
             pollOptionsHeight: 40,
             userVotedOptionIds: userVotedIds,
-            totalVotes: poll?.pollStats.totalVotingAccountsNum.toDouble() ?? 0,
+            totalVotes: poll?.totalInterpretedVotes ?? 0,
             votedBackgroundColor: const Color(0xff2e3d51),
             pollOptionsFillColor: const Color(0xff2e3d51),
             leadingVotedProgessColor: const Color(0xff357ce6),
@@ -141,7 +141,7 @@ class _PostPollState extends State<PostPoll> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (hasVoted && !enableRevote)
+                if (hasVoted && !enableRevote && (meta.voteChange ?? false))
                   TextButton(
                     onPressed: () => onRevote(),
                     child: const Text("Revote"),
