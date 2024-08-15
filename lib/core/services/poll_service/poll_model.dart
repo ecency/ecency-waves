@@ -19,8 +19,8 @@ class PollModel {
   final int filterAccountAgeDays;
   final bool uiHideResUntilVoted;
   final String pollTrxId;
-  final List<PollChoice> pollChoices;
-  final List<PollVoter> pollVoters;
+  List<PollChoice> pollChoices;
+  List<PollVoter> pollVoters;
   final PollStats pollStats;
 
   PollModel({
@@ -100,9 +100,29 @@ class PollModel {
     };
   }
 
-  List<int> userVotedIds(String username) {
-    PollVoter? voter = pollVoters.firstWhereOrNull((item) => item.name == username);
+  List<int> userVotedIds(String? username) {
+    if (username == null) {
+      return [];
+    }
+    PollVoter? voter =
+        pollVoters.firstWhereOrNull((item) => item.name == username);
     return voter?.choices ?? []; // Filter for the correct name
+  }
+
+
+  void injectPollVoteCache(String username, List<int> selection) {
+
+    pollVoters.retainWhere((entry) => entry.name != username);
+
+    PollVoter voter = PollVoter(
+      name: username, 
+      choices: selection, 
+      hiveHp: 0, splSpsp: 0, hiveProxiedHp: 0, hiveHpInclProxied: 0);
+
+    pollVoters = [
+      ...pollVoters,
+      voter,
+    ];
   }
 }
 
