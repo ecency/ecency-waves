@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/services/poll_service/poll_api.dart';
@@ -29,10 +27,14 @@ class PollController with ChangeNotifier {
 
     try {
       // Simulate a network request
-      ActionSingleDataResponse<PollModel> response = await fetchPoll(author, permlink);
-      if(response.isSuccess && response.data != null){
+      ActionSingleDataResponse<PollModel> response =
+          await fetchPoll(author, permlink);
+      if (response.isSuccess && response.data != null) {
         String pollKey = _getLocalPollKey(author, permlink);
-        _pollMap[pollKey] = response.data!;
+        PollModel? data = response.data;
+        if (data != null) {
+          _pollMap[pollKey] = data;
+        }
       }
     } catch (error) {
       _errorMessage = 'Error: $error';
@@ -42,10 +44,40 @@ class PollController with ChangeNotifier {
     }
   }
 
-  PollModel? getPollData(String author, String permlink) => _pollMap[_getLocalPollKey(author, permlink)];
+  Future<bool> castVote(
+      String author, String permlink, List<int> selection) async {
+    print("cast vote for $author $permlink using choice $selection");
 
-  _getLocalPollKey (String author, String permlink){
-    return "$author/$permlink";
+    String pollKey = _getLocalPollKey(author, permlink);
+    PollModel? poll = _pollMap[pollKey];
+
+    if (userData == null) {
+      return false;
+    }
+
+    if (poll == null) {
+      return false;
+    }
+
+    bool status = await Future.delayed(const Duration(seconds: 2), () => true);
+
+    if (status) {
+      //TOOD: update poll model with update vote
+      poll.injectPollVoteCache(userData!.accountName, selection);
+      notifyListeners();
+    }
+    return status;
   }
 
+  List<int> userVotedIds(String author, String permlink) =>
+      _pollMap[_getLocalPollKey(author, permlink)]
+          ?.userVotedIds(userData!.accountName) ??
+      [];
+
+  PollModel? getPollData(String author, String permlink) =>
+      _pollMap[_getLocalPollKey(author, permlink)];
+
+  _getLocalPollKey(String author, String permlink) {
+    return "$author/$permlink";
+  }
 }
