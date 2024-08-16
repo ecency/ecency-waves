@@ -71,6 +71,32 @@ class SignTransactionHiveSignerController {
     }
   }
 
+  Future<void> initPollVoteProcess({
+    required String pollId,
+    required List<int> choices,
+    required UserAuthModel<HiveSignerAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required Function(String) showToast,
+  }) async {
+    ActionSingleDataResponse response = await _threadRepository
+        .broadcastTransactionUsingHiveSigner<PollVoteBroadcastModel>(
+      authdata.auth.token,
+      BroadcastModel(
+          type: BroadCastType.vote,
+          data: PollVoteBroadcastModel(
+            username: authdata.accountName,
+            pollId: pollId,
+            choices: choices,
+          )),
+    );
+    if (response.isSuccess) {
+      showToast(LocaleText.smVoteSuccessMessage);
+      onSuccess();
+    } else {
+      showToast(LocaleText.emVoteFailureMessage);
+    }
+  }
+
   Future<void> initMuteProcess({
     required String author,
     required UserAuthModel<HiveSignerAuthModel> authdata,

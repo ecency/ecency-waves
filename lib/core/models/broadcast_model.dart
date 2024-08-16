@@ -46,6 +46,33 @@ class VoteBroadCastModel {
   }
 }
 
+class PollVoteBroadcastModel {
+  final String username;
+  final String pollId;
+  final List<int> choices;
+
+  const PollVoteBroadcastModel({
+    required this.username,
+    required this.pollId,
+    required this.choices
+  });
+
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": "polls",
+      "required_posting_auths": [username],
+      "json": json.encode(
+        {
+         "poll": pollId, 
+         "action": "vote", 
+         "choices": choices
+        }
+      )
+    };
+  }
+}
+
 class CommentBroadCastModel {
   final String parentAuthor;
   final String parentPermlink;

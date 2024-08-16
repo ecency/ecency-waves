@@ -70,16 +70,14 @@ class _PostPollState extends State<PostPoll> {
             .map((entry) => entry.key)
             .toList();
 
-        bool status = await pollController.castVote(
-            poll!.author, poll.permlink, selectedIds);
+        await pollController.castVote(
+            context, poll!.author, poll.permlink, selectedIds);
 
-        if (status) {
-          setState(() {
-            enableRevote = false;
-            isVoting = false;
-            selection = {};
-          });
-        }
+        setState(() {
+          enableRevote = false;
+          isVoting = false;
+          selection = {};
+        });
       }
     }
 

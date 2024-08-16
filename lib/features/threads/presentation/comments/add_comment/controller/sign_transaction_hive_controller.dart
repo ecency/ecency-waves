@@ -23,27 +23,35 @@ class SignTransactionHiveController extends HiveTransactionController {
   final double? weight;
   final SignTransactionType transactionType;
   String? _generatedPermlink;
+  final String? pollId;
+  final List<int>? choices;
 
-  SignTransactionHiveController({
-    required this.transactionType,
-    required this.author,
-    required this.authData,
-    required super.showError,
-    required super.onSuccess,
-    required super.onFailure,
-    required super.ishiveKeyChainMethod,
-    this.permlink,
-    this.comment,
-    this.imageLinks,
-    this.weight,
-  })  : assert(
+  SignTransactionHiveController(
+      {required this.transactionType,
+      required this.author,
+      required this.authData,
+      required super.showError,
+      required super.onSuccess,
+      required super.onFailure,
+      required super.ishiveKeyChainMethod,
+      this.permlink,
+      this.comment,
+      this.imageLinks,
+      this.weight,
+      this.pollId,
+      this.choices})
+      : assert(
             !(transactionType == SignTransactionType.comment &&
                 (comment == null || imageLinks == null || permlink == null)),
             "comment,permlink and imageLinks parameters are required"),
         assert(
             !(transactionType == SignTransactionType.vote &&
                 (weight == null || permlink == null)),
-            "weight and permlink parameters are required") {
+            "weight and permlink parameters are required"),
+        assert(
+            !(transactionType == SignTransactionType.pollvote &&
+                (weight == null || permlink == null)),
+            "pollId and choices parameters are required") {
     _initSignTransactionSocketSubscription();
   }
 
@@ -72,6 +80,7 @@ class SignTransactionHiveController extends HiveTransactionController {
   String get successMessage {
     switch (transactionType) {
       case SignTransactionType.vote:
+      case SignTransactionType.pollvote:
         return LocaleText.smVoteSuccessMessage;
       case SignTransactionType.comment:
         return LocaleText.smCommentPublishMessage;
@@ -83,6 +92,7 @@ class SignTransactionHiveController extends HiveTransactionController {
   String get failureMessage {
     switch (transactionType) {
       case SignTransactionType.vote:
+      case SignTransactionType.pollvote:
         return LocaleText.emVoteFailureMessage;
       case SignTransactionType.comment:
         return LocaleText.emCommentDeclineMessage;
@@ -130,6 +140,15 @@ class SignTransactionHiveController extends HiveTransactionController {
           author,
           permlink!,
           weight!,
+          null,
+          authData.auth.authKey,
+          authData.auth.token,
+        );
+      case SignTransactionType.pollvote:
+        return _threadRepository.castPollVote(
+          authData.accountName,
+          pollId!,
+          choices!,
           null,
           authData.auth.authKey,
           authData.auth.token,

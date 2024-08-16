@@ -79,6 +79,17 @@ Future<String> voteContentFromPlatform(
   throw UnimplementedError();
 }
 
+Future<String> castPollVoteFromPlatform(
+  String username,
+  String pollId,
+  List<int> choices,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) async {
+   throw UnimplementedError();
+}
+
 Future<String> getImageUploadProofWithPostingKeyFromPlatform(
   String username,
   String postingKey,

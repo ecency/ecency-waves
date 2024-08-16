@@ -98,6 +98,14 @@ class MainActivity: FlutterActivity() {
                     "voteContent('$id','$username', '$author', '$permlink', '$weight', '$postingKey', '$token', '$authKey');",
                     null
                 )
+            } 
+            else if (call.method == "castPollVote" && username != null && pollId != null
+                && choices != null && postingKey != null && token != null
+                && authKey != null ) {
+                webView?.evaluateJavascript(
+                    "castPollVote('$id','$username', '$pollId', '$choices', '$postingKey', '$token', '$authKey');",
+                    null
+                )
             } else if (call.method == "getImageUploadProofWithPostingKey" && username != null && postingKey != null) {
                 webView?.evaluateJavascript(
                     "getImageUploadProofWithPostingKey('$id', '$username', '$postingKey');",

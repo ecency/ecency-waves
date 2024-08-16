@@ -206,6 +206,29 @@ class ApiService {
     }
   }
 
+
+  Future<ActionSingleDataResponse<String>> castPollVote(
+    String username,
+    String pollId,
+    List<int> choices,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    try {
+      String jsonString = await castPollVoteFromPlatform(
+          username, pollId, choices, postingKey, authKey, token);
+      ActionSingleDataResponse<String> response =
+          ActionSingleDataResponse.fromJsonString(jsonString, null,
+              ignoreFromJson: true);
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
+
+
   Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(
       String accessToken, BroadcastModel<T> args) async {
     final url = Uri.parse('https://hivesigner.com/api/broadcast');
