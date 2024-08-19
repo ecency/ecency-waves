@@ -43,6 +43,17 @@ Future<String> voteContentFromPlatform(
   return _error();
 }
 
+Future<String> castPollVoteFromPlatform(
+  String username,
+  String pollId,
+  List<int> choices,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) async {
+     return _error();
+}
+
 Future<String> getImageUploadProofWithPostingKeyFromPlatform(
   String username,
   String postingKey,

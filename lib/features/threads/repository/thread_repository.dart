@@ -61,6 +61,21 @@ class ThreadRepository {
         username, author, permlink, weight, postingKey, authKey, token);
   }
 
+
+  Future<ActionSingleDataResponse<String>> castPollVote(
+    String username,
+    String pollId,
+    List<int> choices,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    return await _apiService.castPollVote(
+        username, pollId, choices, postingKey, authKey, token);
+  }
+
+
+
   Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(
       String token, BroadcastModel<T> data) async {
     return await _apiService.broadcastTransactionUsingHiveSigner(token, data);

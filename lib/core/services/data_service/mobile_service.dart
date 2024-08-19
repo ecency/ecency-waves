@@ -96,12 +96,16 @@ Future<String> voteContentFromPlatform(
   return response;
 }
 
+//ADD custom json support for vote poll support here
+
 Future<String> getImageUploadProofWithPostingKeyFromPlatform(
   String username,
   String postingKey,
 ) async {
-  final String id = 'getImageUploadProofWithPostingKey${DateTime.now().toIso8601String()}';
-  final String response = await platform.invokeMethod('getImageUploadProofWithPostingKey', {
+  final String id =
+      'getImageUploadProofWithPostingKey${DateTime.now().toIso8601String()}';
+  final String response =
+      await platform.invokeMethod('getImageUploadProofWithPostingKey', {
     'id': id,
     'username': username,
     'postingKey': postingKey,
@@ -128,4 +132,23 @@ Future<String> muteUserFromPlatform(
   return response;
 }
 
-
+Future<String> castPollVoteFromPlatform(
+  String username,
+  String pollId,
+  List<int> choices,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) async {
+  final String id = 'castPollVote${DateTime.now().toIso8601String()}';
+  final String response = await platform.invokeMethod('castPollVote', {
+    'id': id,
+    'username': username,
+    'pollId': pollId,
+    'choices': choices,
+    'postingKey': postingKey ?? '',
+    'token': token ?? '',
+    'authKey': authKey ?? ''
+  });
+  return response;
+}

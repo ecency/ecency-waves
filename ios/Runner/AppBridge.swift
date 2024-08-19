@@ -147,6 +147,22 @@ class AppBridge: NSObject {
                         id: id,
                         jsCode: "voteContent('\(id)','\(username)', '\(author)', '\(permlink)', '\(weight)', '\(postingKey)', '\(token)', '\(authKey)');"
                     ) { text in result(text) }
+                case "castPollVote":
+                    guard
+                        let username = arguments ["username"] as? String,
+                        let pollId = arguments ["pollId"] as? String,
+                        let choices = arguments ["choices"] as? [Int],
+                        let postingKey = arguments ["postingKey"] as? String,
+                        let token = arguments ["token"] as? String,
+                        let authKey = arguments ["authKey"] as? String
+                    else {
+                        debugPrint("username, pollId, choices, postingkey, token, authKey - are note set")
+                        return result(FlutterMethodNotImplemented)
+                    }
+                    webVC.runThisJS(
+                        id: id,
+                        jsCode: "castPollVote('\(id)','\(username)', '\(pollId)', '\(choices)', '\(postingKey)', '\(token)', '\(authKey)');"
+                    ) { text in result(text) }
                 case "muteUser":
                     guard
                         let username = arguments ["username"] as? String,

@@ -60,6 +60,25 @@ class SignTransactionPostingKeyController {
     }
   }
 
+  Future<void> initPollVoteProcess({
+    required String pollId,
+    required List<int> choices,
+    required UserAuthModel<PostingAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required Function(String) showToast,
+  }) async {
+
+    ActionSingleDataResponse<String> pollVoteResponse =
+        await _threadRepository.castPollVote(authdata.accountName, pollId,
+            choices, authdata.auth.postingKey, null, null);
+    if (pollVoteResponse.isSuccess) {
+      showToast(LocaleText.smVoteSuccessMessage);
+      onSuccess();
+    } else {
+      showToast(LocaleText.emVoteFailureMessage);
+    }
+  }
+
   Future<void> initMuteProcess({
     required String author,
     required UserAuthModel<PostingAuthModel> authdata,
