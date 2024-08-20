@@ -18,7 +18,7 @@ enum AuthType {hiveKeyChain, hiveAuth, postingKey, hiveSign}
 
 enum TransactionState {loading,qr,redirection}
 
-enum SignTransactionType {comment,vote,mute}
+enum SignTransactionType {comment,vote,mute, pollvote}
 
 enum BroadCastType {vote,comment,custom_json}
 
