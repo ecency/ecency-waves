@@ -44,6 +44,9 @@ class MainActivity: FlutterActivity() {
             val parentPermlink = call.argument<String?>("parentPermlink")
             val comment = call.argument<String?>("comment")
             val weight = call.argument<Int?>("weight")
+            val pollId = call.argument<String?>("pollId")
+            val choices = call.argument<IntArray?>("choices")
+            
             if (id == null) {
                 result.error(
                     "UNAVAILABLE",
