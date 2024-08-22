@@ -8,7 +8,6 @@ class PollModel {
   final String permlink;
   final String parentPermlink;
   final String parentAuthor;
-  final String? image;
   final double protocolVersion;
   final String question;
   final String preferredInterpretation;
@@ -29,7 +28,6 @@ class PollModel {
     required this.permlink,
     required this.parentPermlink,
     required this.parentAuthor,
-    this.image,
     required this.protocolVersion,
     required this.question,
     required this.preferredInterpretation,
@@ -55,7 +53,6 @@ class PollModel {
       permlink: json['permlink'],
       parentPermlink: json['parent_permlink'],
       parentAuthor: json['parent_author'],
-      image: json['image'],
       protocolVersion: json['protocol_version'].toDouble(),
       question: json['question'],
       preferredInterpretation: json['preferred_interpretation'],
@@ -83,7 +80,6 @@ class PollModel {
       'permlink': permlink,
       'parent_permlink': parentPermlink,
       'parent_author': parentAuthor,
-      'image': image,
       'protocol_version': protocolVersion,
       'question': question,
       'preferred_interpretation': preferredInterpretation,
