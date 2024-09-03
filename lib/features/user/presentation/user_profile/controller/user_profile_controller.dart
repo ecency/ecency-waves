@@ -8,7 +8,7 @@ import 'package:waves/features/user/repository/user_repository.dart';
 
 class UserProfileController extends ChangeNotifier {
   final UserRepository _userRepository = getIt<UserRepository>();
-  final String accountName;
+  String? accountName;
   UserModel? data;
   ViewState viewState = ViewState.loading;
 
@@ -17,8 +17,13 @@ class UserProfileController extends ChangeNotifier {
   }
 
   void _init() async {
+
+    if(accountName == null){
+      return;
+    }
+
     ActionSingleDataResponse<UserModel> response =
-        await _userRepository.getAccountInfo(accountName);
+        await _userRepository.getAccountInfo(accountName!);
     if (response.isSuccess && response.data != null) {
       viewState = ViewState.data;
       data = response.data;
@@ -29,13 +34,23 @@ class UserProfileController extends ChangeNotifier {
   }
 
   Future<FollowCountModel> getFollowCount() async {
+
+    if(accountName == null){
+      return FollowCountModel(followerCount: 0, followingCount: 0);
+    }
+
     ActionSingleDataResponse<FollowCountModel> response =
-        await _userRepository.getFollowCount(accountName);
+        await _userRepository.getFollowCount(accountName!);
     if (response.isSuccess) {
       return response.data!;
     } else {
       return FollowCountModel(followerCount: 0, followingCount: 0);
     }
+  }
+
+  void updateAccountName(String? username) {
+    accountName = username;
+    refresh();
   }
 
   void refresh() {
