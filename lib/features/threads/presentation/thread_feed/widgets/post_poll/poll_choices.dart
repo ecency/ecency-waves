@@ -2,7 +2,6 @@ library flutter_polls;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 // FlutterPolls widget.
@@ -78,7 +77,7 @@ class PollChoices extends HookWidget {
   final Future<bool> Function(PollOption pollOption, int newTotalVotes)? onVoted;
 
   final Function(int choiceId, bool status) onSelection;
-  final Map<int, bool> selectedIds;
+  final List<int> selectedIds;
 
   /// The title of the poll. Can be any widget with a bounded size.
   final Widget pollTitle;
@@ -331,7 +330,7 @@ class PollChoices extends HookWidget {
                               // Disables clicking while loading
                               if (_isloading) return;
 
-                              bool preVal = selectedIds[pollOption.id] ?? false;
+                              bool preVal = selectedIds.contains(pollOption.id);
 
                               onSelection(
                                 pollOption.id,
@@ -352,7 +351,7 @@ class PollChoices extends HookWidget {
                                 color: pollOptionsFillColor,
                                 border: pollOptionsBorder ??
                                     Border.all(
-                                      color: (selectedIds[pollOption.id] ?? false) ? Colors.blue : pollOptionsFillColor!,
+                                      color: selectedIds.contains(pollOption.id) ? Colors.blue : pollOptionsFillColor!,
                                       width: 2,
                                     ),
                                 borderRadius: pollOptionsBorderRadius ??

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:collection/collection.dart';
-import 'package:waves/core/utilities/enum.dart';
 
 class PollModel {
   final String author;

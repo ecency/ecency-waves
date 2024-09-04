@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/services/poll_service/poll_model.dart';
-import 'package:waves/features/auth/presentation/controller/auth_controller.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/poll_controller.dart';
@@ -21,7 +19,7 @@ class PostPoll extends StatefulWidget {
 }
 
 class _PostPollState extends State<PostPoll> {
-  Map<int, bool> selection = {};
+  List<int> selection = [];
   bool enableRevote = false;
   bool isVoting = false;
 
@@ -61,8 +59,7 @@ class _PostPollState extends State<PostPoll> {
     //setting for enabling disabling vote button
     bool voteEnabled = poll != null &&
         (!hasVoted || enableRevote) &&
-        selection.entries
-            .fold(false, (prevVal, entry) => entry.value || prevVal);
+        selection.isNotEmpty;
 
     onCastVote() async {
       PollController pollController = context.read<PollController>();
@@ -72,26 +69,43 @@ class _PostPollState extends State<PostPoll> {
           isVoting = true;
         });
 
-        List<int> selectedIds = selection.entries
-            .where((entry) => entry.value)
-            .map((entry) => entry.key)
-            .toList();
-
         await pollController.castVote(
-            context, poll!.author, poll.permlink, selectedIds);
+            context, poll!.author, poll.permlink, selection);
 
         setState(() {
           enableRevote = false;
           isVoting = false;
-          selection = {};
+          selection = [];
         });
       }
     }
 
-    onSelection(int id, bool value) {
-      setState(() {
-        selection = {...selection, id: value};
-      });
+    onSelection(int choiceNum, bool value) {
+      int? maxSelectable = meta?.maxChoicesVoted ?? 1;
+
+      if (maxSelectable > 1) {
+        // handle multiple choice selection
+        bool maxSelected = selection.length >= maxSelectable;
+
+        int index = selection.indexOf(choiceNum);
+        if (index >= 0) {
+          selection.removeAt(index);
+        } else if (!maxSelected) {
+          selection.add(choiceNum);
+        }
+        setState(() {
+          selection = List.from(selection);
+        });
+      } else {
+        // if only one choice allowed, overwrite selection
+        setState(() {
+          selection = [choiceNum]; // [choiceNum];
+        });
+      }
+
+      // setState(() {
+      //   selection = {...selection, id: value};
+      // });
     }
 
     onRevote() {
