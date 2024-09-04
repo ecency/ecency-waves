@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/services/poll_service/poll_model.dart';
+import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/poll_controller.dart';
@@ -40,6 +41,7 @@ class _PostPollState extends State<PostPoll> {
     String author = widget.item.author;
     String permlink = widget.item.permlink;
 
+    ThemeController themeController = context.watch<ThemeController>();
     String? username = context.select<UserController, String?>(
         (userController) => userController.userName);
     PollModel? poll = context.select<PollController, PollModel?>(
@@ -57,9 +59,8 @@ class _PostPollState extends State<PostPoll> {
     bool hasVoted = userVotedIds.isNotEmpty;
 
     //setting for enabling disabling vote button
-    bool voteEnabled = poll != null &&
-        (!hasVoted || enableRevote) &&
-        selection.isNotEmpty;
+    bool voteEnabled =
+        poll != null && (!hasVoted || enableRevote) && selection.isNotEmpty;
 
     //prepare for vote action boadcast
     onCastVote() async {
@@ -104,7 +105,6 @@ class _PostPollState extends State<PostPoll> {
           selection = [choiceNum];
         });
       }
-
     }
 
     onRevote() {
@@ -120,14 +120,20 @@ class _PostPollState extends State<PostPoll> {
     List<PollOption> pollOptions() {
       List<PollChoice> choices =
           poll?.pollChoices ?? PollChoice.fromValues(meta.choices!);
-      
 
       return choices
           .map((e) => PollOption(
               id: e.choiceNum,
-              title: Text(e.choiceText, maxLines: 2, style: const TextStyle(fontSize: 12),),
-              votes: e.votes?.getInterprettedVotes(meta.preferredInterpretation) ?? 0,
-              votesPostfix: e.votes?.getInterprettedSymbol(meta.preferredInterpretation)))
+              title: Text(
+                e.choiceText,
+                maxLines: 2,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              votes:
+                  e.votes?.getInterprettedVotes(meta.preferredInterpretation) ??
+                      0,
+              votesPostfix:
+                  e.votes?.getInterprettedSymbol(meta.preferredInterpretation)))
           .toList();
     }
 
@@ -135,27 +141,28 @@ class _PostPollState extends State<PostPoll> {
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
-          PollChoices(
-            pollId: widget.item.permlink,
-            onSelection: (id, status) => onSelection(id, status),
-            pollTitle: PollHeader(
-              meta: meta,
-            ),
-            pollOptions: pollOptions(),
-            selectedIds: selection,
-            pollEnded: votingProhibited,
-            hasVoted: !enableRevote && hasVoted,
-            heightBetweenOptions: 16,
-            pollOptionsHeight: 32,
-            userVotedOptionIds: userVotedIds,
-            totalVotes: poll?.totalInterpretedVotes ?? 0,
-            votedBackgroundColor: const Color(0xff2e3d51),
-            pollOptionsFillColor: const Color(0xff2e3d51),
-            leadingVotedProgessColor: const Color(0xff254C87),
-            votedProgressColor: const Color(0xff526D91),
-            votedCheckmark:
-                const Icon(Icons.check, color: Colors.white, size: 24),
-          ),
+          Theme(
+              data: themeController.pollThemeData,
+              child: PollChoices(
+                pollId: widget.item.permlink,
+                onSelection: (id, status) => onSelection(id, status),
+                pollTitle: PollHeader(
+                  meta: meta,
+                ),
+                pollOptions: pollOptions(),
+                selectedIds: selection,
+                pollEnded: votingProhibited,
+                hasVoted: !enableRevote && hasVoted,
+                heightBetweenOptions: 16,
+                pollOptionsHeight: 32,
+                userVotedOptionIds: userVotedIds,
+                totalVotes: poll?.totalInterpretedVotes ?? 0,
+                votedBackgroundColor: const Color(0xff2e3d51),
+                pollOptionsFillColor: const Color(0xff2e3d51),
+                votedProgressColor: const Color(0xff526D91),
+                votedCheckmark:
+                    const Icon(Icons.check, color: Colors.white, size: 24),
+              )),
           Align(
             alignment: Alignment.centerLeft,
             child: Row(

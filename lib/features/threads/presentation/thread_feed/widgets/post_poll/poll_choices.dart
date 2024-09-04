@@ -39,7 +39,6 @@ class PollChoices extends HookWidget {
     this.votedPollOptionsRadius,
     this.votedBackgroundColor = const Color(0xffEEF0EB),
     this.votedProgressColor = const Color(0xff84D2F6),
-    this.leadingVotedProgessColor = const Color(0xff0496FF),
     this.voteInProgressColor = const Color(0xffEEF0EB),
     this.votedCheckmark,
     this.votedPercentageTextStyle,
@@ -197,9 +196,6 @@ class PollChoices extends HookWidget {
   /// Defaults to [const Color(0xff84D2F6)].
   final Color? votedProgressColor;
 
-  /// Color of the leading progress bar of a [PollOption] when the user has voted.
-  /// Defaults to [const Color(0xff0496FF)].
-  final Color? leadingVotedProgessColor;
 
   /// Color of the background of a [PollOption] when the user clicks to vote and its still in progress.
   /// Defaults to [const Color(0xffEEF0EB)].
@@ -226,30 +222,11 @@ class PollChoices extends HookWidget {
   @override
   Widget build(BuildContext context) {
 
+    ThemeData theme = Theme.of(context);
 
-    // final votedOption = useState<PollOption?>(hasVoted == false
-    //     ? null
-    //     : pollOptions
-    //         .where(
-    //           (pollOption) => userVotedOptionIds?.contains(pollOption.id) ?? false,
-    //         )
-    //         .toList()
-    //         .first);
+    //Color of the leading progress bar of a [PollOption] when the user has voted.
+    Color leadingVotedProgessColor = theme.primaryColor;
 
-    // final totalVotes = useState<int>(pollOptions.fold(
-    //   0,
-    //   (acc, option) => acc + option.votes,
-    // ));
-
-    // useEffect(() {
-    //   totalVotes.value = pollOptions.fold(
-    //     0,
-    //     (acc, option) => acc + option.votes,
-    //   );
-    //   return;
-    // }, [pollOptions]);
-
-    // totalVotes.value = totalVotes.value;
 
     return Column(
       key: ValueKey(pollId),
@@ -312,9 +289,7 @@ class PollChoices extends HookWidget {
                                   const Spacer(),
                                   Text(
                                      '${pollOption.votes.toString()} ${pollOption.votesPostfix ?? ''}',
-                                    style: const TextStyle(
-                                      fontSize: 12
-                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall
                                   ),
                                 ],
                               ),

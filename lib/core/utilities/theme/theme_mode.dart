@@ -178,4 +178,14 @@ class ThemeController extends ChangeNotifier {
       ),
     );
   }
+
+
+  get pollThemeData => isLightTheme() 
+  ? getLightTheme().copyWith(
+      primaryColor: const Color(0xFF90B5EB)
+    )
+  :  getDarkTheme().copyWith(
+      primaryColor: const Color(0xff254C87)
+    );
+  
 }
