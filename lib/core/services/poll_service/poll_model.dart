@@ -9,7 +9,7 @@ class PollModel {
   final String parentAuthor;
   final double protocolVersion;
   final String question;
-  final String preferredInterpretation;
+  final PollPreferredInterpretation? preferredInterpretation;
   final String? token;
   final DateTime endTime;
   final String status;
@@ -54,7 +54,8 @@ class PollModel {
       parentAuthor: json['parent_author'],
       protocolVersion: json['protocol_version'].toDouble(),
       question: json['question'],
-      preferredInterpretation: json['preferred_interpretation'],
+      preferredInterpretation: PollPreferredInterpretation.fromString(
+          json['preferred_interpretation']),
       token: json['token'],
       endTime: DateTime.parse(json['end_time']),
       status: json['status'],
@@ -96,10 +97,13 @@ class PollModel {
   }
 
   double get totalInterpretedVotes {
+    return pollChoices.fold(0.0, (prev, entry) {
+      num val = preferredInterpretation == PollPreferredInterpretation.tokens
+          ? entry.votes?.hiveHp ?? 0
+          : entry.votes?.totalVotes ?? 0;
 
-    //TODO: return value based on selected interpretation;
-    return pollChoices.fold(0, (val, entry) => val + (entry.votes?.totalVotes ?? 0));
-
+      return prev + val;
+    });
   }
 
   List<int> userVotedIds(String? username) {
@@ -112,7 +116,6 @@ class PollModel {
   }
 
   void injectPollVoteCache(String username, List<int> selection) {
-
     double userHp = 1; //TOOD: use real user hp
 
     //extract previously votes choices and new choices
@@ -149,35 +152,35 @@ class PollModel {
     pollChoices = [
       ...notTouchedChoices,
       ...removedChoices.map((pc) => pc.copyWith(
-        votes: Votes(
-          totalVotes: (pc.votes?.totalVotes ?? 0) - 1, 
-          hiveHp: (pc.votes?.hiveHp ?? 0) - userHp, 
-          hiveProxiedHp: 0, 
-          hiveHpInclProxied: (pc.votes?.hiveHpInclProxied ?? 0) - userHp, 
-          splSpsp: 0,
-        ),
-      )),
+            votes: Votes(
+              totalVotes: (pc.votes?.totalVotes ?? 0) - 1,
+              hiveHp: (pc.votes?.hiveHp ?? 0) - userHp,
+              hiveProxiedHp: 0,
+              hiveHpInclProxied: (pc.votes?.hiveHpInclProxied ?? 0) - userHp,
+              splSpsp: 0,
+            ),
+          )),
       ...newChoices.map((pc) => pc.copyWith(
-        votes: Votes(
-          totalVotes: (pc.votes?.totalVotes ?? 0) + 1, 
-          hiveHp: (pc.votes?.hiveHp ?? 0) + userHp, 
-          hiveProxiedHp: 0, 
-          hiveHpInclProxied: (pc.votes?.hiveHpInclProxied ?? 0) + userHp, 
-          splSpsp: 0,
-        ),
-      )),
+            votes: Votes(
+              totalVotes: (pc.votes?.totalVotes ?? 0) + 1,
+              hiveHp: (pc.votes?.hiveHp ?? 0) + userHp,
+              hiveProxiedHp: 0,
+              hiveHpInclProxied: (pc.votes?.hiveHpInclProxied ?? 0) + userHp,
+              splSpsp: 0,
+            ),
+          )),
     ]..sort((a, b) => a.choiceNum.compareTo(b.choiceNum));
 
     //update poll voters with updated selection
     pollVoters = [
       ...otherVoters,
       PollVoter(
-        name: username, 
-        choices: selection, 
-        hiveHp: userHp, 
-        splSpsp: 0, 
-        hiveProxiedHp: 0, 
-        hiveHpInclProxied: userHp)
+          name: username,
+          choices: selection,
+          hiveHp: userHp,
+          splSpsp: 0,
+          hiveProxiedHp: 0,
+          hiveHpInclProxied: userHp)
     ];
   }
 }
@@ -223,13 +226,11 @@ class PollChoice {
     };
   }
 
-
-    PollChoice copyWith({Votes? votes}) {
+  PollChoice copyWith({Votes? votes}) {
     return PollChoice(
-      choiceNum: choiceNum, 
-      choiceText: choiceText,
-      votes: votes ?? this.votes
-    );
+        choiceNum: choiceNum,
+        choiceText: choiceText,
+        votes: votes ?? this.votes);
   }
 }
 
@@ -272,16 +273,25 @@ class Votes {
     };
   }
 
-    Votes copyWith({int? totalVotes, double? hiveHp, double? hiveHpInclProxied}) {
+  Votes copyWith({int? totalVotes, double? hiveHp, double? hiveHpInclProxied}) {
     return Votes(
-      totalVotes: totalVotes ?? this.totalVotes, 
-      hiveHp: hiveHp ?? this.hiveHp, 
-      hiveProxiedHp: hiveProxiedHp, 
-      hiveHpInclProxied: hiveHpInclProxied ?? this.hiveHpInclProxied, 
-      splSpsp: splSpsp
-      );
-    
-    
+        totalVotes: totalVotes ?? this.totalVotes,
+        hiveHp: hiveHp ?? this.hiveHp,
+        hiveProxiedHp: hiveProxiedHp,
+        hiveHpInclProxied: hiveHpInclProxied ?? this.hiveHpInclProxied,
+        splSpsp: splSpsp);
+  }
+
+  num getInterprettedVotes(PollPreferredInterpretation? interpretation) {
+    return interpretation == PollPreferredInterpretation.tokens
+        ? hiveHp
+        : totalVotes;
+  }
+
+  String getInterprettedSymbol(PollPreferredInterpretation? interpretation) {
+    return interpretation == PollPreferredInterpretation.tokens
+        ? "HP"
+        : "voted";
   }
 }
 
@@ -367,4 +377,43 @@ class PollStats {
       'total_he_token': totalHeToken,
     };
   }
+}
+
+enum PollPreferredInterpretation
+    implements Comparable<PollPreferredInterpretation> {
+  tokens(value: 'tokens'),
+  numberOfVotes(value: 'number_of_votes');
+
+  const PollPreferredInterpretation({
+    required this.value,
+  });
+
+  final String value;
+
+  // Lookup map to find enum from string
+  static final Map<String, PollPreferredInterpretation> _valueMap = {
+    'tokens': PollPreferredInterpretation.tokens,
+    'number_of_votes': PollPreferredInterpretation.numberOfVotes,
+  };
+
+  // Convert string to enum
+  static PollPreferredInterpretation? fromString(String? value) {
+    if (value == null) {
+      return null;
+    }
+
+    final result = _valueMap[value];
+    if (result == null) {
+      throw ArgumentError('Unknown value: $value');
+    }
+    return result;
+  }
+
+  // Convert enum to string
+  String toShortString() {
+    return value;
+  }
+
+  @override
+  int compareTo(PollPreferredInterpretation other) => 0;
 }

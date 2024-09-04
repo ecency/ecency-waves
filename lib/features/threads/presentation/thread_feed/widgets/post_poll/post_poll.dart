@@ -25,7 +25,6 @@ class _PostPollState extends State<PostPoll> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     if (widget.item.jsonMetadata!.contentType == ContentType.poll) {
@@ -61,6 +60,7 @@ class _PostPollState extends State<PostPoll> {
         (!hasVoted || enableRevote) &&
         selection.isNotEmpty;
 
+    //prepare for vote action boadcast
     onCastVote() async {
       PollController pollController = context.read<PollController>();
 
@@ -80,6 +80,7 @@ class _PostPollState extends State<PostPoll> {
       }
     }
 
+    //change selection is user interact with choices
     onSelection(int choiceNum, bool value) {
       int? maxSelectable = meta?.maxChoicesVoted ?? 1;
 
@@ -99,13 +100,10 @@ class _PostPollState extends State<PostPoll> {
       } else {
         // if only one choice allowed, overwrite selection
         setState(() {
-          selection = [choiceNum]; // [choiceNum];
+          selection = [choiceNum];
         });
       }
 
-      // setState(() {
-      //   selection = {...selection, id: value};
-      // });
     }
 
     onRevote() {
@@ -121,12 +119,14 @@ class _PostPollState extends State<PostPoll> {
     List<PollOption> pollOptions() {
       List<PollChoice> choices =
           poll?.pollChoices ?? PollChoice.fromValues(meta.choices!);
+      
 
       return choices
           .map((e) => PollOption(
               id: e.choiceNum,
-              title: Text(e.choiceText, maxLines: 2),
-              votes: e.votes?.totalVotes ?? 0))
+              title: Text(e.choiceText, maxLines: 2, style: const TextStyle(fontSize: 12),),
+              votes: e.votes?.getInterprettedVotes(meta.preferredInterpretation) ?? 0,
+              votesPostfix: e.votes?.getInterprettedSymbol(meta.preferredInterpretation)))
           .toList();
     }
 

@@ -1,3 +1,4 @@
+import 'package:waves/core/services/poll_service/poll_model.dart';
 import 'package:waves/core/utilities/save_convert.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data_video.dart';
 
@@ -15,45 +16,7 @@ enum ContentType implements Comparable<ContentType> {
   int compareTo(ContentType other) => 0;
 }
 
-enum PollPreferredInterpretation
-    implements Comparable<PollPreferredInterpretation> {
-  tokens(value: 'tokens'),
-  numberOfVotes(value: 'number_of_votes');
 
-  const PollPreferredInterpretation({
-    required this.value,
-  });
-
-  final String value;
-
-    // Lookup map to find enum from string
-  static final Map<String, PollPreferredInterpretation> _valueMap = {
-    'tokens': PollPreferredInterpretation.tokens,
-    'number_of_votes': PollPreferredInterpretation.numberOfVotes,
-  };
-
-  // Convert string to enum
-  static PollPreferredInterpretation? fromString(String? value) {
-
-    if(value == null){
-      return null;
-    }
-
-    final result = _valueMap[value];
-    if (result == null) {
-      throw ArgumentError('Unknown value: $value');
-    }
-    return result;
-  }
-
-  // Convert enum to string
-  String toShortString() {
-    return value;
-  }
-
-  @override
-  int compareTo(PollPreferredInterpretation other) => 0;
-}
 
 class PollFilters {
   final int accountAge;

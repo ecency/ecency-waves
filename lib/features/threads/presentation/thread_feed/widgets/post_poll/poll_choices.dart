@@ -311,8 +311,10 @@ class PollChoices extends HookWidget {
                                   const SizedBox(width: 10),
                                   const Spacer(),
                                   Text(
-                                    pollOption.votes.toString(),
-                                    style: votedPercentageTextStyle,
+                                     '${pollOption.votes.toString()} ${pollOption.votesPostfix ?? ''}',
+                                    style: const TextStyle(
+                                      fontSize: 12
+                                    ),
                                   ),
                                 ],
                               ),
@@ -348,7 +350,7 @@ class PollChoices extends HookWidget {
                               width: pollOptionsWidth,
                               padding: EdgeInsets.zero,
                               decoration: BoxDecoration(
-                                color: pollOptionsFillColor,
+                              color: pollOptionsFillColor,
                                 border: pollOptionsBorder ??
                                     Border.all(
                                       color: selectedIds.contains(pollOption.id) ? Colors.blue : pollOptionsFillColor!,
@@ -384,9 +386,11 @@ class PollOption {
     required this.id,
     required this.title,
     required this.votes,
+    this.votesPostfix,
   });
 
   final int id;
   final Widget title;
-  int votes;
+  num votes;
+  String? votesPostfix;
 }
