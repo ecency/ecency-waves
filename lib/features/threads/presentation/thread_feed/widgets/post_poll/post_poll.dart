@@ -164,7 +164,7 @@ class _PostPollState extends State<PostPoll> {
                 if (hasVoted && !enableRevote && (meta.voteChange ?? false))
                   TextButton(
                     onPressed: () => onRevote(),
-                    child: const Text("Revote"),
+                    child: Text(LocaleText.pollRevote),
                   ),
                 if (!votingProhibited)
                   ElevatedButton.icon(
@@ -181,7 +181,7 @@ class _PostPollState extends State<PostPoll> {
                             ),
                           )
                         : const Icon(Icons.bar_chart),
-                    label: const Text("Vote"),
+                    label: Text(LocaleText.pollVote),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF357CE5),
                         padding: const EdgeInsets.symmetric(horizontal: 32)),

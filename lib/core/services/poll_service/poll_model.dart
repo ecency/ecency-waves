@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:collection/collection.dart';
+import 'package:waves/core/locales/locale_text.dart';
 
 class PollModel {
   final String author;
@@ -291,7 +292,7 @@ class Votes {
   String getInterprettedSymbol(PollPreferredInterpretation? interpretation) {
     return interpretation == PollPreferredInterpretation.tokens
         ? "HP"
-        : "voted";
+        : LocaleText.pollVoted;
   }
 }
 
