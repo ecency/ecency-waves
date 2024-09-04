@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/services/poll_service/poll_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
@@ -145,13 +146,13 @@ class _PostPollState extends State<PostPoll> {
             pollEnded: votingProhibited,
             hasVoted: !enableRevote && hasVoted,
             heightBetweenOptions: 16,
-            pollOptionsHeight: 40,
+            pollOptionsHeight: 32,
             userVotedOptionIds: userVotedIds,
             totalVotes: poll?.totalInterpretedVotes ?? 0,
             votedBackgroundColor: const Color(0xff2e3d51),
             pollOptionsFillColor: const Color(0xff2e3d51),
-            leadingVotedProgessColor: const Color(0xff357ce6),
-            votedProgressColor: const Color(0xff526d91),
+            leadingVotedProgessColor: const Color(0xff254C87),
+            votedProgressColor: const Color(0xff526D91),
             votedCheckmark:
                 const Icon(Icons.check, color: Colors.white, size: 24),
           ),
@@ -182,7 +183,7 @@ class _PostPollState extends State<PostPoll> {
                         : const Icon(Icons.bar_chart),
                     label: const Text("Vote"),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: const Color(0xFF357CE5),
                         padding: const EdgeInsets.symmetric(horizontal: 32)),
                   ),
               ],
