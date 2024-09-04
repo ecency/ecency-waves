@@ -32,13 +32,10 @@ class PollChoices extends HookWidget {
     this.pollOptionsHeight = 36,
     this.pollOptionsWidth,
     this.pollOptionsBorderRadius,
-    this.pollOptionsFillColor,
     this.pollOptionsSplashColor = Colors.grey,
     this.pollOptionsBorder,
     this.votedPollOptionsBorder,
     this.votedPollOptionsRadius,
-    this.votedBackgroundColor = const Color(0xffEEF0EB),
-    this.votedProgressColor = const Color(0xff84D2F6),
     this.voteInProgressColor = const Color(0xffEEF0EB),
     this.votedCheckmark,
     this.votedPercentageTextStyle,
@@ -73,7 +70,8 @@ class PollChoices extends HookWidget {
   /// If the user has not voted, this callback is called.
   /// If the callback returns true, the tapped [PollOption] is considered as voted.
   /// Else Nothing happens,
-  final Future<bool> Function(PollOption pollOption, int newTotalVotes)? onVoted;
+  final Future<bool> Function(PollOption pollOption, int newTotalVotes)?
+      onVoted;
 
   final Function(int choiceId, bool status) onSelection;
   final List<int> selectedIds;
@@ -175,11 +173,6 @@ class PollChoices extends HookWidget {
   /// If null, the border is not drawn.
   final BoxBorder? votedPollOptionsBorder;
 
-  /// Color of a [PollOption].
-  /// The color is the same for all options.
-  /// Defaults to [Colors.blue].
-  final Color? pollOptionsFillColor;
-
   /// Splashes a [PollOption] when the user taps it.
   /// Defaults to [Colors.grey].
   final Color? pollOptionsSplashColor;
@@ -187,15 +180,6 @@ class PollChoices extends HookWidget {
   /// Radius of the border of a [PollOption] when the user has voted.
   /// Defaults to Radius.circular(8).
   final Radius? votedPollOptionsRadius;
-
-  /// Color of the background of a [PollOption] when the user has voted.
-  /// Defaults to [const Color(0xffEEF0EB)].
-  final Color? votedBackgroundColor;
-
-  /// Color of the progress bar of a [PollOption] when the user has voted.
-  /// Defaults to [const Color(0xff84D2F6)].
-  final Color? votedProgressColor;
-
 
   /// Color of the background of a [PollOption] when the user clicks to vote and its still in progress.
   /// Defaults to [const Color(0xffEEF0EB)].
@@ -221,12 +205,17 @@ class PollChoices extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-
     ThemeData theme = Theme.of(context);
 
     //Color of the leading progress bar of a [PollOption] when the user has voted.
-    Color leadingVotedProgessColor = theme.primaryColor;
+    Color leadingVotedProgessColor = theme.colorScheme.primary;
+    // Color of the background of a [PollOption] when the user has voted.
+    Color votedBackgroundColor = theme.colorScheme.surface;
 
+    /// The color is the same for all options.
+    Color pollOptionsFillColor = theme.colorScheme.surface;
+    // Color of the progress bar of a [PollOption] when the user has voted.
+    Color votedProgressColor = theme.colorScheme.secondary;
 
     return Column(
       key: ValueKey(pollId),
@@ -271,7 +260,8 @@ class PollChoices extends HookWidget {
                             animationDuration: votedAnimationDuration,
                             backgroundColor: votedBackgroundColor,
                             progressColor:
-                                (userVotedOptionIds?.contains(pollOption.id) ?? false)
+                                (userVotedOptionIds?.contains(pollOption.id) ??
+                                        false)
                                     ? leadingVotedProgessColor
                                     : votedProgressColor,
                             center: Container(
@@ -281,16 +271,25 @@ class PollChoices extends HookWidget {
                               ),
                               child: Row(
                                 children: [
-                                  Checkbox.adaptive(
+                                  Checkbox(
                                       value: (userVotedOptionIds?.contains(pollOption.id) ?? false),
-                                      onChanged: null),
+                                      onChanged: null,
+                                      fillColor:
+                                        WidgetStateProperty.resolveWith<
+                                            Color>((Set<WidgetState> states) {
+                                      if (states.contains(WidgetState.selected)) {
+                                        return theme.primaryColor;
+                                      }
+                                      return Colors.transparent;
+                                    }),),
                                   pollOption.title,
                                   const SizedBox(width: 10),
                                   const Spacer(),
                                   Text(
-                                     '${pollOption.votes.toString()} ${pollOption.votesPostfix ?? ''}',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                  ),
+                                      '${pollOption.votes.toString()} ${pollOption.votesPostfix ?? ''}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall),
                                 ],
                               ),
                             ),
@@ -298,7 +297,6 @@ class PollChoices extends HookWidget {
                         )
                       : Container(
                           key: UniqueKey(),
-                   
                           margin: EdgeInsets.only(
                             bottom: heightBetweenOptions ?? 8,
                           ),
@@ -309,11 +307,7 @@ class PollChoices extends HookWidget {
 
                               bool preVal = selectedIds.contains(pollOption.id);
 
-                              onSelection(
-                                pollOption.id,
-                                !preVal
-                              );
-
+                              onSelection(pollOption.id, !preVal);
                             },
                             splashColor: pollOptionsSplashColor,
                             borderRadius: pollOptionsBorderRadius ??
@@ -325,10 +319,12 @@ class PollChoices extends HookWidget {
                               width: pollOptionsWidth,
                               padding: EdgeInsets.zero,
                               decoration: BoxDecoration(
-                              color: pollOptionsFillColor,
+                                color: pollOptionsFillColor,
                                 border: pollOptionsBorder ??
                                     Border.all(
-                                      color: selectedIds.contains(pollOption.id) ? Colors.blue : pollOptionsFillColor!,
+                                      color: selectedIds.contains(pollOption.id)
+                                          ? theme.primaryColor
+                                          : pollOptionsFillColor!,
                                       width: 2,
                                     ),
                                 borderRadius: pollOptionsBorderRadius ??
@@ -339,7 +335,9 @@ class PollChoices extends HookWidget {
                               child: Row(
                                 children: [
                                   const Checkbox.adaptive(
-                                      value: false, onChanged: null),
+                                    value: false,
+                                    onChanged: null,
+                                  ),
                                   pollOption.title
                                 ],
                               ),

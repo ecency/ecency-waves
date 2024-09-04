@@ -157,9 +157,6 @@ class _PostPollState extends State<PostPoll> {
                 pollOptionsHeight: 32,
                 userVotedOptionIds: userVotedIds,
                 totalVotes: poll?.totalInterpretedVotes ?? 0,
-                votedBackgroundColor: const Color(0xff2e3d51),
-                pollOptionsFillColor: const Color(0xff2e3d51),
-                votedProgressColor: const Color(0xff526D91),
                 votedCheckmark:
                     const Icon(Icons.check, color: Colors.white, size: 24),
               )),
@@ -187,10 +184,10 @@ class _PostPollState extends State<PostPoll> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Icon(Icons.bar_chart),
-                    label: Text(LocaleText.pollVote),
+                        : const Icon(Icons.bar_chart, color: Colors.white),
+                    label: Text(LocaleText.pollVote, style: const TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF357CE5),
+                        backgroundColor: Theme.of(context).primaryColor,
                         padding: const EdgeInsets.symmetric(horizontal: 32)),
                   ),
               ],
