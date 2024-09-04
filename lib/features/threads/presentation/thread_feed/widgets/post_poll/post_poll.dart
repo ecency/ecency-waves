@@ -8,6 +8,7 @@ import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data
 import 'package:waves/features/threads/presentation/thread_feed/controller/poll_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/poll_choices.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/poll_header.dart';
+import 'package:waves/features/user/presentation/user_profile/controller/user_profile_controller.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class PostPoll extends StatefulWidget {
@@ -46,13 +47,19 @@ class _PostPollState extends State<PostPoll> {
     PollModel? poll = context.select<PollController, PollModel?>(
         (pollController) => pollController.getPollData(author, permlink));
 
+    //evaluate voting eligibitliy based on account age limit and end time;
+    int accountAgeDays = context.select<UserProfileController, int>(
+        (userProfileController) => userProfileController.accountAgeDays);
+    int minAgeDays = meta?.filters?.accountAge ?? 0;
     bool hasEnded = poll?.endTime.isBefore(DateTime.now()) ?? false;
+    bool votingProhibited = hasEnded || minAgeDays >= accountAgeDays;
 
+    //check if user already voted
     List<int> userVotedIds = poll?.userVotedIds(username) ?? [];
     bool hasVoted = userVotedIds.isNotEmpty;
 
+    //setting for enabling disabling vote button
     bool voteEnabled = poll != null &&
-        !hasEnded &&
         (!hasVoted || enableRevote) &&
         selection.entries
             .fold(false, (prevVal, entry) => entry.value || prevVal);
@@ -121,7 +128,7 @@ class _PostPollState extends State<PostPoll> {
             ),
             pollOptions: pollOptions(),
             selectedIds: selection,
-            pollEnded: hasEnded,
+            pollEnded: votingProhibited,
             hasVoted: !enableRevote && hasVoted,
             heightBetweenOptions: 16,
             pollOptionsHeight: 40,
@@ -144,25 +151,26 @@ class _PostPollState extends State<PostPoll> {
                     onPressed: () => onRevote(),
                     child: const Text("Revote"),
                   ),
-                ElevatedButton.icon(
-                  onPressed: voteEnabled ? () => onCastVote() : null,
-                  icon: isVoting
-                      ? Container(
-                          width: 24.0,
-                          height: 24.0,
-                          padding: const EdgeInsets.all(4.0),
-                          child: const CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Icon(Icons.bar_chart),
-                  label: const Text("Vote"),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(horizontal: 32)),
-                ),
+                if (!votingProhibited)
+                  ElevatedButton.icon(
+                    onPressed: voteEnabled ? () => onCastVote() : null,
+                    icon: isVoting
+                        ? Container(
+                            width: 24.0,
+                            height: 24.0,
+                            padding: const EdgeInsets.all(4.0),
+                            child: const CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(Icons.bar_chart),
+                    label: const Text("Vote"),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(horizontal: 32)),
+                  ),
               ],
             ),
           )

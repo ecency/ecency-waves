@@ -48,6 +48,15 @@ class UserProfileController extends ChangeNotifier {
     }
   }
 
+  int get accountAgeDays {
+    if(data != null){
+      Duration diff  = data!.created.difference(DateTime.now());
+      return diff.inDays.abs();
+    }
+
+    return 0;
+  }
+
   void updateAccountName(String? username) {
     accountName = username;
     refresh();
