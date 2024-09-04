@@ -266,8 +266,8 @@ class PollChoices extends HookWidget {
                                     : votedProgressColor,
                             center: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
+                              padding: const EdgeInsets.only(
+                                right: 12,
                               ),
                               child: Row(
                                 children: [
