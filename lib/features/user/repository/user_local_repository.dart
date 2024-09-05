@@ -27,4 +27,14 @@ class UserLocalRepository {
   Future<void> writeAllUserAccounts(List<UserAuthModel> accounts) async {
     return await _localService.writeAllUserAccounts(accounts);
   }
+
+  bool readTermsAcceptedFlag() {
+    return _localService.readTermsAcceptedFlag();
+  }
+
+  Future<void> writeTermsAcceptedFlag(bool status) async {
+    return await _localService.writeTermsAcceptedFlag(status);
+  }
+
+  
 }

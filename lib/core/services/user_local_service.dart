@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/models/hive_auth_model.dart';
 import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
@@ -8,10 +9,13 @@ import 'package:waves/features/auth/models/user_auth_model.dart';
 class UserLocalService {
   static const String _currentUserAccountStorageKey = 'currentUserAccount';
   static const String _allUserAccountsStorageKey = 'allUserAccounts';
-  final FlutterSecureStorage _secureStorage;
+  static const String _termsAcceptedFlagKey = 'termsAcceptedFlag';
 
-  UserLocalService({required FlutterSecureStorage secureStorage})
-      : _secureStorage = secureStorage;
+  final FlutterSecureStorage _secureStorage;
+  final GetStorage _getStorage;
+
+  UserLocalService({required FlutterSecureStorage secureStorage, required final GetStorage getStorage})
+      : _secureStorage = secureStorage, _getStorage = getStorage;
 
   Future<void> cleanup() async {
     await _secureStorage.delete(key: _currentUserAccountStorageKey);
@@ -79,4 +83,16 @@ class UserLocalService {
   Future<void> logOut() async {
     await _secureStorage.delete(key: _currentUserAccountStorageKey);
   }
+
+
+  Future<void> writeTermsAcceptedFlag(bool status) async {
+    await _getStorage.write(_termsAcceptedFlagKey, status);
+  }
+
+  bool readTermsAcceptedFlag() {
+
+    bool? data = _getStorage.read(_termsAcceptedFlagKey);
+    return data ?? false;
+  }
+
 }

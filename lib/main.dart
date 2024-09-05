@@ -21,7 +21,7 @@ void main() async {
   if (packageInfo.version == "1.0.0" && packageInfo.buildNumber == "9") {
     var isCleanUpDone = GetStorage().read('did_we_clean_up') as String? ?? 'no';
     if (isCleanUpDone == "no") {
-      await UserLocalService(secureStorage: const FlutterSecureStorage()).cleanup();
+      await UserLocalService(secureStorage: const FlutterSecureStorage(), getStorage: GetStorage()).cleanup();
       await GetStorage().write('did_we_clean_up', 'yes');
     }
   }

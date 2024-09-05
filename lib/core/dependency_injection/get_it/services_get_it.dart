@@ -9,7 +9,7 @@ class ServicesGetIt extends GetItFeature {
   void featureInit() {
     getIt.registerLazySingleton<ApiService>(() => ApiService());
     getIt.registerLazySingleton<UserLocalService>(
-        () => UserLocalService(secureStorage: getIt.call()));
+        () => UserLocalService(secureStorage: getIt.call(), getStorage: getIt.call()));
     getIt.registerLazySingleton<LocalService>(
         () => LocalService(getStorage: getIt.call()));
   }
