@@ -8,6 +8,7 @@
     "bookmarks": "Bookmarks",
     "dark_mode": "Dark Mode",
     "light_mode": "Light Mode",
+    "delete_account": "Delete Account",
     "log_out": "Log out",
     "scan_tap_qr_code": "Scan/Tap QR Code",
     "authorize_this_request_with_keychain_for_hive_app": "Authorize this request with 'Keychain for Hive' app.",
