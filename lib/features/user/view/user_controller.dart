@@ -52,6 +52,14 @@ class UserController extends ChangeNotifier {
     _userSteamController.add(null);
   }
 
+    bool getTermsAcceptedFlag() {
+    return _localRepository.readTermsAcceptedFlag();
+  }
+
+  void setTermsAcceptedFlag(bool status) async {
+    await _localRepository.writeTermsAcceptedFlag(status);
+  }
+
   @override
   void dispose() {
     _userAuthSubscription.cancel();
