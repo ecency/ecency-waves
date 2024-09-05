@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<ThemeController>(
         builder: (context, themeController, child) {
           return MaterialApp.router(
-            routerConfig: AppRouter.router,
+            routerConfig: AppRouter.router(context),
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
             locale: context.locale,

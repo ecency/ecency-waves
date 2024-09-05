@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
+import 'package:waves/core/services/user_local_service.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/presentation/view/auth_view.dart';
 import 'package:waves/features/auth/presentation/view/hive_auth_transaction_view.dart';
@@ -9,6 +11,7 @@ import 'package:waves/features/auth/presentation/view/hive_key_chain_auth_view.d
 import 'package:waves/features/auth/presentation/view/hive_signer_auth_view.dart';
 import 'package:waves/features/auth/presentation/view/posting_key_auth_view.dart';
 import 'package:waves/features/bookmarks/views/thread_bookmark/bookmark_view.dart';
+import 'package:waves/features/settings/presentation/setting/controller/settings_controller.dart';
 import 'package:waves/features/settings/presentation/setting/view/setting_view.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
@@ -17,15 +20,32 @@ import 'package:waves/features/threads/presentation/comments/add_comment/view/hi
 import 'package:waves/features/threads/presentation/comments/comment_detail/view/comment_detail_view.dart';
 import 'package:waves/features/threads/presentation/thread_feed/view/thread_feed_view.dart';
 import 'package:waves/features/user/presentation/user_profile/view/user_profile_view.dart';
+import 'package:waves/features/user/repository/user_local_repository.dart';
+import 'package:waves/features/user/view/user_controller.dart';
+import 'package:waves/features/welcome/view/welcome_view.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-  static GoRouter router = GoRouter(
-      navigatorKey: _rootNavigatorKey, initialLocation: '/', routes: routes());
+  static GoRouter router(BuildContext context) {
+    bool isTermsAccepted = context.select<UserController, bool>(
+        (settingsController) => settingsController.getTermsAcceptedFlag());
+
+    String initialPath = isTermsAccepted ? '/' : '/${Routes.welcomeView}';
+
+    return GoRouter(
+        navigatorKey: _rootNavigatorKey,
+        initialLocation: initialPath,
+        routes: routes());
+  }
 
   static List<RouteBase> routes() {
     return [
+      GoRoute(
+        path: '/${Routes.welcomeView}',
+        name: Routes.welcomeView,
+        builder: (context, state) => const WelcomeView(),
+      ),
       GoRoute(
         path: '/',
         name: Routes.initialView,
@@ -85,18 +105,20 @@ class AppRouter {
           );
         },
       ),
-       GoRoute(
+      GoRoute(
         path: '/${Routes.postingKeyAuthView}',
         name: Routes.postingKeyAuthView,
         builder: (context, state) {
           return const PostingKeyAuthView();
         },
       ),
-       GoRoute(
+      GoRoute(
         path: '/${Routes.hiveKeyChainAuthView}',
         name: Routes.hiveKeyChainAuthView,
         builder: (context, state) {
-          return  HiveKeyChainAuthView(authType:state.extra as AuthType ,);
+          return HiveKeyChainAuthView(
+            authType: state.extra as AuthType,
+          );
         },
       ),
       GoRoute(
@@ -131,16 +153,20 @@ class AppRouter {
     return value.toLowerCase() == "true";
   }
 
-  static String currentRoute() {
-    return AppRouter.router.routerDelegate.currentConfiguration.uri.path
+  static String currentRoute(BuildContext context) {
+    return AppRouter.router(context).routerDelegate.currentConfiguration.uri.path
         .toString();
   }
 
   static void popTillFirstScreen(
     BuildContext context,
   ) {
-    while (router
-            .routerDelegate.currentConfiguration.matches.last.matchedLocation !=
+    while ((router(context))
+            .routerDelegate
+            .currentConfiguration
+            .matches
+            .last
+            .matchedLocation !=
         '/') {
       if (!context.canPop()) {
         return;
