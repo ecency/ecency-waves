@@ -24,9 +24,7 @@ class _WelcomeViewState extends State<WelcomeView> {
     super.initState();
   }
 
-
   void _handleButtonPress() {
-
     context.read<UserController>().setTermsAcceptedFlag(true);
 
     // Navigate to Main Screen (Use your route navigation logic here)
@@ -59,7 +57,8 @@ class _WelcomeViewState extends State<WelcomeView> {
               children: [
                 Text(
                   heading,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(
                     height: 5), // Add some spacing between heading and body
@@ -122,13 +121,21 @@ class _WelcomeViewState extends State<WelcomeView> {
                 Padding(
                   padding: const EdgeInsets.all(40.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Welcome to Waves', // Replace with localized text
+                        'Waves', // Replace with localized text
                         style: TextStyle(fontSize: 34),
+                        textAlign: TextAlign.start,
+                      ),
+                      const Text(
+                        'In Ocean of Thoughts', // Replace with localized text
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
                       ),
                       Text(
-                        'Home for Short Content Sharing', // Replace with localized text
+                        'Short content sharing', // Replace with localized text
                         style: TextStyle(
                             fontSize: 34,
                             color: Theme.of(context).primaryColor),
@@ -146,7 +153,7 @@ class _WelcomeViewState extends State<WelcomeView> {
                               'Post short blogs on a decentralized platform.'),
                           _renderInfo(
                               Icons.sentiment_satisfied_alt,
-                              'Engage with Community',
+                              'Engage with Diverse Communities',
                               'Connect with a global community of content creators.'),
                           _renderInfo(Icons.speed, 'Post in Seconds',
                               'Share quickly using our simple, fast interface.'),
