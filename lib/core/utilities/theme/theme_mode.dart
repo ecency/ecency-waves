@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ThemeController extends ChangeNotifier {
-
-  final Color _primaryThemeColor = Colors.blue;
+  final Color _primaryThemeColor = const Color(0xFF357CE5);
   final Color _primaryColor = Colors.black;
   final Color _primaryColorTwo = const Color.fromARGB(255, 8, 8, 8);
   final Color _secondaryColor = Colors.white;
@@ -178,4 +177,18 @@ class ThemeController extends ChangeNotifier {
       ),
     );
   }
+
+  get pollThemeData => isLightTheme()
+      ? getLightTheme().copyWith(
+          colorScheme: const ColorScheme.light(
+              brightness: Brightness.light,
+              primary: Color(0xFF90B5EB),
+              secondary: Color(0xFFC0C5C7),
+              surface: Color(0xFFF6F6F6)))
+      : getDarkTheme().copyWith(
+          colorScheme: const ColorScheme.dark(
+              brightness: Brightness.light,
+              primary: Color(0xff254C87),
+              secondary:  Color(0xff526D91),
+              surface:  Color(0xff2e3d51)));
 }

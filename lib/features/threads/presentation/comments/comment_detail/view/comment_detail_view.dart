@@ -13,10 +13,12 @@ import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 import 'package:waves/features/threads/presentation/comments/comment_detail/controller/comment_detail_controller.dart';
 import 'package:waves/features/threads/presentation/comments/comment_detail/widgets/tag_scroll.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/interaction_tile.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/thread_markdown.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/post_poll/post_poll.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_feed_divider.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_tile.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_user_info_tile.dart';
@@ -119,6 +121,7 @@ class CommentDetailView extends StatelessWidget {
             ThreadUserInfoTile(item: item),
             const Gap(15),
             ThreadMarkDown(item: item),
+            item.jsonMetadata?.contentType == ContentType.poll ? PostPoll(item: item) : Container() ,
             if (item.jsonMetadata?.tags != null &&
                 item.jsonMetadata!.tags!.isNotEmpty)
               Padding(

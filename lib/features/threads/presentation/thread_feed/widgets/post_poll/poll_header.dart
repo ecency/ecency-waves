@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:waves/core/locales/locale_text.dart';
+import 'package:waves/core/services/poll_service/poll_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 
 class PollHeader extends StatelessWidget {
