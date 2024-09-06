@@ -63,6 +63,7 @@ class LocaleText {
   static String get pollVote => "poll_vote".tr();
   static String get pollVoted => "poll_voted".tr();
   static String get pollRevote => "poll_revote".tr();
+  static String get theAccountDoesntExist => "the_account_doesnt_exist";
 
   
 }

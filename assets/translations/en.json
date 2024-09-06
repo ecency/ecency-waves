@@ -49,5 +49,6 @@
     "no_threads_found": "No threads found",
     "age_limit": "\u2022 Only accounts older than {} days allowed",
     "interpretation_token": "\u2022 User HP based vote interpretation",
-    "max_choices": "\u2022 You may select upto {} choices"
+    "max_choices": "\u2022 You may select upto {} choices",
+    "the_account_doesnt_exist":"The account doesn't exists"
 }

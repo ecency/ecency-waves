@@ -46,6 +46,8 @@ class PostingAuthController extends ChangeNotifier {
     }
   }
 
+  
+
   bool _isKeyFromResponse(String? data) =>
       data != null && data != 'true' && data != 'false' && data.isNotEmpty;
 

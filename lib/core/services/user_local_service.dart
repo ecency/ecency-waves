@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -10,12 +12,16 @@ class UserLocalService {
   static const String _currentUserAccountStorageKey = 'currentUserAccount';
   static const String _allUserAccountsStorageKey = 'allUserAccounts';
   static const String _termsAcceptedFlagKey = 'termsAcceptedFlag';
+  static const String _deletedAccountsKey = 'deletedAccounts';
 
   final FlutterSecureStorage _secureStorage;
   final GetStorage _getStorage;
 
-  UserLocalService({required FlutterSecureStorage secureStorage, required final GetStorage getStorage})
-      : _secureStorage = secureStorage, _getStorage = getStorage;
+  UserLocalService(
+      {required FlutterSecureStorage secureStorage,
+      required final GetStorage getStorage})
+      : _secureStorage = secureStorage,
+        _getStorage = getStorage;
 
   Future<void> cleanup() async {
     await _secureStorage.delete(key: _currentUserAccountStorageKey);
@@ -84,15 +90,25 @@ class UserLocalService {
     await _secureStorage.delete(key: _currentUserAccountStorageKey);
   }
 
-
   Future<void> writeTermsAcceptedFlag(bool status) async {
     await _getStorage.write(_termsAcceptedFlagKey, status);
   }
 
   bool readTermsAcceptedFlag() {
-
     bool? data = _getStorage.read(_termsAcceptedFlagKey);
     return data ?? false;
   }
 
+  List<String> readDeletedAccounts() {
+    String? data = _getStorage.read(_deletedAccountsKey);
+    if (data != null) {
+      return List<String>.from(json.decode(data));
+    }
+    return [];
+  }
+
+  Future<void> writeDeleteAccount(String accountName) async {
+    List<String> deletedAccounts = [...readDeletedAccounts(), accountName];
+    await _getStorage.write(_deletedAccountsKey, json.encode(deletedAccounts));
+  }
 }

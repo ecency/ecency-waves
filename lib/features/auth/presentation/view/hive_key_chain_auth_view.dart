@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/locales/locale_text.dart';
@@ -11,6 +12,7 @@ import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/presentation/widgets/auth_button.dart';
 import 'package:waves/features/auth/presentation/widgets/auth_textfield.dart';
+import 'package:waves/features/user/view/user_controller.dart';
 
 class HiveKeyChainAuthView extends StatefulWidget {
   const HiveKeyChainAuthView({super.key, required this.authType});
@@ -54,16 +56,14 @@ class _HiveKeyChainAuthViewState extends State<HiveKeyChainAuthView> {
                 const Gap(20),
                 if (widget.authType == AuthType.hiveKeyChain)
                   AuthButton(
-                    authType: AuthType.hiveKeyChain,
-                    onTap: () => onHiveAuthLoginTap(AuthType.hiveKeyChain),
-                    label: "HiveKeychain"
-                  ),
+                      authType: AuthType.hiveKeyChain,
+                      onTap: () => onHiveAuthLoginTap(AuthType.hiveKeyChain),
+                      label: "HiveKeychain"),
                 if (widget.authType == AuthType.hiveAuth)
                   AuthButton(
-                    authType: AuthType.hiveAuth,
-                    onTap: () => onHiveAuthLoginTap(AuthType.hiveAuth),
-                    label: "HiveAuth"
-                  ),
+                      authType: AuthType.hiveAuth,
+                      onTap: () => onHiveAuthLoginTap(AuthType.hiveAuth),
+                      label: "HiveAuth"),
               ],
             ),
           ),
@@ -76,6 +76,8 @@ class _HiveKeyChainAuthViewState extends State<HiveKeyChainAuthView> {
     String accountName = accountNameController.text.trim().toLowerCase();
     if (accountName.isEmpty) {
       context.showSnackBar(LocaleText.pleaseEnterTheUsername.tr());
+    } else if (context.read<UserController>().isAccountDeleted(accountName)) {
+      context.showSnackBar(LocaleText.theAccountDoesntExist.tr());
     } else {
       if (type == AuthType.hiveKeyChain) {
         context.platformPushNamed(Routes.hiveAuthTransactionView,

@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/hive_signer_helper_model.dart';
@@ -12,11 +15,17 @@ class HiveSignerController {
   final StreamController<UserAuthModel?> _userStreamController =
       getIt<StreamController<UserAuthModel?>>();
 
-  void onLogin(String url, {required Function(String) onSuccess}) {
+  void onLogin(String url,
+      {required Function(String) onSuccess,
+      required Function(String) onFailure}) {
     HiveSignerHelperModel? data = extractTokenFromUrl(url);
     if (data != null) {
-      _saveToLocal(data.username, data.token)
-          .then((_) => onSuccess(data.username));
+      if (!_userLocalRepository.isAccountDeleted(data.username)) {
+        _saveToLocal(data.username, data.token)
+            .then((_) => onSuccess(data.username));
+      } else {
+        onFailure(LocaleText.theAccountDoesntExist.tr());
+      }
     }
   }
 

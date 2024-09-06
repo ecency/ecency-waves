@@ -21,6 +21,6 @@ class RepositoriesGetIt extends GetItFeature {
     getIt.registerFactory<UserRepository>(
         () => UserRepository(apiService: getIt.call()));
     getIt.registerFactory<SettingsRepository>(
-        () => SettingsRepository(localService: getIt.call()));
+        () => SettingsRepository(localService: getIt.call(),apiService: getIt.call()));
   }
 }

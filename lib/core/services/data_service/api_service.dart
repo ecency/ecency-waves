@@ -440,4 +440,30 @@ class ApiService {
           status: ResponseStatus.failed, errorMessage: e.toString());
     }
   }
+
+  Future<ActionSingleDataResponse<ReportResponse>> deleteAccount(
+      String accountName) async {
+    try {
+      var url = Uri.parse("https://ecency.com/private-api/request-delete");
+
+      http.Response response = await http.post(url,
+          body: json.encode({
+            "type": "content",
+            "data": {"account":accountName}
+          }));
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<ReportResponse>(
+            data: ReportResponse.fromRawJson(response.body),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: "");
+      } else {
+        return ActionSingleDataResponse(
+            status: ResponseStatus.failed, errorMessage: "Server Error");
+      }
+    } catch (e) {
+      return ActionSingleDataResponse(
+          status: ResponseStatus.failed, errorMessage: e.toString());
+    }
+  }
 }

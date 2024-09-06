@@ -1,5 +1,5 @@
-import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/core/services/user_local_service.dart';
+import 'package:waves/features/auth/models/user_auth_model.dart';
 
 class UserLocalRepository {
   final UserLocalService _localService;
@@ -36,5 +36,15 @@ class UserLocalRepository {
     return await _localService.writeTermsAcceptedFlag(status);
   }
 
-  
+  List<String> readDeletedAccounts() {
+    return _localService.readDeletedAccounts();
+  }
+
+  Future<void> writeDeleteAccount(String accountName) async {
+    return await _localService.writeDeleteAccount(accountName);
+  }
+
+  bool isAccountDeleted(String accountName) {
+    return readDeletedAccounts().any((e) => e == accountName);
+  }
 }
