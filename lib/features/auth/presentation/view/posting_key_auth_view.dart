@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
@@ -8,6 +9,7 @@ import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/presentation/controller/posting_auth_controller.dart';
 import 'package:waves/features/auth/presentation/widgets/auth_button.dart';
 import 'package:waves/features/auth/presentation/widgets/auth_textfield.dart';
+import 'package:waves/features/user/view/user_controller.dart';
 
 class PostingKeyAuthView extends StatefulWidget {
   const PostingKeyAuthView({super.key});
@@ -55,7 +57,9 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
                     textEditingController: postingKeyController),
                 const Gap(20),
                 AuthButton(
-                    authType: AuthType.postingKey, onTap: onPostingLoginTap, label: "Login"),
+                    authType: AuthType.postingKey,
+                    onTap: onPostingLoginTap,
+                    label: "Login"),
               ],
             ),
           ),
@@ -68,6 +72,8 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
     String accountName = accountNameController.text.trim().toLowerCase();
     if (accountName.isEmpty) {
       context.showSnackBar(LocaleText.pleaseEnterTheUsername.tr());
+    } else if (context.read<UserController>().isAccountDeleted(accountName)) {
+      context.showSnackBar(LocaleText.theAccountDoesntExist.tr());
     } else if (postingKeyController.text.trim().isEmpty) {
       context.showSnackBar(LocaleText.pleaseEnterThePostingKey.tr());
     } else {

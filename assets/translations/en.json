@@ -8,6 +8,7 @@
     "bookmarks": "Bookmarks",
     "dark_mode": "Dark Mode",
     "light_mode": "Light Mode",
+    "delete_account": "Delete Account",
     "log_out": "Log out",
     "scan_tap_qr_code": "Scan/Tap QR Code",
     "authorize_this_request_with_keychain_for_hive_app": "Authorize this request with 'Keychain for Hive' app.",
@@ -48,5 +49,6 @@
     "no_threads_found": "No threads found",
     "age_limit": "\u2022 Only accounts older than {} days allowed",
     "interpretation_token": "\u2022 User HP based vote interpretation",
-    "max_choices": "\u2022 You may select upto {} choices"
+    "max_choices": "\u2022 You may select upto {} choices",
+    "the_account_doesnt_exist":"The account doesn't exists"
 }

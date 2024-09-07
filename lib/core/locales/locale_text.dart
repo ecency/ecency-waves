@@ -14,6 +14,7 @@ class LocaleText {
   static String get bookmarks => "bookmarks".tr();
   static String get darkMode => "dark_mode".tr();
   static String get lightMode => "light_mode".tr();
+  static String get deleteAccount => "delete_account".tr();
   static String get logOut => "log_out".tr();
   static String get scanTapQRCode => "scan_tap_qr_code".tr();
   static String get authorizeThisRequestWithKeyChainForHiveApp =>
@@ -62,4 +63,7 @@ class LocaleText {
   static String get pollVote => "poll_vote".tr();
   static String get pollVoted => "poll_voted".tr();
   static String get pollRevote => "poll_revote".tr();
+  static String get theAccountDoesntExist => "the_account_doesnt_exist";
+
+  
 }

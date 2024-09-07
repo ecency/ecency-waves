@@ -25,22 +25,20 @@ class _HiveSignerAuthViewState extends State<HiveSignerAuthView> {
           onProgress: (int progress) {
             loadingProgress.value = progress;
           },
-          onPageFinished: (String url) {
-            
-          },
+          onPageFinished: (String url) {},
           onHttpError: (HttpResponseError error) {},
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
             if (request.url.startsWith('https://example.com/')) {
-              controller.onLogin(
-              request.url,
-              onSuccess: (accountname) {
+              controller.onLogin(request.url, onSuccess: (accountname) {
                 context.showSnackBar(
                     LocaleText.successfullLoginMessage(accountname));
                 Navigator.pop(context);
                 Navigator.pop(context);
-              },
-            );
+              }, onFailure: (errorMessage) {
+                context.showSnackBar(errorMessage);
+                Navigator.pop(context);
+              });
               return NavigationDecision.prevent;
             }
             return NavigationDecision.navigate;
@@ -48,7 +46,7 @@ class _HiveSignerAuthViewState extends State<HiveSignerAuthView> {
         ),
       )
       ..loadRequest(Uri.parse(
-        'https://hivesigner.com/oauth2/authorize?client_id=ecency.app&redirect_uri=https://example.com/callback/&scope=vote,comment'));
+          'https://hivesigner.com/oauth2/authorize?client_id=ecency.app&redirect_uri=https://example.com/callback/&scope=vote,comment'));
     super.initState();
   }
 

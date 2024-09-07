@@ -7,6 +7,7 @@ class DrawerTile extends StatelessWidget {
       this.onTap,
       required this.text,
       required this.icon,
+      this.color,
       this.leftPadding, this.trailing});
 
   final VoidCallback? onTap;
@@ -14,6 +15,7 @@ class DrawerTile extends StatelessWidget {
   final IconData icon;
   final double? leftPadding;
   final Widget? trailing;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +25,8 @@ class DrawerTile extends StatelessWidget {
         padding: EdgeInsets.only(left: leftPadding ?? 0.0),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-          leading: Icon(icon),
-          title: Text(text),
+          leading: Icon(icon, color: color,),
+          title: Text(text, style: TextStyle(color: color),),
           trailing: trailing,
         ),
       ),

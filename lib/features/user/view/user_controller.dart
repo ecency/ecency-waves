@@ -39,6 +39,10 @@ class UserController extends ChangeNotifier {
     return userData!.imageUploadToken;
   }
 
+  bool isAccountDeleted(String accountName) {
+    return _localRepository.isAccountDeleted(accountName);
+  }
+
   Future<void> _readUserFromLocal() async {
     userData = await _localRepository.readCurrentUser();
     if (userData != null) notifyListeners();
@@ -52,7 +56,7 @@ class UserController extends ChangeNotifier {
     _userSteamController.add(null);
   }
 
-    bool getTermsAcceptedFlag() {
+  bool getTermsAcceptedFlag() {
     return _localRepository.readTermsAcceptedFlag();
   }
 
