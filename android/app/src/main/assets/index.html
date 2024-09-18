@@ -209,6 +209,7 @@
       parentPermlink,
       permlink,
       comment,
+      tags,
       postingKey,
       token,
       authKey
@@ -226,15 +227,15 @@
 
 
 
-      // Regex pattern for hashtags
-      const pattern = /#(\w+)/g;
-      // Find all hashtags and discard the # character
-      const hashtags = [];
-      let match;
+      // // Regex pattern for hashtags
+      // const pattern = /#(\w+)/g;
+      // // Find all hashtags and discard the # character
+      // const hashtags = [];
+      // let match;
 
-      while ((match = pattern.exec(description)) !== null) {
-        hashtags.push(match[1]); // match[1] contains the hashtag without the #
-      }
+      // while ((match = pattern.exec(description)) !== null) {
+      //   hashtags.push(match[1]); // match[1] contains the hashtag without the #
+      // }
 
 
       let op = [
@@ -247,14 +248,7 @@
           title: "",
           body: description,
           json_metadata: JSON.stringify({
-            tags: [
-              "hive-125125",
-              "waves",
-              "ecency",
-              "mobile",
-              "thread",
-              ...hashtags
-            ],
+            tags:JSON.parse(tags),
             app: "ecency-waves",
             format: "markdown+html",
           }),

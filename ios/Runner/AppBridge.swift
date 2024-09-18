@@ -119,16 +119,18 @@ class AppBridge: NSObject {
                         let parentPermlink = arguments ["parentPermlink"] as? String,
                         let permlink = arguments ["permlink"] as? String,
                         let comment = arguments ["comment"] as? String,
+                        let tags = arguments ["tags"] as? [String],
                         let postingKey = arguments ["postingKey"] as? String,
                         let token = arguments ["token"] as? String,
                         let authKey = arguments ["authKey"] as? String
+
                     else {
                         debugPrint("username, author, parentPermlink, permlink, comment, postingKey, token, authKey - are note set")
                         return result(FlutterMethodNotImplemented)
                     }
                     webVC.runThisJS(
                         id: id,
-                        jsCode: "commentOnContent('\(id)','\(username)', '\(author)', '\(parentPermlink)', '\(permlink)', '\(comment)', '\(postingKey)', '\(token)', '\(authKey)');"
+                        jsCode: "commentOnContent('\(id)','\(username)', '\(author)', '\(parentPermlink)', '\(permlink)', '\(comment)', '\(tags)', '\(postingKey)', '\(token)', '\(authKey)');"
                     ) { text in result(text) }
                 case "voteContent":
                     guard

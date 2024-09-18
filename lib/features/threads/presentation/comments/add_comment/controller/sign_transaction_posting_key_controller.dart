@@ -22,6 +22,7 @@ class SignTransactionPostingKeyController {
   }) async {
     String generatedPermlink = Act.generatePermlink(authData.accountName);
     String commentWithImages = Act.commentWithImages(comment, imageLinks);
+    List<String> tags = Act.compileTags(comment);
     ActionSingleDataResponse<String> commentResponse =
         await _threadRepository.commentOnContent(
             authData.accountName,
@@ -29,6 +30,7 @@ class SignTransactionPostingKeyController {
             parentPermlink,
             generatedPermlink,
             commentWithImages,
+            tags,
             authData.auth.postingKey,
             null,
             null);

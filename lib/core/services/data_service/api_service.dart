@@ -167,13 +167,14 @@ class ApiService {
     String parentPermlink,
     String permlink,
     String comment,
+    List<String> tags,
     String? postingKey,
     String? authKey,
     String? token,
   ) async {
     try {
       String jsonString = await commentOnContentFromPlatform(username, author,
-          parentPermlink, permlink, comment, postingKey, authKey, token);
+          parentPermlink, permlink, comment, tags, postingKey, authKey, token);
       ActionSingleDataResponse<String> response =
           ActionSingleDataResponse.fromJsonString(jsonString, null,
               ignoreFromJson: true);
