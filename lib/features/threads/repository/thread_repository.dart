@@ -40,12 +40,13 @@ class ThreadRepository {
     String parentPermlink,
     String permlink,
     String comment,
+    List<String> tags,
     String? postingKey,
     String? authKey,
     String? token,
   ) async {
     return await _apiService.commentOnContent(username, author, parentPermlink,
-        permlink, comment, postingKey, authKey, token);
+        permlink, comment, tags, postingKey, authKey, token);
   }
 
   Future<ActionSingleDataResponse<String>> votecontent(

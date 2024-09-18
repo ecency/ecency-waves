@@ -35,6 +35,29 @@ class Act {
     return data?.text;
   }
 
+  static List<String> compileTags(String comment) {
+    // Regex pattern for hashtags
+    RegExp pattern = RegExp(r'#(\w+)');
+
+    // Find all hashtags and discard the # character
+    List<String> hashtags = [];
+    Iterable<RegExpMatch> matches = pattern.allMatches(comment);
+
+    for (var match in matches) {
+      hashtags
+          .add(match.group(1)!); // group(1) contains the hashtag without the #
+    }
+    
+    return [
+      "hive-125125",
+      "waves",
+      "ecency",
+      "mobile",
+      "thread",
+      ...hashtags
+    ];
+  }
+
   static String generatePermlink(String username) {
     final t = DateTime.now();
     final timeFormat = '${t.year}'

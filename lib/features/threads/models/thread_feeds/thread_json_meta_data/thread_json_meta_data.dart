@@ -131,7 +131,7 @@ class ThreadJsonMetadata {
       'vote_change':voteChange,
       'hide_votes':hideVotes,
       'ui_hide_res_until_voted':uiHideResUntilVoted,
-      'preferred_interpretation':preferredInterpretation!.value
+      'preferred_interpretation':preferredInterpretation?.value
     };
   }
 

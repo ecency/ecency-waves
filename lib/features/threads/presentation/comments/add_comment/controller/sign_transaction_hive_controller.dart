@@ -125,12 +125,14 @@ class SignTransactionHiveController extends HiveTransactionController {
     switch (transactionType) {
       case SignTransactionType.comment:
         _generatedPermlink = Act.generatePermlink(authData.accountName);
+        List<String> tags = Act.compileTags(comment!);
         return _threadRepository.commentOnContent(
             authData.accountName,
             author,
             permlink!, //parentPermlink
             _generatedPermlink!,
             Act.commentWithImages(comment!, imageLinks!),
+            tags,
             null,
             authData.auth.authKey,
             authData.auth.token);
