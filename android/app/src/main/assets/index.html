@@ -223,6 +223,20 @@
       //   .toLowerCase();
       // permlink2 = `re-${username}-${permlink2}`;
       // console.log(permlink2);
+
+
+
+      // Regex pattern for hashtags
+      const pattern = /#(\w+)/g;
+      // Find all hashtags and discard the # character
+      const hashtags = [];
+      let match;
+
+      while ((match = pattern.exec(comment)) !== null) {
+        hashtags.push(match[1]); // match[1] contains the hashtag without the #
+      }
+
+
       let op = [
         "comment",
         {
@@ -238,7 +252,8 @@
               "waves",
               "ecency",
               "mobile",
-              "thread"
+              "thread",
+              ...hashtags
             ],
             app: "ecency-waves",
             format: "markdown+html",
