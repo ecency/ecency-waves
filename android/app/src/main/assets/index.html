@@ -232,7 +232,7 @@
       const hashtags = [];
       let match;
 
-      while ((match = pattern.exec(comment)) !== null) {
+      while ((match = pattern.exec(description)) !== null) {
         hashtags.push(match[1]); // match[1] contains the hashtag without the #
       }
 
