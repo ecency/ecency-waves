@@ -188,6 +188,7 @@
       parentPermlink,
       permlink,
       comment,
+      tags,
       postingKey,
       token,
       authKey
@@ -201,7 +202,8 @@
       //   .replace(/[^a-zA-Z0-9]+/g, "")
       //   .toLowerCase();
       // permlink2 = `re-${username}-${permlink2}`;
-      // console.log(permlink2);
+      // console.log(permlink2)
+
       let op = [
         "comment",
         {
@@ -212,13 +214,7 @@
           title: "",
           body: description,
           json_metadata: JSON.stringify({
-            tags: [
-                    "hive-125125",
-                    "waves",
-                    "ecency",
-                    "mobile",
-                    "thread"
-            ],
+            tags: JSON.parase(tags),
             app: "ecency-waves",
             format: "markdown+html",
           }),

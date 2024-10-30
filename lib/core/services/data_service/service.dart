@@ -24,6 +24,7 @@ Future<String> commentOnContentFromPlatform(
   String parentPermlink,
   String permlink,
   String comment,
+  List<String> tags,
   String? postingKey,
   String? authKey,
   String? token,

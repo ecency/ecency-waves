@@ -209,6 +209,7 @@
       parentPermlink,
       permlink,
       comment,
+      tags,
       postingKey,
       token,
       authKey
@@ -223,6 +224,20 @@
       //   .toLowerCase();
       // permlink2 = `re-${username}-${permlink2}`;
       // console.log(permlink2);
+
+
+
+      // // Regex pattern for hashtags
+      // const pattern = /#(\w+)/g;
+      // // Find all hashtags and discard the # character
+      // const hashtags = [];
+      // let match;
+
+      // while ((match = pattern.exec(description)) !== null) {
+      //   hashtags.push(match[1]); // match[1] contains the hashtag without the #
+      // }
+
+
       let op = [
         "comment",
         {
@@ -233,13 +248,7 @@
           title: "",
           body: description,
           json_metadata: JSON.stringify({
-            tags: [
-              "hive-125125",
-              "waves",
-              "ecency",
-              "mobile",
-              "thread"
-            ],
+            tags:JSON.parse(tags),
             app: "ecency-waves",
             format: "markdown+html",
           }),

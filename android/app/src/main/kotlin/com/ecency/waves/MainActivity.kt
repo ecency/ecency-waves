@@ -46,6 +46,7 @@ class MainActivity: FlutterActivity() {
             val weight = call.argument<Int?>("weight")
             val pollId = call.argument<String?>("pollId")
             val choices = call.argument<IntArray?>("choices")
+            val tags = call.argument<StringArray?>("tags")
             
             if (id == null) {
                 result.error(
@@ -91,7 +92,7 @@ class MainActivity: FlutterActivity() {
                 && parentPermlink != null && permlink != null && comment != null && postingKey != null && token != null
                 && authKey != null ) {
                 webView?.evaluateJavascript(
-                    "commentOnContent('$id','$username', '$author', '$parentPermlink', '$permlink', '$comment', '$postingKey', '$token', '$authKey');",
+                    "commentOnContent('$id','$username', '$author', '$parentPermlink', '$permlink', '$comment', '$tags',  '$postingKey', '$token', '$authKey');",
                     null
                 )
             } else if (call.method == "voteContent" && username != null && author != null
