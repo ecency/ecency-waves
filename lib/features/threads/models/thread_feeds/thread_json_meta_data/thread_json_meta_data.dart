@@ -50,7 +50,7 @@ class ThreadJsonMetadata {
   final String? format;
 
   final ContentType? contentType;
-  final double? version;
+  final Object? version;
   final String? question;
   final PollPreferredInterpretation? preferredInterpretation;
   final int? maxChoicesVoted;
@@ -99,7 +99,7 @@ class ThreadJsonMetadata {
                 ? ContentType.poll
                 : ContentType.general,
 
-        version: json?['version'] as double?,
+        version: json?['version'],
         question: json?['question'] as String?,
         choices: asList(json, 'choices').map((e) => e.toString()).toList(),
         filters: json?['filters'] != null ? PollFilters.fromMap(json?['filters']) : null,
