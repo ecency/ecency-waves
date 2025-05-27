@@ -68,11 +68,11 @@ jobs:   #here we specify the jobs - We could have multiple jobs
 
 
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
-      - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+      - name: Select Xcode 16.3
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app/Contents/Developer
       - name: Check out
         uses: actions/checkout@v1
 
