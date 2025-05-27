@@ -48,6 +48,8 @@ class Thread {
     switch (type) {
       case ThreadFeedType.ecency:
         return "assets/images/waves.png";
+      case ThreadFeedType.peakd:
+        return "assets/images/logo/peakd_logo.png";
       case ThreadFeedType.liketu:
         return "assets/images/logo/liketu_logo.png";
       case ThreadFeedType.leo:
@@ -63,6 +65,8 @@ class Thread {
     switch (type) {
       case ThreadFeedType.ecency:
         return "Waves";
+      case ThreadFeedType.peakd:
+        return "Snaps";
       case ThreadFeedType.liketu:
         return "Moments";
       case ThreadFeedType.leo:
