@@ -121,6 +121,7 @@ class ThreadFeedController extends ChangeNotifier
     try {
       List<List<ThreadFeedModel>?> totalFeeds = await Future.wait([
         _loadFeed(ThreadFeedType.ecency),
+        _loadFeed(ThreadFeedType.peakd),
         _loadFeed(ThreadFeedType.liketu),
         _loadFeed(ThreadFeedType.leo),
         _loadFeed(ThreadFeedType.dbuzz),
@@ -319,6 +320,8 @@ class ThreadFeedController extends ChangeNotifier
     switch (type ?? threadType) {
       case ThreadFeedType.ecency:
         return "ecency.waves";
+      case ThreadFeedType.peakd:
+        return "peak.snaps";
       case ThreadFeedType.liketu:
         return "liketu.moments";
       case ThreadFeedType.leo:

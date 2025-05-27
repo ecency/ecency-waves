@@ -6,7 +6,7 @@ enum ViewState { loading, data, empty, error }
 
 enum AccountPostType { blog, posts, comments, replies }
 
-enum ThreadFeedType {all,ecency,liketu,leo,dbuzz}
+enum ThreadFeedType {all,ecency,peakd,liketu,leo,dbuzz}
 
 enum BookmarkType {thread}
 
