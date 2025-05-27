@@ -68,7 +68,7 @@ jobs:   #here we specify the jobs - We could have multiple jobs
 
 
   build-ios:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Select Xcode 16
