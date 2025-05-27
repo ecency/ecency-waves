@@ -44,7 +44,7 @@ jobs:   #here we specify the jobs - We could have multiple jobs
       #  run: flutter test
 
       - name: Build Android appBundle
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --android-skip-build-dependency-validation
 
       #- name: Build ios
       #  run: flutter build ios --release --no-codesign
