@@ -12,10 +12,10 @@ import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'core/dependency_injection/dependency_injection.dart' as get_it;
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await get_it.init();
   await GetStorage.init();
   await EasyLocalization.ensureInitialized();
-  WidgetsFlutterBinding.ensureInitialized();
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
   if (packageInfo.version == "1.0.0" && packageInfo.buildNumber == "9") {
