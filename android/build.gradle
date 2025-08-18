@@ -1,3 +1,5 @@
+import groovy.xml.XmlSlurper
+
 allprojects {
     repositories {
         google()
@@ -6,29 +8,23 @@ allprojects {
 }
 
 rootProject.buildDir = '../build'
-subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
+
 subprojects { subproj ->
-    project.evaluationDependsOn(':app')
-    afterEvaluate {
-        if (subproj.plugins.hasPlugin("com.android.library")) {
-            def androidExt = subproj.extensions.findByName("android")
-            if (androidExt && !androidExt.hasProperty("namespace")) {
-                def manifestFile = file("${subproj.projectDir}/src/main/AndroidManifest.xml")
-                if (manifestFile.exists()) {
-                    // read package="..." from manifest
-                    def pkg = null
-                    manifestFile.withInputStream { is ->
-                        def xml = new XmlSlurper(false, false).parse(is)
-                        pkg = xml.@package?.text()
-                    }
-                    if (pkg) {
-                        androidExt.namespace = pkg
-                        println("Set namespace for ${subproj.path} -> ${pkg}")
-                    } else {
-                        throw new GradleException("No package found in ${manifestFile} for ${subproj.path}. Please upgrade the dependency or set a namespace.")
-                    }
+    // keep per-module build dirs if you want
+    subproj.buildDir = "${rootProject.buildDir}/${subproj.name}"
+
+    // Namespace fallback for legacy Android library modules (no afterEvaluate!)
+    plugins.withId("com.android.library") {
+        def androidExt = subproj.extensions.findByName("android")
+        if (androidExt && !androidExt.hasProperty("namespace")) {
+            def manifestFile = file("${subproj.projectDir}/src/main/AndroidManifest.xml")
+            if (manifestFile.exists()) {
+                def pkg = new XmlSlurper(false, false).parse(manifestFile).'@package'.text()
+                if (pkg) {
+                    androidExt.namespace = pkg
+                    println("Set namespace for ${subproj.path} -> ${pkg}")
+                } else {
+                    throw new GradleException("No package found in ${manifestFile} for ${subproj.path}. Please upgrade the dependency or set a namespace.")
                 }
             }
         }
