@@ -19,15 +19,24 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity: FlutterActivity() {
+class MainActivity : FlutterActivity() {
     private var webView: WebView? = null
     var handlers: MutableMap<String, MethodChannel.Result> = mutableMapOf()
+
+    // Escape strings before injecting into JS
+    private fun js(s: String?): String =
+        s?.replace("\\", "\\\\")
+            ?.replace("'", "\\'")
+            ?.replace("\n", "\\n")
+            ?.replace("\r", "")
+            ?: ""
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         if (webView == null) {
             setupView()
         }
+
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "bridge"
@@ -45,9 +54,9 @@ class MainActivity: FlutterActivity() {
             val comment = call.argument<String?>("comment")
             val weight = call.argument<Int?>("weight")
             val pollId = call.argument<String?>("pollId")
-            val choices = call.argument<IntArray?>("choices")
-            val tags = call.argument<StringArray?>("tags")
-            
+            val choices: List<Int> = call.argument<List<Int>>("choices") ?: emptyList()
+            val tags: List<String> = call.argument<List<String>>("tags") ?: emptyList()
+
             if (id == null) {
                 result.error(
                     "UNAVAILABLE",
@@ -56,74 +65,81 @@ class MainActivity: FlutterActivity() {
                 )
                 return@setMethodCallHandler
             }
+
             handlers[id] = result
+
             val jsCode = call.argument<String?>("jsCode")
+            val gson = Gson()
+            val choicesJson = gson.toJson(choices) // e.g., [1,2,3]
+            val tagsJson = gson.toJson(tags)       // e.g., ["hive","ecency"]
+
             if (call.method == "runThisJS" && jsCode != null) {
                 webView?.evaluateJavascript(
-                    "runThisJS(\"$jsCode\", \"$id\");",
+                    "runThisJS('${js(jsCode)}','${js(id)}');",
                     null
                 )
             } else if (call.method == "doWeHaveHiveKeychainExtension") {
                 webView?.evaluateJavascript(
-                    "doWeHaveHiveKeychainExtension('$id');",
+                    "doWeHaveHiveKeychainExtension('${js(id)}');",
                     null
                 )
             } else if (call.method == "signInWithHiveKeychain" && username != null && message != null) {
                 webView?.evaluateJavascript(
-                    "signInWithHiveKeychain('$id','$username','$message');",
+                    "signInWithHiveKeychain('${js(id)}','${js(username)}','${js(message)}');",
                     null
                 )
             } else if (call.method == "getRedirectUriData" && username != null) {
                 webView?.evaluateJavascript(
-                    "getRedirectUriData('$id', '$username');",
+                    "getRedirectUriData('${js(id)}','${js(username)}');",
                     null
                 )
             } else if (call.method == "getDecryptedHASToken" && username != null && encryptedData != null && authKey != null) {
                 webView?.evaluateJavascript(
-                    "getDecryptedHASToken('$id', '$username', '$encryptedData', '$authKey');",
+                    "getDecryptedHASToken('${js(id)}','${js(username)}','${js(encryptedData)}','${js(authKey)}');",
                     null
                 )
             } else if (call.method == "validatePostingKey" && username != null && postingKey != null) {
                 webView?.evaluateJavascript(
-                    "validatePostingKey('$id', '$username', '$postingKey');",
+                    "validatePostingKey('${js(id)}','${js(username)}','${js(postingKey)}');",
                     null
                 )
             } else if (call.method == "commentOnContent" && username != null && author != null
                 && parentPermlink != null && permlink != null && comment != null && postingKey != null && token != null
-                && authKey != null ) {
+                && authKey != null
+            ) {
                 webView?.evaluateJavascript(
-                    "commentOnContent('$id','$username', '$author', '$parentPermlink', '$permlink', '$comment', '$tags',  '$postingKey', '$token', '$authKey');",
+                    "commentOnContent('${js(id)}','${js(username)}','${js(author)}','${js(parentPermlink)}','${js(permlink)}','${js(comment)}',$tagsJson,'${js(postingKey)}','${js(token)}','${js(authKey)}');",
                     null
                 )
             } else if (call.method == "voteContent" && username != null && author != null
-                && permlink != null && weight != null && postingKey != null && token != null
-                && authKey != null ) {
+                && permlink != null && weight != null && postingKey != null && token != null && authKey != null
+            ) {
                 webView?.evaluateJavascript(
-                    "voteContent('$id','$username', '$author', '$permlink', '$weight', '$postingKey', '$token', '$authKey');",
+                    "voteContent('${js(id)}','${js(username)}','${js(author)}','${js(permlink)}',${weight},'${js(postingKey)}','${js(token)}','${js(authKey)}');",
                     null
                 )
-            } 
-            else if (call.method == "castPollVote" && username != null && pollId != null
-                && choices != null && postingKey != null && token != null
-                && authKey != null ) {
+            } else if (call.method == "castPollVote" && username != null && pollId != null
+                && choices.isNotEmpty() && postingKey != null && token != null && authKey != null
+            ) {
                 webView?.evaluateJavascript(
-                    "castPollVote('$id','$username', '$pollId', '$choices', '$postingKey', '$token', '$authKey');",
+                    "castPollVote('${js(id)}','${js(username)}','${js(pollId)}',$choicesJson,'${js(postingKey)}','${js(token)}','${js(authKey)}');",
                     null
                 )
             } else if (call.method == "getImageUploadProofWithPostingKey" && username != null && postingKey != null) {
                 webView?.evaluateJavascript(
-                    "getImageUploadProofWithPostingKey('$id', '$username', '$postingKey');",
+                    "getImageUploadProofWithPostingKey('${js(id)}','${js(username)}','${js(postingKey)}');",
                     null
                 )
             } else if (call.method == "muteUser" && username != null && author != null
-                && postingKey != null && token != null && authKey != null ) {
+                && postingKey != null && token != null && authKey != null
+            ) {
                 webView?.evaluateJavascript(
-                    "muteUser('$id','$username', '$author', '$postingKey', '$token', '$authKey');",
+                    "muteUser('${js(id)}','${js(username)}','${js(author)}','${js(postingKey)}','${js(token)}','${js(authKey)}');",
                     null
                 )
-            } 
+            }
+        }
     }
-}
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupView() {
@@ -134,11 +150,12 @@ class MainActivity: FlutterActivity() {
         webView?.visibility = View.GONE
         webView?.settings?.javaScriptEnabled = true
         webView?.settings?.domStorageEnabled = true
-//        webView?.webChromeClient = WebChromeClient()
         WebView.setWebContentsDebuggingEnabled(true)
+
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
+
         val client: WebViewClient = object : WebViewClient() {
             @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
             override fun shouldInterceptRequest(
@@ -155,6 +172,7 @@ class MainActivity: FlutterActivity() {
                 return assetLoader.shouldInterceptRequest(Uri.parse(url))
             }
         }
+
         webView?.webViewClient = client
         webView?.addJavascriptInterface(WebAppInterface(this), "Android")
         webView?.loadUrl("https://appassets.androidplatform.net/assets/index.html")
@@ -173,4 +191,3 @@ class WebAppInterface(private val mContext: Context) {
 data class JSEvent(
     var id: String,
 )
-
