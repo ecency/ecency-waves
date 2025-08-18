@@ -176,27 +176,41 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   void _postingKeyVoteTransaction(
       UserAuthModel userData, BuildContext context) async {
     widget.rootContext.showLoader();
-    await SignTransactionPostingKeyController().initVoteProcess(weight * 10000,
+    try {
+      await SignTransactionPostingKeyController().initVoteProcess(
+        weight * 10000,
         author: widget.author,
         permlink: widget.permlink,
         authdata: userData as UserAuthModel<PostingAuthModel>,
         onSuccess: () =>
             widget.onSuccess(generateVoteModel(widget.rootContext)),
-        showToast: (message) => widget.rootContext.showSnackBar(message));
-    widget.rootContext.hideLoader();
+        showToast: (message) => widget.rootContext.showSnackBar(message),
+      );
+    } catch (e) {
+      widget.rootContext.showSnackBar(e.toString());
+    } finally {
+      widget.rootContext.hideLoader();
+    }
   }
 
   void _hiveSignerTransaction(
       UserAuthModel userData, BuildContext context) async {
     widget.rootContext.showLoader();
-    await SignTransactionHiveSignerController().initVoteProcess(weight * 10000,
+    try {
+      await SignTransactionHiveSignerController().initVoteProcess(
+        weight * 10000,
         author: widget.author,
         permlink: widget.permlink,
         authdata: userData as UserAuthModel<HiveSignerAuthModel>,
         onSuccess: () =>
             widget.onSuccess(generateVoteModel(widget.rootContext)),
-        showToast: (message) => widget.rootContext.showSnackBar(message));
-    widget.rootContext.hideLoader();
+        showToast: (message) => widget.rootContext.showSnackBar(message),
+      );
+    } catch (e) {
+      widget.rootContext.showSnackBar(e.toString());
+    } finally {
+      widget.rootContext.hideLoader();
+    }
   }
 
   Future<dynamic> _dialogForHiveTransaction(BuildContext context) {
