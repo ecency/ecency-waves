@@ -67,7 +67,7 @@ dependencies:
   collection: any
   intl: any
   markdown: any
-  firebase_core: any
+  firebase_core: ^4.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
