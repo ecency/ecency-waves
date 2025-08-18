@@ -1,4 +1,4 @@
-library flutter_polls;
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -324,7 +324,7 @@ class PollChoices extends HookWidget {
                                     Border.all(
                                       color: selectedIds.contains(pollOption.id)
                                           ? theme.primaryColor
-                                          : pollOptionsFillColor!,
+                                          : pollOptionsFillColor,
                                       width: 2,
                                     ),
                                 borderRadius: pollOptionsBorderRadius ??

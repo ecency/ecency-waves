@@ -58,7 +58,7 @@ class SettingView extends StatelessWidget {
     );
   }
 
-  onDeletePress(BuildContext context) {
+  void onDeletePress(BuildContext context) {
     UserController userController = context.read<UserController>();
     SettingsController controller = context.read<SettingsController>();
     showDialog(

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';

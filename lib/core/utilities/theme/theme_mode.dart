@@ -16,7 +16,7 @@ class ThemeController extends ChangeNotifier {
 
   ThemeMode _themeMode = ThemeMode.dark;
 
-  get themeMode => _themeMode;
+  ThemeMode get themeMode => _themeMode;
 
   void toggleTheme() {
     _themeMode = isLightTheme() ? ThemeMode.dark : ThemeMode.light;
@@ -178,7 +178,7 @@ class ThemeController extends ChangeNotifier {
     );
   }
 
-  get pollThemeData => isLightTheme()
+  ThemeData get pollThemeData => isLightTheme()
       ? getLightTheme().copyWith(
           colorScheme: const ColorScheme.light(
               brightness: Brightness.light,

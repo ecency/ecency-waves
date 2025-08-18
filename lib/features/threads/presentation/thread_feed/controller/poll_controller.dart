@@ -26,7 +26,7 @@ class PollController with ChangeNotifier {
 
   PollController({required this.userData});
 
-  updateUserData(UserAuthModel? user) {
+  void updateUserData(UserAuthModel? user) {
     userData = user;
   }
 
@@ -119,7 +119,7 @@ class PollController with ChangeNotifier {
   PollModel? getPollData(String author, String permlink) =>
       _pollMap[_getLocalPollKey(author, permlink)];
 
-  _getLocalPollKey(String author, String permlink) {
+  String _getLocalPollKey(String author, String permlink) {
     return "$author/$permlink";
   }
 }
