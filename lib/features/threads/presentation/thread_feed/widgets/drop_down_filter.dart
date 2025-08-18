@@ -17,7 +17,8 @@ class DropDownFilter extends StatefulWidget {
 }
 
 class _DropDownFilterState extends State<DropDownFilter> {
-  final DropdownController _dropdownController = DropdownController();
+  final DropdownController<ThreadFeedType> _dropdownController =
+  DropdownController<ThreadFeedType>();
 
   @override
   void dispose() {
@@ -29,8 +30,10 @@ class _DropDownFilterState extends State<DropDownFilter> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = context.read<ThreadFeedController>();
-    final List types = ThreadFeedType.values.sublist(1);
-    String defaultTypeString = Thread.gethreadName(type: controller.threadType);
+    final List<ThreadFeedType> types = ThreadFeedType.values.sublist(1);
+    final String defaultTypeString =
+    Thread.gethreadName(type: controller.threadType);
+
     return AnimatedContainer(
       key: const ValueKey('dropdown'),
       duration: const Duration(milliseconds: 200),
@@ -40,9 +43,10 @@ class _DropDownFilterState extends State<DropDownFilter> {
           CoolDropdown<ThreadFeedType>(
             controller: _dropdownController,
             defaultItem: CoolDropdownItem<ThreadFeedType>(
-                isSelected: true,
-                label: defaultTypeString,
-                value: controller.threadType),
+              isSelected: true,
+              label: defaultTypeString,
+              value: controller.threadType,
+            ),
             dropdownItemOptions: DropdownItemOptions(
               render: DropdownItemRender.all,
               selectedBoxDecoration: BoxDecoration(color: Colors.grey.shade600),
@@ -53,16 +57,17 @@ class _DropDownFilterState extends State<DropDownFilter> {
               color: theme.colorScheme.tertiary,
             ),
             dropdownTriangleOptions:
-                const DropdownTriangleOptions(height: 5, width: 0),
+            const DropdownTriangleOptions(height: 5, width: 0),
             dropdownList: types
                 .map(
                   (e) => CoolDropdownItem<ThreadFeedType>(
-                      isSelected: e == controller.threadType,
-                      label: Thread.gethreadName(type: e),
-                      value: e),
-                )
+                isSelected: e == controller.threadType,
+                label: Thread.gethreadName(type: e),
+                value: e,
+              ),
+            )
                 .toList(),
-            onChange: (type) {
+            onChange: (ThreadFeedType type) {
               if (controller.threadType != type) {
                 widget.onChanged(type);
                 setState(() {});
@@ -73,13 +78,15 @@ class _DropDownFilterState extends State<DropDownFilter> {
               placeholder: defaultTypeString,
               render: ResultRender.all,
               openBoxDecoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(6)),
-                  color: Colors.transparent,
-                  border: Border.all(color: Colors.transparent)),
+                borderRadius: const BorderRadius.all(Radius.circular(6)),
+                color: Colors.transparent,
+                border: Border.all(color: Colors.transparent),
+              ),
               boxDecoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: const BorderRadius.all(Radius.circular(6)),
-                  border: Border.all(color: Colors.transparent)),
+                color: Colors.transparent,
+                borderRadius: const BorderRadius.all(Radius.circular(6)),
+                border: Border.all(color: Colors.transparent),
+              ),
               textStyle: const TextStyle(color: Colors.transparent),
             ),
           ),
@@ -101,12 +108,12 @@ class _DropDownFilterState extends State<DropDownFilter> {
                     const Padding(
                       padding: EdgeInsets.only(top: 4.0),
                       child: Icon(Icons.arrow_drop_down),
-                    )
+                    ),
                   ],
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

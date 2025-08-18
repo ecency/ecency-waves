@@ -14,7 +14,7 @@ class DefaultThreadDropdown extends StatefulWidget {
 }
 
 class _DefaultThreadDropdownState extends State<DefaultThreadDropdown> {
-  final DropdownController _dropdownController = DropdownController();
+  final DropdownController<ThreadFeedType> _dropdownController = DropdownController<ThreadFeedType>();
   late ThreadFeedType selectedThreadType;
 
   @override
@@ -33,7 +33,7 @@ class _DefaultThreadDropdownState extends State<DefaultThreadDropdown> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final settingsController = context.read<SettingsController>();
-    final List types = ThreadFeedType.values.sublist(1);
+    final List<ThreadFeedType> types = ThreadFeedType.values.sublist(1);
     String defaultTypeString = Thread.gethreadName(type: selectedThreadType);
     return SizedBox(
       width: 130,
@@ -64,7 +64,7 @@ class _DefaultThreadDropdownState extends State<DefaultThreadDropdown> {
                   value: e),
             )
             .toList(),
-        onChange: (type) {
+        onChange: (ThreadFeedType type) {
           if (selectedThreadType != type) {
             setState(() {
               selectedThreadType = type;
