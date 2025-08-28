@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+
 import 'package:waves/core/providers/transaction_listeners_providers.dart';
 import 'package:waves/core/socket/models/socket_wait_model.dart';
 import 'package:waves/core/socket/models/socket_response.dart';
