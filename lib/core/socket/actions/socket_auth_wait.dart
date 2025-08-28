@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:waves/core/providers/transaction_listeners_providers.dart';
 import 'package:waves/core/socket/models/socket_wait_model.dart';
 import 'package:waves/core/socket/models/socket_response.dart';
@@ -8,16 +7,15 @@ import 'package:waves/core/utilities/act.dart';
 import 'package:waves/core/utilities/enum.dart';
 
 class SocketWaitAction {
-  static void call(
-      {required SocketResponse data,
-      required SocketInputType socketInputType,
-      required TransactionListenersProvider listenersProvider,
-      required bool isHiveKeyChainMethod,
-      required String accountName,
-      required String authKey,
-      required Timer? timer,
-      required VoidCallback onTimeOut,
-      required VoidCallback resetListeners}) {
+  static Timer call({
+    required SocketResponse data,
+    required SocketInputType socketInputType,
+    required TransactionListenersProvider listenersProvider,
+    required bool isHiveKeyChainMethod,
+    required String accountName,
+    required String authKey,
+    required VoidCallback onTimeOut,
+  }) {
     String uuid = data.value;
     String jsonString =
         SocketWaitModel(accountName: accountName, uuid: uuid, authKey: authKey)
@@ -32,7 +30,7 @@ class SocketWaitAction {
     }
     listenersProvider.tickValueListener.value =
         listenersProvider.timeOutValueListener.value;
-    timer = Timer.periodic(const Duration(seconds: 1), (tickValue) {
+    return Timer.periodic(const Duration(seconds: 1), (tickValue) {
       if (listenersProvider.tickValueListener.value == 0) {
         tickValue.cancel();
         onTimeOut();
