@@ -29,16 +29,15 @@ class HiveTransactionController {
 
   void onSocketSignWait(SocketResponse data, SocketInputType type,
       String accountName, String authKey) {
-    SocketWaitAction.call(
-        data: data,
-        socketInputType: type,
-        listenersProvider: listenersProvider,
-        isHiveKeyChainMethod: ishiveKeyChainMethod,
-        accountName: accountName,
-        authKey: authKey,
-        timer: timer,
-        onTimeOut: () => onServerFailure(message: LocaleText.emTimeOutMessage),
-        resetListeners: resetListeners);
+    timer = SocketWaitAction.call(
+      data: data,
+      socketInputType: type,
+      listenersProvider: listenersProvider,
+      isHiveKeyChainMethod: ishiveKeyChainMethod,
+      accountName: accountName,
+      authKey: authKey,
+      onTimeOut: () => onServerFailure(message: LocaleText.emTimeOutMessage),
+    );
   }
 
   @protected
