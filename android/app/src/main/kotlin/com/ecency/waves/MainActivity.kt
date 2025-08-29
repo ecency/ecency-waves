@@ -108,7 +108,7 @@ class MainActivity : FlutterActivity() {
                 && authKey != null
             ) {
                 webView?.evaluateJavascript(
-                    "commentOnContent('${js(id)}','${js(username)}','${js(author)}','${js(parentPermlink)}','${js(permlink)}','${js(comment)}',$tagsJson,'${js(postingKey)}','${js(token)}','${js(authKey)}');",
+                    "commentOnContent('${js(id)}','${js(username)}','${js(author)}','${js(parentPermlink)}','${js(permlink)}','${js(comment)}','${js(tagsJson)}','${js(postingKey)}','${js(token)}','${js(authKey)}');",
                     null
                 )
             } else if (call.method == "voteContent" && username != null && author != null
