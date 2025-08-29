@@ -128,9 +128,12 @@ class AppBridge: NSObject {
                         debugPrint("username, author, parentPermlink, permlink, comment, postingKey, token, authKey - are note set")
                         return result(FlutterMethodNotImplemented)
                     }
+                    let tagsData = try? JSONSerialization.data(withJSONObject: tags, options: [])
+                    var tagsJson = String(data: tagsData ?? Data(), encoding: .utf8) ?? "[]"
+                    tagsJson = tagsJson.replacingOccurrences(of: "'", with: "\\'")
                     webVC.runThisJS(
                         id: id,
-                        jsCode: "commentOnContent('\(id)','\(username)', '\(author)', '\(parentPermlink)', '\(permlink)', '\(comment)', '\(tags)', '\(postingKey)', '\(token)', '\(authKey)');"
+                        jsCode: "commentOnContent('\(id)','\(username)', '\(author)', '\(parentPermlink)', '\(permlink)', '\(comment)', '\(tagsJson)', '\(postingKey)', '\(token)', '\(authKey)');"
                     ) { text in result(text) }
                 case "voteContent":
                     guard
