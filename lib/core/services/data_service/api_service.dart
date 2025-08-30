@@ -185,13 +185,30 @@ class ApiService {
         authKey,
         token,
       ).timeout(
-        const Duration(seconds: 20),
+        const Duration(seconds: 5),
       );
       ActionSingleDataResponse<String> response =
-          ActionSingleDataResponse.fromJsonString(jsonString, null,
-              ignoreFromJson: true);
+          ActionSingleDataResponse.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
       return response;
     } on TimeoutException {
+      final confirmed = await _confirmCommentOnChain(
+        parentAuthor: author,
+        parentPermlink: parentPermlink,
+        commentAuthor: username,
+        permlink: permlink,
+      );
+      if (confirmed) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.success,
+          errorMessage: '',
+          isSuccess: true,
+          valid: true,
+        );
+      }
       return ActionSingleDataResponse(
         status: ResponseStatus.failed,
         errorMessage: 'Request timed out',
@@ -202,6 +219,30 @@ class ApiService {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  Future<bool> _confirmCommentOnChain({
+    required String parentAuthor,
+    required String parentPermlink,
+    required String commentAuthor,
+    required String permlink,
+  }) async {
+    try {
+      final url = Uri.parse(
+          'https://hivexplorer.com/api/get_discussion?author=$parentAuthor&permlink=$parentPermlink');
+      final res = await http.get(url).timeout(const Duration(seconds: 3));
+      if (res.statusCode == 200) {
+        final Map<String, dynamic> decoded = json.decode(res.body);
+        for (final value in decoded.values) {
+          if (value is Map &&
+              value['author'] == commentAuthor &&
+              value['permlink'] == permlink) {
+            return true;
+          }
+        }
+      }
+    } catch (_) {}
+    return false;
   }
 
   Future<ActionSingleDataResponse<String>> voteContent(

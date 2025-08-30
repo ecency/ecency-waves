@@ -37,7 +37,11 @@ class SignTransactionHiveSignerController {
         ),
       );
       if (commentResponse.isSuccess) {
-        showToast(LocaleText.smCommentPublishMessage);
+        showToast(
+          commentResponse.errorMessage.isNotEmpty
+              ? commentResponse.errorMessage
+              : LocaleText.smCommentPublishMessage,
+        );
         onSuccess(generatedPermlink);
       } else {
         showToast(
