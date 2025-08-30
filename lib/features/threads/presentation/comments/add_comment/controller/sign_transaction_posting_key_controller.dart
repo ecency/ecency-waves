@@ -20,25 +20,34 @@ class SignTransactionPostingKeyController {
     required Function(String) showToast,
     required List<String> imageLinks,
   }) async {
-    String generatedPermlink = Act.generatePermlink(authData.accountName);
-    String commentWithImages = Act.commentWithImages(comment, imageLinks);
-    List<String> tags = Act.compileTags(comment);
-    ActionSingleDataResponse<String> commentResponse =
-        await _threadRepository.commentOnContent(
-            authData.accountName,
-            author,
-            parentPermlink,
-            generatedPermlink,
-            commentWithImages,
-            tags,
-            authData.auth.postingKey,
-            null,
-            null);
-    if (commentResponse.isSuccess) {
-      showToast(LocaleText.smCommentPublishMessage);
-      onSuccess(generatedPermlink);
-    } else {
-      showToast(LocaleText.emCommentDeclineMessage);
+    try {
+      String generatedPermlink = Act.generatePermlink(authData.accountName);
+      String commentWithImages = Act.commentWithImages(comment, imageLinks);
+      List<String> tags = Act.compileTags(comment);
+      ActionSingleDataResponse<String> commentResponse =
+          await _threadRepository.commentOnContent(
+              authData.accountName,
+              author,
+              parentPermlink,
+              generatedPermlink,
+              commentWithImages,
+              tags,
+              authData.auth.postingKey,
+              null,
+              null);
+      if (commentResponse.isSuccess) {
+        showToast(LocaleText.smCommentPublishMessage);
+        onSuccess(generatedPermlink);
+      } else {
+        showToast(
+          commentResponse.errorMessage.isNotEmpty
+              ? commentResponse.errorMessage
+              : LocaleText.emCommentDeclineMessage,
+        );
+        onFailure();
+      }
+    } catch (e) {
+      showToast(e.toString());
       onFailure();
     }
   }

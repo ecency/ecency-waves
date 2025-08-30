@@ -104,15 +104,23 @@ class SignTransactionHiveController extends HiveTransactionController {
   @override
   void initTransactionProcess() async {
     listenersProvider.transactionState.value = TransactionState.loading;
-    ActionSingleDataResponse<String> response = await transactionMethod();
-    if (response.isSuccess) {
-      SocketSignRequestModel socketSignRequest = SocketSignRequestModel(
-          accountName: authData.accountName,
-          token: authData.auth.token,
-          data: response.data!);
-      socketProvider.sendDataToSocket(socketSignRequest.toJsonString());
-    } else {
-      onServerFailure();
+    try {
+      ActionSingleDataResponse<String> response = await transactionMethod();
+      if (response.isSuccess) {
+        SocketSignRequestModel socketSignRequest = SocketSignRequestModel(
+            accountName: authData.accountName,
+            token: authData.auth.token,
+            data: response.data!);
+        socketProvider.sendDataToSocket(socketSignRequest.toJsonString());
+      } else {
+        onServerFailure(
+          message: response.errorMessage.isNotEmpty
+              ? response.errorMessage
+              : null,
+        );
+      }
+    } catch (e) {
+      onServerFailure(message: e.toString());
     }
   }
 

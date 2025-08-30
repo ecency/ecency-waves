@@ -20,26 +20,35 @@ class SignTransactionHiveSignerController {
       required VoidCallback onFailure,
       required Function(String) showToast,
       required List<String> imageLinks}) async {
-    String generatedPermlink = Act.generatePermlink(authData.accountName);
-    String commentWithImages = Act.commentWithImages(comment, imageLinks);
-    ActionSingleDataResponse commentResponse = await _threadRepository
-        .broadcastTransactionUsingHiveSigner<CommentBroadCastModel>(
-      authData.auth.token,
-      BroadcastModel(
-        type: BroadCastType.comment,
-        data: CommentBroadCastModel(
-            parentAuthor: parentAuthor,
-            parentPermlink: parentPermlink,
-            username: authData.accountName,
-            permlink: generatedPermlink,
-            comment: commentWithImages),
-      ),
-    );
-    if (commentResponse.isSuccess) {
-      showToast(LocaleText.smCommentPublishMessage);
-      onSuccess(generatedPermlink);
-    } else {
-      showToast(LocaleText.emCommentDeclineMessage);
+    try {
+      String generatedPermlink = Act.generatePermlink(authData.accountName);
+      String commentWithImages = Act.commentWithImages(comment, imageLinks);
+      ActionSingleDataResponse commentResponse = await _threadRepository
+          .broadcastTransactionUsingHiveSigner<CommentBroadCastModel>(
+        authData.auth.token,
+        BroadcastModel(
+          type: BroadCastType.comment,
+          data: CommentBroadCastModel(
+              parentAuthor: parentAuthor,
+              parentPermlink: parentPermlink,
+              username: authData.accountName,
+              permlink: generatedPermlink,
+              comment: commentWithImages),
+        ),
+      );
+      if (commentResponse.isSuccess) {
+        showToast(LocaleText.smCommentPublishMessage);
+        onSuccess(generatedPermlink);
+      } else {
+        showToast(
+          commentResponse.errorMessage.isNotEmpty
+              ? commentResponse.errorMessage
+              : LocaleText.emCommentDeclineMessage,
+        );
+        onFailure();
+      }
+    } catch (e) {
+      showToast(e.toString());
       onFailure();
     }
   }

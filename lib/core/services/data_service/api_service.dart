@@ -1,5 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
@@ -173,15 +174,33 @@ class ApiService {
     String? token,
   ) async {
     try {
-      String jsonString = await commentOnContentFromPlatform(username, author,
-          parentPermlink, permlink, comment, tags, postingKey, authKey, token);
+      String jsonString = await commentOnContentFromPlatform(
+        username,
+        author,
+        parentPermlink,
+        permlink,
+        comment,
+        tags,
+        postingKey,
+        authKey,
+        token,
+      ).timeout(
+        const Duration(seconds: 20),
+      );
       ActionSingleDataResponse<String> response =
           ActionSingleDataResponse.fromJsonString(jsonString, null,
               ignoreFromJson: true);
       return response;
+    } on TimeoutException {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Request timed out',
+      );
     } catch (e) {
       return ActionSingleDataResponse(
-          status: ResponseStatus.failed, errorMessage: e.toString());
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
     }
   }
 
