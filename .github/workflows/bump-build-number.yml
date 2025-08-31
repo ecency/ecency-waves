@@ -1,0 +1,21 @@
+name: Bump build number
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  bump:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increment build number
+        run: |
+          current=$(grep '^version:' pubspec.yaml | sed -E 's/.*\+([0-9]+)/\1/')
+          next=$((current + 1))
+          sed -i -E "s/(version: [0-9]+\.[0-9]+\.[0-9]+\+)[0-9]+/\1$next/" pubspec.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: increment build number [skip ci]"
+          git push
