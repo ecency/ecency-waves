@@ -291,60 +291,95 @@ class ApiService {
   // -------------------------- Discussion / Comments --------------------------
 
   Future<ActionListDataResponse<ThreadFeedModel>> getComments(
-      String accountName, String permlink, String? observer) async {
+      String accountName,
+      String permlink,
+      String? observer,
+      ) async {
     try {
-      final params = {
-        'author': accountName,
-        'permlink': permlink,
-        if (observer != null) 'observer': observer,
-      };
+      List<Map<String, dynamic>> _normalize(List<dynamic> entries) {
+        return entries.map<Map<String, dynamic>>((e) {
+          final m = Map<String, dynamic>.from(e as Map);
+          m['post_id'] ??= m['id']; // ThreadFeedModel requires post_id
+          return m;
+        }).toList();
+      }
 
-      // Sticky per discussion
-      final stickyKey = 'discussion:$accountName:$permlink';
-
-      final response = await _postWithFallback({
+      // 1) Try condenser: top-level replies (stable list)
+      final repliesRes = await _postWithFallback({
         'jsonrpc': '2.0',
-        'method': 'bridge.get_discussion',
-        'params': params,
+        'method': 'condenser_api.get_content_replies',
+        'params': [accountName, permlink],
         'id': 1,
-      }, stickyKey: stickyKey);
+      });
 
-      if (response == null) {
-        return ActionListDataResponse(
-          status: ResponseStatus.failed,
-          errorMessage: 'RPC error: no node responded',
-        );
-      }
-
-      final decoded = _tryDecode(response.body);
-      if (decoded is Map && decoded['error'] != null) {
-        return ActionListDataResponse(
-          status: ResponseStatus.failed,
-          errorMessage: _rpcErrorMessage(response),
-        );
-      }
-
-      final result = (decoded is Map) ? decoded['result'] : null;
-      final Map<String, dynamic> comments = {};
-
-      if (result is Map<String, dynamic>) {
-        final post = result['post'];
-        if (post is Map<String, dynamic>) {
-          final key = '${post['author']}/${post['permlink']}';
-          comments[key] = post;
-        }
-        final replies = result['replies'];
-        if (replies is Map<String, dynamic>) {
-          comments.addAll(replies);
+      List<dynamic> entries = [];
+      if (repliesRes != null) {
+        final decoded = jsonDecode(repliesRes.body);
+        if (!(decoded is Map && decoded['error'] != null)) {
+          final result = (decoded is Map) ? decoded['result'] : decoded;
+          if (result is List) {
+            entries = result;
+          }
         }
       }
 
-      // Keep original generic <ThreadFeedModel> to avoid breaking callers.
+      // 2) If empty, fallback to bridge.get_discussion (handle both shapes)
+      if (entries.isEmpty) {
+        final discussionRes = await _postWithFallback({
+          'jsonrpc': '2.0',
+          'method': 'bridge.get_discussion',
+          'params': {
+            'author': accountName,
+            'permlink': permlink,
+            if (observer != null) 'observer': observer,
+          },
+          'id': 1,
+        });
+
+        if (discussionRes != null) {
+          final decoded = jsonDecode(discussionRes.body);
+          if (!(decoded is Map && decoded['error'] != null)) {
+            final result = (decoded is Map) ? decoded['result'] : decoded;
+            if (result is Map<String, dynamic>) {
+              final post = result['post'];
+              if (post is Map<String, dynamic>) entries.add(post);
+              final replies = result['replies'];
+              if (replies is List) {
+                entries.addAll(replies);
+              } else if (replies is Map) {
+                entries.addAll((replies as Map).values);
+              }
+            } else if (result is List) {
+              entries.addAll(result);
+            }
+          }
+        }
+      }
+
+      // 3) If still empty, at least return the root post
+      if (entries.isEmpty) {
+        final rootRes = await _postWithFallback({
+          'jsonrpc': '2.0',
+          'method': 'condenser_api.get_content',
+          'params': [accountName, permlink],
+          'id': 1,
+        }, timeout: const Duration(seconds: 4));
+
+        if (rootRes != null) {
+          final decoded = jsonDecode(rootRes.body);
+          final root = (decoded is Map) ? decoded['result'] : null;
+          if (root is Map && (root['id'] ?? 0) != 0) {
+            entries.add(root);
+          }
+        }
+      }
+
+      final list = ThreadFeedModel.parseThreads(_normalize(entries));
       return ActionListDataResponse<ThreadFeedModel>(
-        data: CommentModel.fromRawJson(jsonEncode(comments)),
+        data: list,
         status: ResponseStatus.success,
         isSuccess: true,
-        errorMessage: "",
+        errorMessage: '',
       );
     } catch (e) {
       return ActionListDataResponse(

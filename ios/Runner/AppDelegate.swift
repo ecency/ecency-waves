@@ -2,7 +2,7 @@ import UIKit
 import Flutter
 import FirebaseCore
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     var webVC: WebViewController? = nil
     let bridge = AppBridge()

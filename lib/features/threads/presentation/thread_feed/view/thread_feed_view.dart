@@ -39,7 +39,7 @@ class ThreadFeedView extends StatelessWidget {
             selector: (_, provider) => provider.viewState,
             builder: (context, value, child) {
               if (value == ViewState.data) {
-                return const ThreadListView();
+                return ThreadListView();
               } else if (value == ViewState.empty) {
                 return Emptystate(
                     icon: Icons.hourglass_empty,

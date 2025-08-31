@@ -29,29 +29,36 @@ class _ThreadListViewState extends State<ThreadListView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = context.read<ThreadFeedController>();
+
     return Stack(
       children: [
-        Selector<ThreadFeedController, List<ThreadFeedModel>>(
-          shouldRebuild: (previous, next) {
-            return previous != next || previous.length != next.length;
+        // (Optional) tiny probe to verify item count changes
+        Selector<ThreadFeedController, int>(
+          selector: (_, c) => c.items.length,
+          builder: (_, len, __) {
+            debugPrint('[LIST] items.length=$len');
+            return const SizedBox.shrink();
           },
-          selector: (_, myType) => myType.items,
-          builder: (context, items, child) {
+        ),
+
+        Selector<ThreadFeedController, List<ThreadFeedModel>>(
+          selector: (_, c) => c.items,
+          // NOTE: no custom shouldRebuild — rely on new list identity from controller
+          builder: (context, items, _) {
             return Column(
               children: [
-                Selector<ThreadFeedController, List<ThreadFeedModel>>(
-                  shouldRebuild: (previous, next) {
-                    return previous != next || previous.length != next.length;
-                  },
-                  selector: (_, myType) => myType.newFeeds,
-                  builder: (context, items, child) {
+                // Spacer for the “new content” banner height
+                Selector<ThreadFeedController, bool>(
+                  selector: (_, c) => c.newFeeds.isNotEmpty,
+                  builder: (context, hasNew, _) {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      height: items.isNotEmpty ? 55 : 0,
+                      height: hasNew ? 55 : 0,
                       width: double.infinity,
                     );
                   },
                 ),
+
                 Expanded(
                   child: ScrollEndListener(
                     loadNextPage: () =>
@@ -62,23 +69,23 @@ class _ThreadListViewState extends State<ThreadListView> {
                       child: ListView.separated(
                         padding: kScreenVerticalPadding,
                         controller: scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: items.length,
                         itemBuilder: (context, index) {
                           return Column(
                             children: [
                               ThreadTile(item: items[index]),
                               if (index == items.length - 1)
+                              // FIX: provide required pageVisibilityListener
                                 PaginationLoader(
-                                  pageVisibilityListener: (context) => context
+                                  pageVisibilityListener: (ctx) => ctx
                                       .select<ThreadFeedController, bool>(
-                                          (value) => value.isNextPageLoading),
+                                          (c) => c.isNextPageLoading),
                                 ),
                             ],
                           );
                         },
-                        separatorBuilder: (context, index) {
-                          return const ThreadFeedDivider();
-                        },
+                        separatorBuilder: (_, __) => const ThreadFeedDivider(),
                       ),
                     ),
                   ),
@@ -87,48 +94,42 @@ class _ThreadListViewState extends State<ThreadListView> {
             );
           },
         ),
+
+        // “Load new content” banner
         Positioned(
           top: 0,
           left: 0,
           right: 0,
-          child: _newFeedsPopUpWidget(theme),
-        )
-      ],
-    );
-  }
-
-  Selector<ThreadFeedController, List<ThreadFeedModel>> _newFeedsPopUpWidget(
-      ThemeData theme) {
-    return Selector<ThreadFeedController, List<ThreadFeedModel>>(
-      shouldRebuild: (previous, next) {
-        return previous != next || previous.length != next.length;
-      },
-      selector: (_, myType) => myType.newFeeds,
-      builder: (context, items, child) {
-        if (items.isNotEmpty) {
-          return GestureDetector(
-            onTap: () {
-              if (scrollController.hasClients) {
-                scrollController.jumpTo(0);
-              }
-              context.read<ThreadFeedController>().loadNewFeeds();
+          child: Selector<ThreadFeedController, bool>(
+            selector: (_, c) => c.newFeeds.isNotEmpty,
+            builder: (context, hasNew, _) {
+              if (!hasNew) return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: () {
+                  if (scrollController.hasClients) {
+                    scrollController.jumpTo(0);
+                  }
+                  context.read<ThreadFeedController>().loadNewFeeds();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: kScreenHorizontalPaddingDigit,
+                    vertical: 10,
+                  ),
+                  color: theme.primaryColor,
+                  child: Text(
+                    'Load new content',
+                    style: theme.textTheme.bodyLarge!.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: kScreenHorizontalPaddingDigit, vertical: 10),
-              decoration: BoxDecoration(color: theme.primaryColor),
-              child: Text(
-                "Load new content",
-                style: theme.textTheme.bodyLarge!.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-      },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -22,15 +22,17 @@ class ThreadFeedController extends ChangeNotifier
   final ThreadLocalRepository _localRepository = getIt<ThreadLocalRepository>();
   late ThreadFeedType threadType;
   final AccountPostType _postType = AccountPostType.posts;
+
   final BookmarkProvider bookmarkProvider =
-      BookmarkProvider<ThreadBookmarkModel>(type: BookmarkType.thread);
+  BookmarkProvider<ThreadBookmarkModel>(type: BookmarkType.thread);
+
   String? observer;
   int currentPage = 0;
   bool isDataDisplayedFromServer = false;
+
   List<ThreadInfo> pages = [];
   @override
   List<ThreadFeedModel> items = [];
-
   List<ThreadFeedModel> newFeeds = [];
 
   @override
@@ -56,6 +58,16 @@ class ThreadFeedController extends ChangeNotifier
     await refresh();
   }
 
+  void dumpAccountPosts(ActionListDataResponse<ThreadFeedModel> r) {
+    final list = r.data ?? const <ThreadFeedModel>[];
+    debugPrint('success=${r.isSuccess} status=${r.status} err="${r.errorMessage}"');
+    debugPrint('count=${list.length}');
+    if (list.isNotEmpty) {
+      final first = list.first;
+      debugPrint('first: ${first.author}/${first.permlink} id=${first.postId}');
+    }
+  }
+
   Future<void> _loadSingleFeedType(ThreadFeedType type) async {
     _loadLocalThreads(type);
 
@@ -64,12 +76,13 @@ class ThreadFeedController extends ChangeNotifier
       _postType,
       pageLimit,
     );
+    dumpAccountPosts(accountPostResponse);
 
     if (accountPostResponse.isSuccess) {
       final roots = accountPostResponse.data;
 
       if (roots != null && roots.isNotEmpty) {
-        // Build unique list of root ThreadInfo (dedupe author/permlink)
+        // dedupe
         final seen = <String>{};
         pages = roots
             .map((e) => ThreadInfo(author: e.author, permlink: e.permlink))
@@ -82,7 +95,7 @@ class ThreadFeedController extends ChangeNotifier
           return;
         }
 
-        // Fetch comments for the first root
+        // fetch discussion for first root
         ActionListDataResponse<ThreadFeedModel> response =
         await _repository.getcomments(
           pages[0].author,
@@ -90,10 +103,8 @@ class ThreadFeedController extends ChangeNotifier
           observer,
         );
 
-        // If first root came back empty or failed, try the second root once
-        if ((!response.isSuccess) ||
-            response.data == null ||
-            response.data!.isEmpty) {
+        // fallback to second root once if needed
+        if ((!response.isSuccess) || response.data == null || response.data!.isEmpty) {
           if (pages.length > 1) {
             final alt = await _repository.getcomments(
               pages[1].author,
@@ -102,42 +113,44 @@ class ThreadFeedController extends ChangeNotifier
             );
             if (alt.isSuccess && alt.data != null && alt.data!.isNotEmpty) {
               response = alt;
-              currentPage = 1; // we consumed page 2 as our initial page
+              currentPage = 1;
             }
           }
         }
 
         if (response.isSuccess && response.data != null) {
           if (type == threadType) {
-            List<ThreadFeedModel> items = response.data!;
-            // Filter to top-level comments of the current root
-            items = filterTopLevelComments(
+            final raw = response.data!;
+            debugPrint('[threads] discussion raw=${raw.length} root=${pages[currentPage].permlink}');
+
+            // top-level filter
+            List<ThreadFeedModel> viewItems = filterTopLevelComments(
               pages[currentPage].permlink,
-              items: items,
+              items: raw,
             );
-            // Remove reported
-            items = Thread.filterReportedThreads(
-              items: items,
+            debugPrint('[threads] topLevel after filter=${viewItems.length}');
+
+            // SAFETY: if filter nukes everything but raw has data, use raw
+            if (viewItems.isEmpty && raw.isNotEmpty) {
+              debugPrint('[threads] filter==0; using raw discussion for visibility');
+              viewItems = raw;
+            }
+
+            // remove reported
+            viewItems = Thread.filterReportedThreads(
+              items: viewItems,
               reportedThreads: _localRepository.readReportedThreads(),
             );
 
-            if (items.isEmpty && viewState != ViewState.data) {
+            if (viewItems.isEmpty && viewState != ViewState.data) {
               viewState = ViewState.empty;
-            } else if (items.isNotEmpty) {
-              _localRepository.writeLocalThreads(items, type);
+            } else if (viewItems.isNotEmpty) {
+              _localRepository.writeLocalThreads(viewItems, type);
 
-              if (this.items.isEmpty) {
-                this.items = items;
-                isDataDisplayedFromServer = true;
-                _loadNextPageOnFewerResults(type);
-              } else if (this.items.first.identifier != items.first.identifier) {
-                newFeeds = [...items];
-                notifyListeners();
-              } else {
-                isDataDisplayedFromServer = true;
-                this.items = [...items];
-                _loadNextPageOnFewerResults(type);
-              }
+              // >>> ALWAYS APPLY SERVER DATA <<<
+              items = [...viewItems];
+              isDataDisplayedFromServer = true;
+              _loadNextPageOnFewerResults(type);
 
               viewState = ViewState.data;
             }
@@ -152,29 +165,30 @@ class ThreadFeedController extends ChangeNotifier
       viewState = ViewState.error;
     }
 
+    debugPrint('[CTRL] viewState=$viewState items=${items.length} page=$currentPage pages=${pages.length}');
     notifyListeners();
   }
 
   Future<void> _loadAllFeedType(ThreadFeedType type) async {
     try {
-      List<List<ThreadFeedModel>?> totalFeeds = await Future.wait([
-        _loadFeed(ThreadFeedType.ecency),
-        _loadFeed(ThreadFeedType.peakd),
-        _loadFeed(ThreadFeedType.liketu),
-        _loadFeed(ThreadFeedType.leo),
-        _loadFeed(ThreadFeedType.dbuzz),
-      ]);
+      final totalFeeds = await Future.wait<List<ThreadFeedModel>?>(
+        [
+          _loadFeed(ThreadFeedType.ecency),
+          _loadFeed(ThreadFeedType.peakd),
+          _loadFeed(ThreadFeedType.liketu),
+          _loadFeed(ThreadFeedType.leo),
+          _loadFeed(ThreadFeedType.dbuzz),
+        ],
+      );
 
       if (totalFeeds.every((list) => list == null)) {
         viewState = ViewState.error;
       } else {
-        List<ThreadFeedModel> singleFeedList = totalFeeds
-            .where((list) => list != null)
-            .expand((list) => list!)
-            .toList();
+        final singleFeedList =
+        totalFeeds.where((list) => list != null).expand((list) => list!).toList();
         if (type == threadType) {
           Thread.sortList(singleFeedList);
-          if (totalFeeds.isEmpty) {
+          if (singleFeedList.isEmpty) {
             viewState = ViewState.empty;
           } else {
             items = singleFeedList;
@@ -190,23 +204,28 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   Future<List<ThreadFeedModel>?> _loadFeed(ThreadFeedType type) async {
-    ActionSingleDataResponse<ThreadFeedModel> postResponse = await _repository
-        .getFirstAccountPost(_getThreadAccountName(type: type), _postType, 1);
-    if (postResponse.isSuccess) {
-      ActionListDataResponse<ThreadFeedModel> response =
-          await _repository.getcomments(
-              postResponse.data!.author, postResponse.data!.permlink, observer);
-      if (response.isSuccess) {
-        return filterTopLevelComments(postResponse.data!.permlink,
-            items: response.data);
+    final postResponse =
+    await _repository.getFirstAccountPost(_getThreadAccountName(type: type), _postType, 1);
+    if (postResponse.isSuccess && postResponse.data != null) {
+      final response = await _repository.getcomments(
+        postResponse.data!.author,
+        postResponse.data!.permlink,
+        observer,
+      );
+      if (response.isSuccess && response.data != null) {
+        final raw = response.data!;
+        var filtered = filterTopLevelComments(postResponse.data!.permlink, items: raw);
+        if (filtered.isEmpty && raw.isNotEmpty) {
+          filtered = raw;
+        }
+        return filtered;
       }
     }
     return null;
   }
 
   void _loadLocalThreads(ThreadFeedType type) {
-    List<ThreadFeedModel>? localThreads =
-        _localRepository.readLocalThreads(type);
+    final localThreads = _localRepository.readLocalThreads(type);
     if (localThreads != null && localThreads.isNotEmpty) {
       items = [...localThreads];
       viewState = ViewState.data;
@@ -229,11 +248,9 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   void refreshOnUpvote(int postId, ActiveVoteModel newVote) {
-    int feedIndex = items.indexWhere((e) => e.postId == postId);
-    int newFeedIndex = newFeeds.indexWhere((e) => e.postId == postId);
-    if (feedIndex != -1) {
-      _updateVoteInItems(feedIndex, newVote, items);
-    }
+    final feedIndex = items.indexWhere((e) => e.postId == postId);
+    final newFeedIndex = newFeeds.indexWhere((e) => e.postId == postId);
+    if (feedIndex != -1) _updateVoteInItems(feedIndex, newVote, items);
     if (newFeeds.isNotEmpty && newFeedIndex != -1) {
       _updateVoteInItems(newFeedIndex, newVote, newFeeds);
     }
@@ -244,23 +261,18 @@ class ThreadFeedController extends ChangeNotifier
 
   void refreshOnRootComment(ThreadFeedModel newComment) {
     items = [newComment, ...items];
-    if (viewState == ViewState.empty) {
-      viewState = ViewState.data;
-    }
-    if (newFeeds.isNotEmpty) {
-      newFeeds = [newComment, ...newFeeds];
-    }
+    if (viewState == ViewState.empty) viewState = ViewState.data;
+    if (newFeeds.isNotEmpty) newFeeds = [newComment, ...newFeeds];
     notifyListeners();
   }
 
   void _updateVoteInItems(
-      int feedIndex, ActiveVoteModel newVote, List<ThreadFeedModel> items) {
-    ThreadFeedModel upvotedItem = items[feedIndex];
-    List<ActiveVoteModel>? votes = upvotedItem.activeVotes;
-    List<ActiveVoteModel> alteredVotes =
-        votes == null ? [newVote] : [...votes, newVote];
-    items.removeAt(feedIndex);
-    items.insert(feedIndex, upvotedItem.copyWith(activeVotes: alteredVotes));
+      int feedIndex, ActiveVoteModel newVote, List<ThreadFeedModel> target) {
+    final upvotedItem = target[feedIndex];
+    final votes = upvotedItem.activeVotes;
+    final alteredVotes = votes == null ? [newVote] : [...votes, newVote];
+    target.removeAt(feedIndex);
+    target.insert(feedIndex, upvotedItem.copyWith(activeVotes: alteredVotes));
   }
 
   @override
@@ -271,18 +283,23 @@ class ThreadFeedController extends ChangeNotifier
       currentPage++;
       if (!super.isPageEnded && currentPage < pages.length) {
         notifyListeners();
-        ActionListDataResponse<ThreadFeedModel> response =
-            await _repository.getcomments(pages[currentPage].author,
-                pages[currentPage].permlink, observer);
+
+        final response = await _repository.getcomments(
+          pages[currentPage].author,
+          pages[currentPage].permlink,
+          observer,
+        );
+
         if (response.isSuccess && response.data != null && type == threadType) {
-          List<ThreadFeedModel> newItems = filterTopLevelComments(
-              pages[currentPage].permlink,
-              items: response.data);
-          items = [...items, ...newItems];
-          if (saveLocal) {
-            _localRepository.writeLocalThreads(items, type);
+          final raw = response.data!;
+          var newItems = filterTopLevelComments(pages[currentPage].permlink, items: raw);
+          if (newItems.isEmpty && raw.isNotEmpty) {
+            newItems = raw;
           }
+          items = [...items, ...newItems];
+          if (saveLocal) _localRepository.writeLocalThreads(items, type);
         }
+
         super.isNextPageLoading = false;
         notifyListeners();
       } else {
@@ -294,8 +311,7 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   Future<bool> reportThread(String author, String permlink) async {
-    ActionSingleDataResponse<ReportResponse> response =
-        await _repository.reportThread(author, permlink);
+    final response = await _repository.reportThread(author, permlink);
     if (response.isSuccess && response.data!.isSuccess) {
       _localRepository.writeReportedThreads(
           ThreadInfoModel(author: author, permlink: permlink));
@@ -318,17 +334,11 @@ class ThreadFeedController extends ChangeNotifier
 
   List<ThreadFeedModel> filterTopLevelComments(String parentPermlink,
       {List<ThreadFeedModel>? items}) {
-    List<ThreadFeedModel> result = items ?? this.items;
-    return Thread.filterTopLevelComments(parentPermlink,
-        items: result, depth: 1);
+    final result = items ?? this.items;
+    return Thread.filterTopLevelComments(parentPermlink, items: result, depth: 1);
   }
 
-  ThreadInfo? get rootThreadInfo {
-    if (pages.isNotEmpty) {
-      return pages.first;
-    }
-    return null;
-  }
+  ThreadInfo? get rootThreadInfo => pages.isNotEmpty ? pages.first : null;
 
   void onTapFilter(ThreadFeedType type) {
     if (threadType != type) {
