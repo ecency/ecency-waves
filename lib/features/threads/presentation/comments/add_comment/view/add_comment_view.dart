@@ -65,6 +65,7 @@ class _AddCommentViewState extends State<AddCommentView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: _appBar(),
       body: KeyboardActions(
@@ -81,7 +82,10 @@ class _AddCommentViewState extends State<AddCommentView> {
               focusNode: _nodeText,
               textInputAction: TextInputAction.newline,
               decoration:
-                  InputDecoration(hintText: hintText, border: InputBorder.none),
+                  InputDecoration(hintText: hintText, border: InputBorder.none, hintStyle: theme.inputDecorationTheme.hintStyle ??
+                      TextStyle(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),),
             ),
           ),
         ),
