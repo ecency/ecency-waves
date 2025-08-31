@@ -17,5 +17,5 @@ jobs:
           sed -i -E "s/(version: [0-9]+\.[0-9]+\.[0-9]+\+)[0-9]+/\1$next/" pubspec.yaml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "chore: increment build number [skip ci]"
+          git commit -am "chore: increment build number [deploy ci]"
           git push
