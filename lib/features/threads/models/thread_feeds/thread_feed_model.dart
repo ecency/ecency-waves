@@ -161,11 +161,13 @@ class ThreadFeedModel extends Equatable {
         curatorPayoutValue: json["curator_payout_value"],
         pendingPayoutValue: json["pending_payout_value"],
         promoted: json["promoted"],
-        replies: List<dynamic>.from(json["replies"].map((x) => x)),
+        replies: _parseReplies(json["replies"]),
         bodyLength: asInt(json, "body_length"),
         authorReputation: asInt(json, 'author_reputation'),
-        activeVotes: List<ActiveVoteModel>.from(
-            json["active_votes"].map((x) => ActiveVoteModel.fromJson(x))),
+        activeVotes: json["active_votes"] != null
+            ? List<ActiveVoteModel>.from((json["active_votes"] as List)
+                .map((x) => ActiveVoteModel.fromJson(x)))
+            : [],
         parentAuthor: json["parent_author"],
         parentPermlink: json["parent_permlink"],
         url: json["url"],
@@ -175,6 +177,16 @@ class ThreadFeedModel extends Equatable {
         maxAcceptedPayout: json["max_accepted_payout"],
         percentHBD: json["percent_hbd"],
       );
+
+  static List<dynamic> _parseReplies(dynamic value) {
+    if (value is List) {
+      return List<dynamic>.from(value.map((x) => x));
+    }
+    if (value is Map) {
+      return List<dynamic>.from(value.values.map((x) => x));
+    }
+    return [];
+  }
 
   Map<String, dynamic> toJson() {
     return {
