@@ -30,6 +30,12 @@ class ApiService {
     'https://api.deathwing.me',
   ];
 
+  // --- Sticky node handling (prevents cross-node pagination drift) ---
+  final Map<String, String> _stickyNode = {};
+  String? _getSticky(String key) => _stickyNode[key];
+  void _setSticky(String key, String url) => _stickyNode[key] = url;
+  void _clearSticky(String key) => _stickyNode.remove(key);
+
   Map<String, String> get _rpcHeaders => const {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -41,13 +47,37 @@ class ApiService {
     'Accept': 'application/json',
   };
 
-  /// POST to bridge/condenser with randomized node fallback.
-  /// Returns the first 200; if none succeed, returns the **last** non-200 response (to surface error body)
-  /// or null if all attempts threw before getting any response.
-  Future<http.Response?> _postWithFallback(Map<String, dynamic> payload,
-      {Duration timeout = const Duration(seconds: 10)}) async {
+  /// POST to bridge/condenser with sticky-node fallback.
+  /// If [stickyKey] is provided, prefer the sticky node for that key and
+  /// update it on success. If a sticky fails, it will be cleared and the
+  /// next node will be tried.
+  /// Returns the first 200; if none succeed, returns the **last** non-200 response
+  /// (so caller can surface a useful error body) or null if all attempts threw.
+  Future<http.Response?> _postWithFallback(
+      Map<String, dynamic> payload, {
+        Duration timeout = const Duration(seconds: 10),
+        String? stickyKey,
+      }) async {
     final body = jsonEncode(payload);
-    final urls = List<String>.from(_rpcUrls)..shuffle();
+
+    // Build prioritized URL list: sticky first (if any), then others (shuffled).
+    final urls = List<String>.from(_rpcUrls);
+    if (stickyKey != null) {
+      final s = _getSticky(stickyKey);
+      if (s != null && urls.contains(s)) {
+        urls.remove(s);
+        urls.insert(0, s);
+      }
+    }
+    if (urls.length > 1) {
+      final head = urls.first;
+      final tail = urls.sublist(1)..shuffle();
+      urls
+        ..clear()
+        ..add(head)
+        ..addAll(tail);
+    }
+
     http.Response? lastNon200;
 
     for (final url in urls) {
@@ -56,12 +86,18 @@ class ApiService {
             .post(Uri.parse(url), headers: _rpcHeaders, body: body)
             .timeout(timeout);
         if (res.statusCode == 200) {
+          if (stickyKey != null) _setSticky(stickyKey, url);
           return res;
         } else {
           lastNon200 = res;
+          if (stickyKey != null && _getSticky(stickyKey) == url) {
+            _clearSticky(stickyKey);
+          }
         }
       } catch (_) {
-        // swallow and try next
+        if (stickyKey != null && _getSticky(stickyKey) == url) {
+          _clearSticky(stickyKey);
+        }
       }
     }
     return lastNon200;
@@ -94,6 +130,8 @@ class ApiService {
     }
     return '$fallback (${res.statusCode})';
   }
+
+  // -------------------------- Account Posts --------------------------
 
   Future<ActionListDataResponse<ThreadFeedModel>> getAccountPosts(
       String accountName,
@@ -143,12 +181,16 @@ class ApiService {
       if (lastAuthor != null) 'start_author': lastAuthor,
       if (lastPermlink != null) 'start_permlink': lastPermlink,
     };
+
+    // Sticky per feed (sort+account)
+    final stickyKey = 'acct_posts:${enumToString(type)}:$accountName';
+
     final res = await _postWithFallback({
       'jsonrpc': '2.0',
       'method': 'bridge.get_account_posts',
       'params': params,
       'id': 1,
-    });
+    }, stickyKey: stickyKey);
 
     if (res == null) {
       return http.Response('RPC error: no node responded', 500);
@@ -220,6 +262,8 @@ class ApiService {
     }
   }
 
+  // -------------------------- Discussion / Comments --------------------------
+
   Future<ActionListDataResponse<ThreadFeedModel>> getComments(
       String accountName, String permlink, String? observer) async {
     try {
@@ -228,12 +272,16 @@ class ApiService {
         'permlink': permlink,
         if (observer != null) 'observer': observer,
       };
+
+      // Sticky per discussion
+      final stickyKey = 'discussion:$accountName:$permlink';
+
       final response = await _postWithFallback({
         'jsonrpc': '2.0',
         'method': 'bridge.get_discussion',
         'params': params,
         'id': 1,
-      });
+      }, stickyKey: stickyKey);
 
       if (response == null) {
         return ActionListDataResponse(
@@ -265,7 +313,7 @@ class ApiService {
         }
       }
 
-      // Kept original generic <ThreadFeedModel> to avoid breaking callers.
+      // Keep original generic <ThreadFeedModel> to avoid breaking callers.
       return ActionListDataResponse<ThreadFeedModel>(
         data: CommentModel.fromRawJson(jsonEncode(comments)),
         status: ResponseStatus.success,
@@ -279,6 +327,8 @@ class ApiService {
       );
     }
   }
+
+  // -------------------------- Auth redirect / decrypt / validation --------------------------
 
   Future<ActionSingleDataResponse<AuthRedirectionResponse>> getRedirectUri(
       String accountName) async {
@@ -322,8 +372,7 @@ class ApiService {
     try {
       final jsonString =
       await validatePostingKeyFromPlatform(accountName, postingKey);
-      final response =
-      ActionSingleDataResponse<String>.fromJsonString(
+      final response = ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -336,6 +385,8 @@ class ApiService {
       );
     }
   }
+
+  // -------------------------- Mutations (comment/vote/mute/poll) --------------------------
 
   Future<ActionSingleDataResponse<String>> commentOnContent(
       String username,
@@ -361,8 +412,7 @@ class ApiService {
         token,
       ).timeout(const Duration(seconds: 15));
 
-      final response =
-      ActionSingleDataResponse<String>.fromJsonString(
+      final response = ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -407,8 +457,12 @@ class ApiService {
     var delay = const Duration(seconds: 1);
     for (var i = 0; i < 3; i++) {
       try {
-        final res =
-        await _postWithFallback(payload, timeout: const Duration(seconds: 3));
+        final res = await _postWithFallback(
+          payload,
+          timeout: const Duration(seconds: 3),
+          // optional sticky across checks:
+          stickyKey: 'confirm:$commentAuthor:$permlink',
+        );
         if (res != null) {
           final decoded = _tryDecode(res.body);
           final result = (decoded is Map) ? decoded['result'] : null;
@@ -439,8 +493,7 @@ class ApiService {
     try {
       final jsonString = await voteContentFromPlatform(
           username, author, permlink, weight, postingKey, authKey, token);
-      final response =
-      ActionSingleDataResponse<String>.fromJsonString(
+      final response = ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -465,8 +518,7 @@ class ApiService {
     try {
       final jsonString = await castPollVoteFromPlatform(
           username, pollId, choices, postingKey, authKey, token);
-      final response =
-      ActionSingleDataResponse<String>.fromJsonString(
+      final response = ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -479,6 +531,32 @@ class ApiService {
       );
     }
   }
+
+  Future<ActionSingleDataResponse<String>> muteUser(
+      String username,
+      String author,
+      String? postingKey,
+      String? authKey,
+      String? token,
+      ) async {
+    try {
+      final jsonString = await muteUserFromPlatform(
+          username, author, postingKey, authKey, token);
+      final response = ActionSingleDataResponse<String>.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  // -------------------------- HiveSigner broadcast --------------------------
 
   Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(
       String accessToken, BroadcastModel<T> args) async {
@@ -496,7 +574,6 @@ class ApiService {
 
     try {
       final response = await http.post(url, headers: headers, body: body);
-
       final decoded = _tryDecode(response.body);
 
       if (response.statusCode == 200) {
@@ -537,6 +614,8 @@ class ApiService {
       );
     }
   }
+
+  // -------------------------- Accounts / Follows --------------------------
 
   Future<ActionSingleDataResponse<UserModel>> getAccountInfo(
       String accountName,
@@ -645,6 +724,8 @@ class ApiService {
     }
   }
 
+  // -------------------------- Image upload --------------------------
+
   Future<ActionSingleDataResponse<String>> getImageUploadProofWithPostingKey(
       String accountName, String postingKey) async {
     try {
@@ -721,30 +802,7 @@ class ApiService {
     }
   }
 
-  Future<ActionSingleDataResponse<String>> muteUser(
-      String username,
-      String author,
-      String? postingKey,
-      String? authKey,
-      String? token,
-      ) async {
-    try {
-      final jsonString =
-      await muteUserFromPlatform(username, author, postingKey, authKey, token);
-      final response =
-      ActionSingleDataResponse<String>.fromJsonString(
-        jsonString,
-        null,
-        ignoreFromJson: true,
-      );
-      return response;
-    } catch (e) {
-      return ActionSingleDataResponse(
-        status: ResponseStatus.failed,
-        errorMessage: e.toString(),
-      );
-    }
-  }
+  // -------------------------- Private API (report/delete) --------------------------
 
   Future<ActionSingleDataResponse<ReportResponse>> reportThread(
       String author, String permlink) async {
