@@ -265,8 +265,7 @@ class ApiService {
         }
       }
 
-      // NOTE: Keeping your original return type <ThreadFeedModel> even though parsing uses CommentModel.
-      // If CommentModel.fromRawJson returns List<ThreadFeedModel>, this is fine; otherwise consider changing the generic.
+      // Kept original generic <ThreadFeedModel> to avoid breaking callers.
       return ActionListDataResponse<ThreadFeedModel>(
         data: CommentModel.fromRawJson(jsonEncode(comments)),
         status: ResponseStatus.success,
@@ -285,7 +284,8 @@ class ApiService {
       String accountName) async {
     try {
       final jsonString = await getRedirectUriDataFromPlatform(accountName);
-      final response = ActionSingleDataResponse.fromJsonString(
+      final response =
+      ActionSingleDataResponse<AuthRedirectionResponse>.fromJsonString(
         jsonString,
         AuthRedirectionResponse.fromJson,
       );
@@ -303,7 +303,8 @@ class ApiService {
     try {
       final jsonString = await getDecryptedHASTokenFromPlatform(
           accountName, encryptedData, authKey);
-      final response = ActionSingleDataResponse.fromJsonString(
+      final response =
+      ActionSingleDataResponse<AuthDecryptionResponse>.fromJsonString(
         jsonString,
         AuthDecryptionResponse.fromJson,
       );
@@ -321,7 +322,8 @@ class ApiService {
     try {
       final jsonString =
       await validatePostingKeyFromPlatform(accountName, postingKey);
-      final response = ActionSingleDataResponse.fromJsonString(
+      final response =
+      ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -359,7 +361,8 @@ class ApiService {
         token,
       ).timeout(const Duration(seconds: 15));
 
-      final response = ActionSingleDataResponse.fromJsonString(
+      final response =
+      ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -436,7 +439,8 @@ class ApiService {
     try {
       final jsonString = await voteContentFromPlatform(
           username, author, permlink, weight, postingKey, authKey, token);
-      final response = ActionSingleDataResponse.fromJsonString(
+      final response =
+      ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -461,7 +465,8 @@ class ApiService {
     try {
       final jsonString = await castPollVoteFromPlatform(
           username, pollId, choices, postingKey, authKey, token);
-      final response = ActionSingleDataResponse.fromJsonString(
+      final response =
+      ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
@@ -645,7 +650,6 @@ class ApiService {
     try {
       final jsonString = await getImageUploadProofWithPostingKeyFromPlatform(
           accountName, postingKey);
-      // Keeping as originally implemented: jsonString is already the data you need.
       return ActionSingleDataResponse(
         errorMessage: "",
         status: ResponseStatus.success,
@@ -727,7 +731,8 @@ class ApiService {
     try {
       final jsonString =
       await muteUserFromPlatform(username, author, postingKey, authKey, token);
-      final response = ActionSingleDataResponse.fromJsonString(
+      final response =
+      ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
