@@ -34,7 +34,7 @@ class ThemeController extends ChangeNotifier {
       brightness: Brightness.light,
       dividerColor: _primaryColor.withOpacity(0.2),
       focusColor: _primaryThemeColor,
-      hintColor: Colors.black54,
+      hintColor: Colors.black38,
       cardColor: _lightGrey,
       dividerTheme: DividerThemeData(color: _primaryColor.withOpacity(0.1)),
       colorScheme: ColorScheme.light(
@@ -111,7 +111,7 @@ class ThemeController extends ChangeNotifier {
       brightness: Brightness.dark,
       dividerColor: _secondaryColor.withOpacity(0.2),
       focusColor: _primaryThemeColor,
-      hintColor: Colors.white54,
+      hintColor: Colors.white38,
       dividerTheme: DividerThemeData(color: _secondaryColor.withOpacity(0.1)),
       colorScheme: ColorScheme.dark(
           onPrimary: _staticColor,
