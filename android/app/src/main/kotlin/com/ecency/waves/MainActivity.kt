@@ -75,7 +75,7 @@ class MainActivity : FlutterActivity() {
 
             if (call.method == "runThisJS" && jsCode != null) {
                 webView?.evaluateJavascript(
-                    "runThisJS('${js(jsCode)}','${js(id)}');",
+                    "runThisJS('${js(id)}','${js(jsCode)}');",
                     null
                 )
             } else if (call.method == "doWeHaveHiveKeychainExtension") {

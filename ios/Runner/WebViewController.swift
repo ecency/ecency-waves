@@ -33,6 +33,14 @@ class WebViewController: UIViewController {
         let dir = url.deletingLastPathComponent()
         webView?.loadFileURL(url, allowingReadAccessTo: dir)
     }
+    private func js(_ s: String?) -> String {
+        guard let s = s else { return "" }
+        return s
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "'", with: "\\'")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "")
+    }
 
     func runThisJS(
         id: String,
@@ -40,8 +48,9 @@ class WebViewController: UIViewController {
         handler: @escaping (String) -> Void
     ) {
         handlers[id] = handler
-        OperationQueue.main.addOperation {
-            self.webView?.evaluateJavaScript(jsCode)
+        OperationQueue.main.addOperation { [weak self] in
+            let call = "runThisJS('\(self?.js(jsCode) ?? "")','\(self?.js(id) ?? "")');"
+            self?.webView?.evaluateJavaScript(call, completionHandler: nil)
         }
     }
 }

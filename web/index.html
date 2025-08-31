@@ -50,12 +50,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
   <script src="https://bundle.run/buffer@6.0.3"></script>
   <script>
-    window.addEventListener("load", function (ev) {
-      // Download main.dart.js
+    // ===== Flutter boot stays as you had it =====
+    window.addEventListener("load", function () {
       _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
+        serviceWorker: { serviceWorkerVersion: serviceWorkerVersion },
         onEntrypointLoaded: function (engineInitializer) {
           engineInitializer.initializeEngine().then(function (appRunner) {
             appRunner.runApp();
@@ -64,17 +62,18 @@
       });
     });
 
+    // ✅ correct node name: "deathwing" (no 's')
     var client = new dhive.Client([
       "https://api.hive.blog",
-      "https://api.deathwings.me",
+      "https://api.deathwing.me",
       "https://hive-api.arcange.eu",
-      "https://hived.emre.sh",
+      "https://rpc.mahdiyari.info",
       "https://api.openhive.network",
       "https://rpc.ausbit.dev",
-      "https://rpc.mahdiyari.info",
+      "https://techcoderx.com",
+      "https://hived.emre.sh",
       "https://hive-api.3speak.tv",
       "https://anyx.io",
-      "https://techcoderx.com",
       "https://api.hive.blue",
       "https://api.c0ff33a.uk",
       "https://api.pharesim.me",
@@ -82,58 +81,176 @@
       "https://hive.roelandp.nl",
     ]);
 
-    async function runThisJS(jsCode) {
+    // ===== Unified delivery to Android and iOS =====
+    const hasAndroid = typeof Android !== 'undefined' && Android && typeof Android.postMessage === 'function';
+    const hasIOS = typeof window.webkit !== 'undefined'
+            && window.webkit.messageHandlers
+            && window.webkit.messageHandlers.app
+            && typeof window.webkit.messageHandlers.app.postMessage === 'function';
+
+    function deliver(id, payload) {
+      const json = JSON.stringify(payload);
+      if (id) {
+        if (hasAndroid) {
+          try { Android.postMessage(json, id); } catch (_) {}
+        }
+        if (hasIOS) {
+          try { window.webkit.messageHandlers.app.postMessage({ id, data: json }); } catch (_) {}
+        }
+      }
+      return json; // also useful for Flutter Web
+    }
+
+    const ok   = (id, data) => deliver(id, { valid: true,  data, error: "" });
+    const fail = (id, err)  => deliver(id, { valid: false, data: null, error: (err && err.message) ? err.message : String(err) });
+
+    // Helper: robust b64 -> UTF-8
+    function b64ToUtf8(b64) {
       try {
-        const response = await eval(jsCode);
-        return replyToNative({
-          data: response,
-          valid: true,
-          error: "",
-        });
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder("utf-8").decode(bytes);
       } catch (e) {
-        return replyToNative({
-          data: null,
-          valid: false,
-          error: e.message,
-        });
+        try { return atob(b64); } catch (_) { return ""; }
       }
     }
 
-    function doWeHaveHiveKeychainExtension() {
-      const keychain = window.hive_keychain;
-      return new Promise((res) => {
-        const data = {
-          valid: true,
-          data: keychain !== null && keychain !== undefined,
-          error: "",
+    // ---------- runThisJS ----------
+    // Android calls runThisJS(jsCode, id). iOS will too (see Swift below).
+    async function runThisJS(jsCode, id /* optional */) {
+      try {
+        const result = await (new Function(`
+        "use strict";
+        return (async () => { ${jsCode} })();
+      `))();
+        return ok(id, result);
+      } catch (e) {
+        return fail(id, e);
+      }
+    }
+
+    // ---------- Keychain presence ----------
+    function doWeHaveHiveKeychainExtension(id /* optional */) {
+      try { return ok(id, !!window.hive_keychain); } catch (e) { return fail(id, e); }
+    }
+
+    // ---------- Sign with Hive Keychain ----------
+    function signInWithHiveKeychain(id /* optional */, username, message) {
+      try {
+        const keychain = window.hive_keychain;
+        if (!keychain) return fail(id, "Hive Keychain extension not found");
+        keychain.requestSignBuffer(username, message, "Active", (response) => {
+          const valid = !!(response && response.success);
+          return deliver(id, { valid, data: response, error: valid ? "" : (response.error || "Keychain error") });
+        });
+        return "";
+      } catch (e) {
+        return fail(id, e);
+      }
+    }
+
+    // ---------- Broadcast comment (reply) ----------
+    // Android calls: commentOnContent(id, username, parentAuthor, parentPermlink, permlink, commentBase64, tagsJson, postingKey, token, authKey)
+    async function commentOnContent(id, username, parentAuthor, parentPermlink, permlink, commentBase64, tagsJson, postingKey, token, authKey) {
+      try {
+        if (!postingKey) return fail(id, "Missing postingKey");
+        const pk = dhive.PrivateKey.fromString(postingKey);
+
+        const body = b64ToUtf8(commentBase64);
+        let tags = [];
+        try { const parsed = JSON.parse(tagsJson || "[]"); if (Array.isArray(parsed)) tags = parsed; } catch(_) {}
+        const jsonMetadata = { app: "waves", tags, format: "markdown" };
+
+        const op = ['comment', {
+          parent_author: parentAuthor,
+          parent_permlink: parentPermlink,
+          author: username,
+          permlink: permlink,
+          title: "",
+          body: body,
+          json_metadata: JSON.stringify(jsonMetadata),
+        }];
+
+        const result = await client.broadcast.sendOperations([op], pk);
+        return ok(id, { tx: result.id || null, result });
+      } catch (e) {
+        return fail(id, e);
+      }
+    }
+
+    // ---------- Vote ----------
+    // Android calls: voteContent(id, username, author, permlink, weight, postingKey, token, authKey)
+    async function voteContent(id, username, author, permlink, weight, postingKey, token, authKey) {
+      try {
+        if (!postingKey) return fail(id, "Missing postingKey");
+        const pk = dhive.PrivateKey.fromString(postingKey);
+
+        const op = ['vote', {
+          voter: username,
+          author,
+          permlink,
+          weight: parseInt(weight, 10), // -10000..10000
+        }];
+
+        const result = await client.broadcast.sendOperations([op], pk);
+        return ok(id, { tx: result.id || null, result });
+      } catch (e) {
+        return fail(id, e);
+      }
+    }
+
+    // ---------- Poll vote (custom_json) — stub ----------
+    // Android calls:
+    // castPollVote(id, username, pollId, choicesArray, postingKey, token, authKey)
+    async function castPollVote(
+            id, username, pollId, choicesArray, postingKey, token, authKey
+    ) {
+      try {
+        if (!username)   return fail(id, "Missing username");
+        if (!pollId)     return fail(id, "Missing pollId");
+        if (!postingKey) return fail(id, "Missing postingKey");
+
+        // choicesArray comes in as a real JS array from Android (thanks to Gson).
+        // Normalize just in case:
+        let choices = [];
+        if (Array.isArray(choicesArray)) {
+          choices = choicesArray.map((n) => parseInt(n, 10)).filter(Number.isFinite);
+        } else {
+          return fail(id, "choices must be a numeric array");
+        }
+        if (!choices.length) return fail(id, "Invalid vote: no choices provided");
+
+        const payload = {
+          poll: String(pollId),     // RN code passes postId as string
+          action: "vote",
+          choices,                  // [number, number, ...]
         };
-        res(replyToNative(data));
-      });
+
+        // Build custom_json op
+        const op = ['custom_json', {
+          id: 'polls',
+          json: JSON.stringify(payload),
+          required_auths: [],
+          required_posting_auths: [username],
+        }];
+
+        // Sign with posting key and broadcast via dhive
+        const pk = dhive.PrivateKey.fromString(postingKey);
+        const result = await client.broadcast.sendOperations([op], pk);
+
+        return ok(id, { tx: result.id || null, result });
+      } catch (e) {
+        return fail(id, e);
+      }
     }
 
-    function signInWithHiveKeychain(username, message) {
-      const keychain = window.hive_keychain;
-      return new Promise((res) => {
-        keychain.requestSignBuffer(
-          username,
-          message,
-          "Active",
-          (response) => {
-            console.log(`Response is ${JSON.stringify(response)}`);
-            const data = {
-              valid: response != null,
-              data: response,
-              error: "",
-            };
-            res(replyToNative(data));
-          }
-        );
-      });
-    }
-
-    function replyToNative(result) {
-      return JSON.stringify(result);
-    }
+    // ---------- Stubs so native never hangs ----------
+    function getRedirectUriData(id, username) { return fail(id, "getRedirectUriData not implemented in JS"); }
+    function getDecryptedHASToken(id, username, encryptedData, authKey) { return fail(id, "getDecryptedHASToken not implemented in JS"); }
+    function validatePostingKey(id, username, postingKey) { return fail(id, "validatePostingKey not implemented in JS"); }
+    function getImageUploadProofWithPostingKey(id, username, postingKey) { return fail(id, "getImageUploadProofWithPostingKey not implemented in JS"); }
+    function muteUser(id, username, author, postingKey, token, authKey) { return fail(id, "muteUser not implemented in JS"); }
   </script>
 </body>
 
