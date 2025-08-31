@@ -63,9 +63,23 @@ class ApiService {
       });
 
       if (response != null) {
-        final body = jsonEncode(jsonDecode(response.body)['result']);
+        final decoded = jsonDecode(response.body);
+        final result = decoded['result'];
+        final Map<String, dynamic> comments = {};
+        if (result is Map<String, dynamic>) {
+          final post = result['post'];
+          if (post is Map<String, dynamic>) {
+            final key = '${post['author']}/${post['permlink']}';
+            comments[key] = post;
+          }
+          final replies = result['replies'];
+          if (replies is Map<String, dynamic>) {
+            comments.addAll(replies);
+          }
+        }
+
         return ActionListDataResponse<ThreadFeedModel>(
-            data: CommentModel.fromRawJson(body),
+            data: CommentModel.fromRawJson(jsonEncode(comments)),
             status: ResponseStatus.success,
             isSuccess: true,
             errorMessage: "");
