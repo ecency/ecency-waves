@@ -37,8 +37,7 @@ jobs:
 
       - name: Upload-keystore generator
         run: |
-          echo "${{secrets.UPLOAD_KEYSTORE}}" > upload.keystore.asc
-          base64 --decode upload.keystore.asc > android/app/key.jks
+          echo "${{ secrets.UPLOAD_KEYSTORE }}" | base64 -d > android/app/key.jks
 
       - name: Key.Properties
         run: |
