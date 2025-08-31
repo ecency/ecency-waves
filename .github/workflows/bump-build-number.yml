@@ -1,0 +1,28 @@
+name: Bump build number
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  bump:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increment build number
+        run: |
+          current=$(grep '^version:' pubspec.yaml | sed -E 's/.*\+([0-9]+)/\1/')
+          next=$((current + 1))
+          sed -i -E "s/(version: [0-9]+\.[0-9]+\.[0-9]+\+)[0-9]+/\1$next/" pubspec.yaml
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: increment build number [skip ci]"
+          branch: build-number-bump
+          base: main
+          title: "chore: increment build number"
+          body: "Automated build number bump."

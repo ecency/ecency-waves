@@ -23,19 +23,49 @@ import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 
 class ApiService {
+  static const List<String> _rpcUrls = [
+    'https://api.hive.blog',
+    'https://hive-api.arcange.eu',
+    'https://api.openhive.network',
+    'https://api.deathwing.me',
+  ];
+
+  Future<http.Response?> _postWithFallback(Map<String, dynamic> payload,
+      {Duration timeout = const Duration(seconds: 10)}) async {
+    final body = jsonEncode(payload);
+    for (final url in _rpcUrls) {
+      try {
+        final res = await http
+            .post(Uri.parse(url),
+                headers: {'Content-Type': 'application/json'}, body: body)
+            .timeout(timeout);
+        if (res.statusCode == 200) {
+          return res;
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
+
   Future<ActionListDataResponse<ThreadFeedModel>> getComments(
       String accountName, String permlink, String? observer) async {
     try {
-      var url = Uri.parse(
-          'https://hivexplorer.com/api/get_discussion?author=$accountName&permlink=$permlink&observer=$observer');
+      final params = {
+        'author': accountName,
+        'permlink': permlink,
+        if (observer != null) 'observer': observer,
+      };
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'bridge.get_discussion',
+        'params': params,
+        'id': 1,
+      });
 
-      var response = await http.get(
-        url,
-      );
-
-      if (response.statusCode == 200) {
+      if (response != null) {
+        final body = jsonEncode(jsonDecode(response.body)['result']);
         return ActionListDataResponse<ThreadFeedModel>(
-            data: CommentModel.fromRawJson(response.body),
+            data: CommentModel.fromRawJson(body),
             status: ResponseStatus.success,
             isSuccess: true,
             errorMessage: "");
@@ -82,13 +112,24 @@ class ApiService {
       String? lastAuthor,
       String? lastPermlink,
       int limit) async {
-    var url = Uri.parse(
-        'https://hivexplorer.com/api/get_account_posts?sort=${enumToString(type)}&account=$accountName&limit=$limit&start_author=$lastAuthor&start_permlink=$lastPermlink');
-
-    var response = await http.get(
-      url,
-    );
-    return response;
+    final params = {
+      'sort': enumToString(type),
+      'account': accountName,
+      'limit': limit,
+      if (lastAuthor != null) 'start_author': lastAuthor,
+      if (lastPermlink != null) 'start_permlink': lastPermlink,
+    };
+    final res = await _postWithFallback({
+      'jsonrpc': '2.0',
+      'method': 'bridge.get_account_posts',
+      'params': params,
+      'id': 1,
+    });
+    if (res != null) {
+      final posts = jsonDecode(res.body)['result']['posts'];
+      return http.Response(jsonEncode(posts), 200);
+    }
+    return http.Response('RPC error', 500);
   }
 
   Future<ActionSingleDataResponse<ThreadFeedModel>> getFirstAccountPost(
@@ -185,7 +226,7 @@ class ApiService {
         authKey,
         token,
       ).timeout(
-        const Duration(seconds: 5),
+        const Duration(seconds: 15),
       );
       ActionSingleDataResponse<String> response =
           ActionSingleDataResponse.fromJsonString(
@@ -196,8 +237,6 @@ class ApiService {
       return response;
     } on TimeoutException {
       final confirmed = await _confirmCommentOnChain(
-        parentAuthor: author,
-        parentPermlink: parentPermlink,
         commentAuthor: username,
         permlink: permlink,
       );
@@ -222,26 +261,34 @@ class ApiService {
   }
 
   Future<bool> _confirmCommentOnChain({
-    required String parentAuthor,
-    required String parentPermlink,
     required String commentAuthor,
     required String permlink,
   }) async {
-    try {
-      final url = Uri.parse(
-          'https://hivexplorer.com/api/get_discussion?author=$parentAuthor&permlink=$parentPermlink');
-      final res = await http.get(url).timeout(const Duration(seconds: 3));
-      if (res.statusCode == 200) {
-        final Map<String, dynamic> decoded = json.decode(res.body);
-        for (final value in decoded.values) {
-          if (value is Map &&
-              value['author'] == commentAuthor &&
-              value['permlink'] == permlink) {
+    final payload = {
+      'jsonrpc': '2.0',
+      'method': 'condenser_api.get_content',
+      'params': [commentAuthor, permlink],
+      'id': 1,
+    };
+
+    for (var i = 0; i < 3; i++) {
+      try {
+        final res =
+            await _postWithFallback(payload, timeout: const Duration(seconds: 3));
+        if (res != null) {
+          final decoded = json.decode(res.body);
+          final result = decoded['result'];
+          if (result is Map &&
+              result['author'] == commentAuthor &&
+              result['permlink'] == permlink &&
+              result['id'] != 0) {
             return true;
           }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+      await Future.delayed(const Duration(seconds: 1));
+    }
+
     return false;
   }
 
@@ -343,18 +390,21 @@ class ApiService {
   }
 
   Future<ActionSingleDataResponse<UserModel>> getAccountInfo(
-    String accountName,
+      String accountName,
   ) async {
     try {
-      var url = Uri.parse(
-          'https://hivexplorer.com/api/get_accounts?names=[%22$accountName%22]');
-
-      http.Response response = await http.get(
-        url,
-      );
-      if (response.statusCode == 200) {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'condenser_api.get_accounts',
+        'params': [
+          [accountName]
+        ],
+        'id': 1,
+      });
+      if (response != null) {
+        final users = jsonEncode(jsonDecode(response.body)['result']);
         return ActionSingleDataResponse<UserModel>(
-            data: UserModel.fromJsonString(response.body).first,
+            data: UserModel.fromJsonString(users).first,
             status: ResponseStatus.success,
             isSuccess: true,
             errorMessage: "");
@@ -369,18 +419,19 @@ class ApiService {
   }
 
   Future<ActionSingleDataResponse<FollowCountModel>> getFollowCount(
-    String accountName,
+      String accountName,
   ) async {
     try {
-      var url = Uri.parse(
-          "https://hivexplorer.com/api/get_follow_count?account=$accountName");
-
-      http.Response response = await http.get(
-        url,
-      );
-      if (response.statusCode == 200) {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'condenser_api.get_follow_count',
+        'params': [accountName],
+        'id': 1,
+      });
+      if (response != null) {
+        final count = jsonEncode(jsonDecode(response.body)['result']);
         return ActionSingleDataResponse<FollowCountModel>(
-            data: FollowCountModel.fromJsonString(response.body),
+            data: FollowCountModel.fromJsonString(count),
             status: ResponseStatus.success,
             isSuccess: true,
             errorMessage: "");
