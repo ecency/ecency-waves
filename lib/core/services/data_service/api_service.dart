@@ -47,6 +47,11 @@ class ApiService {
     'Accept': 'application/json',
   };
 
+  String? currentAccountPostsNode(AccountPostType type, String account) =>
+      _getSticky('acct_posts:${enumToString(type)}:$account');
+
+  void invalidateAccountPostsSticky(AccountPostType type, String account) =>
+      _clearSticky('acct_posts:${enumToString(type)}:$account');
   /// POST to bridge/condenser with sticky-node fallback.
   /// If [stickyKey] is provided, prefer the sticky node for that key and
   /// update it on success. If a sticky fails, it will be cleared and the
@@ -185,40 +190,61 @@ class ApiService {
     // Sticky per feed (sort+account)
     final stickyKey = 'acct_posts:${enumToString(type)}:$accountName';
 
-    final res = await _postWithFallback({
+    Future<http.Response> _do(Map<String, dynamic> payload) async {
+      final res = await _postWithFallback(payload, stickyKey: stickyKey);
+      if (res == null) return http.Response('RPC error: no node responded', 500);
+
+      try {
+        final decoded = _tryDecode(res.body);
+        if (decoded is Map && decoded['error'] != null) {
+          return http.Response(_rpcErrorMessage(res), 500);
+        }
+
+        final result = (decoded is Map) ? decoded['result'] : decoded;
+        List<dynamic> posts;
+
+        if (result is List) {
+          posts = result;
+        } else if (result is Map && result['posts'] is List) {
+          posts = List<dynamic>.from(result['posts'] as List);
+        } else if (res.statusCode != 200) {
+          return http.Response(_rpcErrorMessage(res), 500);
+        } else {
+          posts = const [];
+        }
+
+        return http.Response(jsonEncode(posts), 200);
+      } catch (e) {
+        return http.Response('Parse error: $e', 500);
+      }
+    }
+
+    final payload = {
       'jsonrpc': '2.0',
       'method': 'bridge.get_account_posts',
       'params': params,
       'id': 1,
-    }, stickyKey: stickyKey);
+    };
 
-    if (res == null) {
-      return http.Response('RPC error: no node responded', 500);
+    // First attempt
+    final first = await _do(payload);
+
+    // If FIRST PAGE (no start_author) came back empty, retry once on a fresh node.
+    if (first.statusCode == 200 && lastAuthor == null) {
+      List<dynamic> arr;
+      try {
+        arr = jsonDecode(first.body) as List<dynamic>;
+      } catch (_) {
+        arr = const [];
+      }
+      if (arr.isEmpty) {
+        _clearSticky(stickyKey);               // drop the sticky node
+        final retry = await _do(payload);      // try again on a different node
+        if (retry.statusCode == 200) return retry;
+      }
     }
 
-    try {
-      final decoded = _tryDecode(res.body);
-      if (decoded is Map && decoded['error'] != null) {
-        return http.Response(_rpcErrorMessage(res), 500);
-      }
-
-      final result = (decoded is Map) ? decoded['result'] : decoded;
-      List<dynamic> posts;
-
-      if (result is List) {
-        posts = result;
-      } else if (result is Map && result['posts'] is List) {
-        posts = List<dynamic>.from(result['posts'] as List);
-      } else if (res.statusCode != 200) {
-        return http.Response(_rpcErrorMessage(res), 500);
-      } else {
-        posts = const [];
-      }
-
-      return http.Response(jsonEncode(posts), 200);
-    } catch (e) {
-      return http.Response('Parse error: $e', 500);
-    }
+    return first;
   }
 
   Future<ActionSingleDataResponse<ThreadFeedModel>> getFirstAccountPost(

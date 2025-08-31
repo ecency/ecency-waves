@@ -58,41 +58,79 @@ class ThreadFeedController extends ChangeNotifier
 
   Future<void> _loadSingleFeedType(ThreadFeedType type) async {
     _loadLocalThreads(type);
-    ActionListDataResponse<ThreadFeedModel> accountPostResponse =
-        await _repository.getAccountPosts(
-            _getThreadAccountName(), _postType, pageLimit);
+
+    final accountPostResponse = await _repository.getAccountPosts(
+      _getThreadAccountName(),
+      _postType,
+      pageLimit,
+    );
+
     if (accountPostResponse.isSuccess) {
-      if (accountPostResponse.data != null &&
-          accountPostResponse.data!.isNotEmpty) {
-        pages = accountPostResponse.data!
+      final roots = accountPostResponse.data;
+
+      if (roots != null && roots.isNotEmpty) {
+        // Build unique list of root ThreadInfo (dedupe author/permlink)
+        final seen = <String>{};
+        pages = roots
             .map((e) => ThreadInfo(author: e.author, permlink: e.permlink))
+            .where((ti) => seen.add('${ti.author}/${ti.permlink}'))
             .toList();
-        super.pageLimit = pages.length;
+
+        if (pages.isEmpty) {
+          if (items.isEmpty) viewState = ViewState.empty;
+          notifyListeners();
+          return;
+        }
+
+        // Fetch comments for the first root
         ActionListDataResponse<ThreadFeedModel> response =
-            await _repository.getcomments(
-                accountPostResponse.data!.first.author,
-                accountPostResponse.data!.first.permlink,
-                observer);
+        await _repository.getcomments(
+          pages[0].author,
+          pages[0].permlink,
+          observer,
+        );
+
+        // If first root came back empty or failed, try the second root once
+        if ((!response.isSuccess) ||
+            response.data == null ||
+            response.data!.isEmpty) {
+          if (pages.length > 1) {
+            final alt = await _repository.getcomments(
+              pages[1].author,
+              pages[1].permlink,
+              observer,
+            );
+            if (alt.isSuccess && alt.data != null && alt.data!.isNotEmpty) {
+              response = alt;
+              currentPage = 1; // we consumed page 2 as our initial page
+            }
+          }
+        }
+
         if (response.isSuccess && response.data != null) {
           if (type == threadType) {
             List<ThreadFeedModel> items = response.data!;
+            // Filter to top-level comments of the current root
             items = filterTopLevelComments(
-                accountPostResponse.data!.first.permlink,
-                items: items);
+              pages[currentPage].permlink,
+              items: items,
+            );
+            // Remove reported
             items = Thread.filterReportedThreads(
-                items: items,
-                reportedThreads: _localRepository.readReportedThreads());
+              items: items,
+              reportedThreads: _localRepository.readReportedThreads(),
+            );
 
             if (items.isEmpty && viewState != ViewState.data) {
               viewState = ViewState.empty;
             } else if (items.isNotEmpty) {
               _localRepository.writeLocalThreads(items, type);
+
               if (this.items.isEmpty) {
                 this.items = items;
                 isDataDisplayedFromServer = true;
                 _loadNextPageOnFewerResults(type);
-              } else if (this.items.first.identifier !=
-                  items.first.identifier) {
+              } else if (this.items.first.identifier != items.first.identifier) {
                 newFeeds = [...items];
                 notifyListeners();
               } else {
