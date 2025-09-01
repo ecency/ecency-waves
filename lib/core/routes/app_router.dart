@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -10,7 +11,10 @@ import 'package:waves/features/auth/presentation/view/hive_key_chain_auth_view.d
 import 'package:waves/features/auth/presentation/view/hive_signer_auth_view.dart';
 import 'package:waves/features/auth/presentation/view/posting_key_auth_view.dart';
 import 'package:waves/features/bookmarks/views/thread_bookmark/bookmark_view.dart';
+import 'package:waves/features/explore/presentation/tag_feed/view/tag_feed_view.dart';
+import 'package:waves/features/explore/presentation/view/explore_view.dart';
 import 'package:waves/features/settings/presentation/setting/view/setting_view.dart';
+import 'package:waves/features/settings/repository/settings_repository.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/view/add_comment_view.dart';
@@ -20,8 +24,6 @@ import 'package:waves/features/threads/presentation/thread_feed/view/thread_feed
 import 'package:waves/features/user/presentation/user_profile/view/user_profile_view.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 import 'package:waves/features/welcome/view/welcome_view.dart';
-import 'package:waves/features/explore/presentation/view/explore_view.dart';
-import 'package:waves/features/explore/presentation/tag_feed/view/tag_feed_view.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -153,10 +155,14 @@ class AppRouter {
         builder: (context, state) {
           final name = state.uri.queryParameters[RouteKeys.accountName]!;
           final typeParam = state.uri.queryParameters[RouteKeys.threadType];
+          final defaultType = getIt<SettingsRepository>().readDefaultThread();
           final threadType = typeParam != null
-              ? enumFromString<ThreadFeedType>(typeParam, ThreadFeedType.values,
-                  defaultValue: ThreadFeedType.ecency)
-              : ThreadFeedType.ecency;
+              ? enumFromString<ThreadFeedType>(
+                  typeParam,
+                  ThreadFeedType.values,
+                  defaultValue: ThreadFeedType.ecency,
+                )
+              : defaultType;
           return UserProfileView(
             accountName: name,
             threadType: threadType,

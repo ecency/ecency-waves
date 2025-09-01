@@ -73,15 +73,13 @@ class SnapsFeedController extends ChangeNotifier
 
   Future<void> _ensureRoots() async {
     if (_rootIndex < _roots.length) return;
-    // Fetch a larger batch of container posts so that older user content
-    // isn't missed when filtering by author/permlink. The profile feed can
-    // otherwise appear empty if a user's posts are buried under many
-    // container posts.
-    const batchMultiplier = 20; // fetch 20x the normal page size
+    // Fetch the most recent container posts to match snaps against
+    // replies within those threads.
+    const fetchLimit = 20;
     final rootRes = await _threadRepository.getAccountPosts(
       _getContainer(),
       AccountPostType.posts,
-      pageLimit * batchMultiplier,
+      fetchLimit,
       lastAuthor: _lastRootAuthor,
       lastPermlink: _lastRootPermlink,
     );

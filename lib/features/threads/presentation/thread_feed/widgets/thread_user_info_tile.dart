@@ -85,12 +85,16 @@ class ThreadUserInfoTile extends StatelessWidget {
       threadType = context.read<ThreadFeedController>().threadType;
     }
 
+    final params = {
+      RouteKeys.accountName: item.author,
+    };
+    if (threadType != ThreadFeedType.all) {
+      params[RouteKeys.threadType] = enumToString(threadType);
+    }
+
     return context.pushNamed(
       Routes.userProfileView,
-      queryParameters: {
-        RouteKeys.accountName: item.author,
-        RouteKeys.threadType: enumToString(threadType),
-      },
+      queryParameters: params,
     );
   }
 }

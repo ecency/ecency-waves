@@ -18,7 +18,7 @@ class ImageContainer extends StatelessWidget {
         image: url == null || url!.isEmpty
             ? null
             : DecorationImage(
-                image: NetworkImage('https://images.hive.blog/0x500/$url'),
+                image: NetworkImage('https://images.ecency.com/0x500/$url'),
                 fit: BoxFit.cover),
       ),
     );
