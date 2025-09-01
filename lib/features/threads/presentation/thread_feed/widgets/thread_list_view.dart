@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/back_to_top_button.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
@@ -18,9 +19,30 @@ class ThreadListView extends StatefulWidget {
 
 class _ThreadListViewState extends State<ThreadListView> {
   final ScrollController scrollController = ScrollController();
+  bool showBackToTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    final double triggerHeight = MediaQuery.of(context).size.height;
+    if (scrollController.offset > triggerHeight && !showBackToTopButton) {
+      setState(() {
+        showBackToTopButton = true;
+      });
+    } else if (scrollController.offset <= triggerHeight && showBackToTopButton) {
+      setState(() {
+        showBackToTopButton = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
+    scrollController.removeListener(_scrollListener);
     scrollController.dispose();
     super.dispose();
   }
@@ -130,6 +152,25 @@ class _ThreadListViewState extends State<ThreadListView> {
                 ),
               );
             },
+          ),
+        ),
+
+        // Back to top button
+        Positioned(
+          // Push above the compose FAB
+          bottom: 96,
+          right: 16,
+          child: Visibility(
+            visible: showBackToTopButton,
+            child: BackToTopButton(
+              onPressed: () {
+                if (scrollController.hasClients) {
+                  scrollController.animateTo(0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut);
+                }
+              },
+            ),
           ),
         ),
       ],

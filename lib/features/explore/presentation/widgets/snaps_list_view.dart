@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/back_to_top_button.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
@@ -20,9 +21,30 @@ class SnapsListView extends StatefulWidget {
 
 class _SnapsListViewState extends State<SnapsListView> {
   final ScrollController _scrollController = ScrollController();
+  bool _showBackToTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    final double triggerHeight = MediaQuery.of(context).size.height;
+    if (_scrollController.offset > triggerHeight && !_showBackToTopButton) {
+      setState(() {
+        _showBackToTopButton = true;
+      });
+    } else if (_scrollController.offset <= triggerHeight && _showBackToTopButton) {
+      setState(() {
+        _showBackToTopButton = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
   }
@@ -45,29 +67,50 @@ class _SnapsListViewState extends State<SnapsListView> {
                 (c) => c.items);
         return ScrollEndListener(
           loadNextPage: controller.loadNextPage,
-          child: RefreshIndicator(
-            onRefresh: () async {
-              controller.refresh();
-            },
-            child: ListView.separated(
-              controller: _scrollController,
-              padding: kScreenVerticalPadding,
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    ThreadTile(item: items[index]),
-                    if (index == items.length - 1)
-                      PaginationLoader(
-                        pageVisibilityListener: (ctx) => ctx
-                            .select<SnapsFeedController, bool>(
-                                (c) => c.isNextPageLoading),
-                      ),
-                  ],
-                );
-              },
-              separatorBuilder: (_, __) => const ThreadFeedDivider(),
-            ),
+          child: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: () async {
+                  controller.refresh();
+                },
+                child: ListView.separated(
+                  controller: _scrollController,
+                  padding: kScreenVerticalPadding,
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    return Column(
+                      children: [
+                        ThreadTile(item: items[index]),
+                        if (index == items.length - 1)
+                          PaginationLoader(
+                            pageVisibilityListener: (ctx) => ctx
+                                .select<SnapsFeedController, bool>(
+                                    (c) => c.isNextPageLoading),
+                          ),
+                      ],
+                    );
+                  },
+                  separatorBuilder: (_, __) => const ThreadFeedDivider(),
+                ),
+              ),
+              Positioned(
+                // Avoid overlap with the compose FAB
+                bottom: 96,
+                right: 16,
+                child: Visibility(
+                  visible: _showBackToTopButton,
+                  child: BackToTopButton(
+                    onPressed: () {
+                      if (_scrollController.hasClients) {
+                        _scrollController.animateTo(0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
