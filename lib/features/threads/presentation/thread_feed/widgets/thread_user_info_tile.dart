@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
+import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/explore/presentation/snaps/controller/snaps_feed_controller.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_pop_up_menu.dart';
 
 class ThreadUserInfoTile extends StatelessWidget {
@@ -74,7 +78,19 @@ class ThreadUserInfoTile extends StatelessWidget {
   }
 
   Future<Object?> _pushToUserProfile(BuildContext context) {
-    return context.pushNamed(Routes.userProfileView,
-        queryParameters: {RouteKeys.accountName: item.author});
+    ThreadFeedType threadType;
+    try {
+      threadType = context.read<SnapsFeedController>().threadType;
+    } catch (_) {
+      threadType = context.read<ThreadFeedController>().threadType;
+    }
+
+    return context.pushNamed(
+      Routes.userProfileView,
+      queryParameters: {
+        RouteKeys.accountName: item.author,
+        RouteKeys.threadType: enumToString(threadType),
+      },
+    );
   }
 }

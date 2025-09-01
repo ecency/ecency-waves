@@ -177,7 +177,6 @@ class ThreadFeedController extends ChangeNotifier
           _loadFeed(ThreadFeedType.peakd),
           _loadFeed(ThreadFeedType.liketu),
           _loadFeed(ThreadFeedType.leo),
-          _loadFeed(ThreadFeedType.dbuzz),
         ],
       );
 
@@ -374,8 +373,6 @@ class ThreadFeedController extends ChangeNotifier
         return "liketu.moments";
       case ThreadFeedType.leo:
         return "leothreads";
-      case ThreadFeedType.dbuzz:
-        return "dbuzz";
       case ThreadFeedType.all:
         return "All";
     }

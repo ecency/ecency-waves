@@ -54,8 +54,6 @@ class Thread {
         return "assets/images/logo/liketu_logo.png";
       case ThreadFeedType.leo:
         return "assets/images/logo/inleo_logo.jpg";
-      case ThreadFeedType.dbuzz:
-        return "assets/images/logo/buzz_logo.jpg";
       case ThreadFeedType.all:
         return "assets/images/waves.png";
     }
@@ -71,8 +69,6 @@ class Thread {
         return "Moments";
       case ThreadFeedType.leo:
         return "Threads";
-      case ThreadFeedType.dbuzz:
-        return "Buzz";
       case ThreadFeedType.all:
         return "All";
     }

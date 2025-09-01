@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/empty_state.dart';
+import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
-import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_feed_divider.dart';
-import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_tile.dart';
+import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/presentation/snaps/controller/snaps_feed_controller.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_feed_divider.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_tile.dart';
 
 class SnapsListView extends StatefulWidget {
   const SnapsListView({super.key});
@@ -28,16 +31,25 @@ class _SnapsListViewState extends State<SnapsListView> {
   Widget build(BuildContext context) {
     final controller = context.read<SnapsFeedController>();
 
-    return ScrollEndListener(
-      loadNextPage: controller.loadNextPage,
-      child: RefreshIndicator(
-        onRefresh: () async {
-          controller.refresh();
-        },
-        child: Selector<SnapsFeedController, List<ThreadFeedModel>>(
-          selector: (_, c) => c.items,
-          builder: (context, items, _) {
-            return ListView.separated(
+    return Selector<SnapsFeedController, ViewState>(
+      selector: (_, c) => c.viewState,
+      builder: (context, state, _) {
+        if (state == ViewState.loading) {
+          return const LoadingState();
+        }
+        if (state == ViewState.empty) {
+          return const Emptystate(text: 'No content found');
+        }
+        final items =
+            context.select<SnapsFeedController, List<ThreadFeedModel>>(
+                (c) => c.items);
+        return ScrollEndListener(
+          loadNextPage: controller.loadNextPage,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              controller.refresh();
+            },
+            child: ListView.separated(
               controller: _scrollController,
               padding: kScreenVerticalPadding,
               itemCount: items.length,
@@ -55,10 +67,10 @@ class _SnapsListViewState extends State<SnapsListView> {
                 );
               },
               separatorBuilder: (_, __) => const ThreadFeedDivider(),
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

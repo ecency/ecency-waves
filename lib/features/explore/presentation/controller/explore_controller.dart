@@ -63,8 +63,6 @@ class ExploreController extends ChangeNotifier {
         return 'liketu.moments';
       case ThreadFeedType.leo:
         return 'leothreads';
-      case ThreadFeedType.dbuzz:
-        return 'dbuzz';
       case ThreadFeedType.all:
         return 'ecency.waves';
     }

@@ -9,7 +9,9 @@ import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/settings/repository/settings_repository.dart';
 import 'package:waves/features/user/view/user_controller.dart';
+import 'package:waves/core/dependency_injection/dependency_injection.dart';
 
 class DrawerMenu extends StatelessWidget {
   const DrawerMenu({super.key});
@@ -54,13 +56,16 @@ class DrawerMenu extends StatelessWidget {
                           DrawerTile(
                               onTap: () {
                                 Navigator.pop(context);
+                                final threadType =
+                                    getIt<SettingsRepository>()
+                                        .readDefaultThread();
                                 context.platformPushNamed(
                                   Routes.userProfileView,
                                   queryParameters: {
                                     RouteKeys.accountName:
                                         userController.userName!,
                                     RouteKeys.threadType:
-                                        enumToString(ThreadFeedType.ecency),
+                                        enumToString(threadType),
                                   },
                                 );
                               },

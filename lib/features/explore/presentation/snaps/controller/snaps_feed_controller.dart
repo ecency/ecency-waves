@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
 import 'package:waves/features/explore/repository/explore_repository.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
-import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
 import 'package:waves/features/threads/repository/thread_repository.dart';
+import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
 
 class SnapsFeedController extends ChangeNotifier
     with PaginationMixin
@@ -22,7 +21,8 @@ class SnapsFeedController extends ChangeNotifier
   ThreadFeedType threadType;
 
   final Set<String> _snapKeys = {};
-  final List<ThreadInfo> _roots = [];
+  // Holds container root posts that are scanned for user content.
+  final List<ThreadFeedModel> _roots = [];
   int _rootIndex = 0;
   String? _lastRootAuthor;
   String? _lastRootPermlink;
@@ -73,20 +73,24 @@ class SnapsFeedController extends ChangeNotifier
 
   Future<void> _ensureRoots() async {
     if (_rootIndex < _roots.length) return;
-
+    // Fetch a larger batch of container posts so that older user content
+    // isn't missed when filtering by author/permlink. The profile feed can
+    // otherwise appear empty if a user's posts are buried under many
+    // container posts.
+    const batchMultiplier = 20; // fetch 20x the normal page size
     final rootRes = await _threadRepository.getAccountPosts(
       _getContainer(),
       AccountPostType.posts,
-      pageLimit,
+      pageLimit * batchMultiplier,
       lastAuthor: _lastRootAuthor,
       lastPermlink: _lastRootPermlink,
     );
 
     if (rootRes.isSuccess && rootRes.data != null && rootRes.data!.isNotEmpty) {
-      final seen = <String>{};
+      // Deduplicate by author/permlink across existing and newly fetched roots.
+      final seen = _roots.map((e) => '${e.author}/${e.permlink}').toSet();
       final newRoots = rootRes.data!
-          .map((e) => ThreadInfo(author: e.author, permlink: e.permlink))
-          .where((ti) => seen.add('${ti.author}/${ti.permlink}'))
+          .where((e) => seen.add('${e.author}/${e.permlink}'))
           .toList();
       if (newRoots.isNotEmpty) {
         _roots.addAll(newRoots);
@@ -112,23 +116,30 @@ class SnapsFeedController extends ChangeNotifier
       if (_rootIndex >= _roots.length) break;
 
       final root = _roots[_rootIndex++];
-      final res = await _threadRepository.getcomments(
-        root.author,
-        root.permlink,
-        observer,
-      );
-      if (res.isSuccess && res.data != null && res.data!.isNotEmpty) {
-        final threads = Thread.filterTopLevelComments(
+      final rootKey = '${root.author}/${root.permlink}';
+      if (_snapKeys.remove(rootKey)) {
+        items.add(root);
+        added++;
+      }
+
+      if (added < pageLimit && _snapKeys.isNotEmpty) {
+        final res = await _threadRepository.getcomments(
+          root.author,
           root.permlink,
-          items: res.data!,
-          depth: 1,
+          observer,
         );
-        for (final t in threads) {
-          final key = '${t.author}/${t.permlink}';
-          if (_snapKeys.remove(key)) {
-            items.add(t);
-            added++;
-            if (added >= pageLimit) break;
+        if (res.isSuccess && res.data != null && res.data!.isNotEmpty) {
+          // Scan the full comment tree so snaps that appear as replies are not
+          // missed. `getcomments` may return nested replies, so instead of
+          // filtering only top-level comments, walk every entry and match on
+          // author/permlink pairs returned by the Peakd snaps API.
+          for (final t in res.data!) {
+            final key = '${t.author}/${t.permlink}';
+            if (_snapKeys.remove(key)) {
+              items.add(t);
+              added++;
+              if (added >= pageLimit) break;
+            }
           }
         }
       }
@@ -181,8 +192,6 @@ class SnapsFeedController extends ChangeNotifier
         return 'liketu.moments';
       case ThreadFeedType.leo:
         return 'leothreads';
-      case ThreadFeedType.dbuzz:
-        return 'dbuzz';
       case ThreadFeedType.all:
         return 'ecency.waves';
     }
