@@ -97,7 +97,8 @@ class HiveAuthController extends HiveTransactionController {
           decryptionResponse) async {
     UserAuthModel<HiveAuthModel> data = UserAuthModel(
       accountName: accountName,
-      authType: AuthType.hiveKeyChain,
+      authType:
+          ishiveKeyChainMethod ? AuthType.hiveKeyChain : AuthType.hiveAuth,
       imageUploadToken: decryptionResponse.data!.hsToken!,
       auth: HiveAuthModel(
         authKey: authKey!,
