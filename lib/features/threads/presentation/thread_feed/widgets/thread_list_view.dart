@@ -74,7 +74,10 @@ class _ThreadListViewState extends State<ThreadListView> {
                         itemBuilder: (context, index) {
                           return Column(
                             children: [
-                              ThreadTile(item: items[index]),
+                              ThreadTile(
+                                item: items[index],
+                                threadType: controller.threadType,
+                              ),
                               if (index == items.length - 1)
                               // FIX: provide required pageVisibilityListener
                                 PaginationLoader(

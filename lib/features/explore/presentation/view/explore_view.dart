@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
+import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -107,6 +108,9 @@ class _UsersTab extends StatelessWidget {
               itemBuilder: (context, index) {
                 final a = authors[index];
                 return ListTile(
+                  leading: UserProfileImage(
+                    url: a.author,
+                  ),
                   title: Text(a.author),
                   onTap: () {
                     context.platformPushNamed(

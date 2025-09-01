@@ -43,7 +43,7 @@ class FollowInfo extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
             horizontal: kScreenHorizontalPaddingDigit, vertical: 6),
         backgroundColor: Colors.transparent,
-        text: "Followers - ${data?.followerCount ?? 0}",
+        text: "Followers ${data?.followerCount ?? 0}",
       ),
       const Gap(10),
       TextBox(
@@ -53,7 +53,7 @@ class FollowInfo extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
             horizontal: kScreenHorizontalPaddingDigit, vertical: 6),
         backgroundColor: Colors.transparent,
-        text: "Following - ${data?.followingCount ?? 0}",
+        text: "Following ${data?.followingCount ?? 0}",
       ),
       const Padding(
         padding: EdgeInsets.symmetric(vertical: 15),

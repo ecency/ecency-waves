@@ -6,13 +6,10 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
-import 'package:waves/core/utilities/enum.dart';
 
-class HashTagBuilder extends MarkdownElementBuilder {
+class MentionBuilder extends MarkdownElementBuilder {
   final ThemeData theme;
-  final ThreadFeedType threadType;
-
-  HashTagBuilder({required this.theme, required this.threadType});
+  MentionBuilder({required this.theme});
 
   @override
   Widget? visitElementAfterWithContext(
@@ -22,17 +19,14 @@ class HashTagBuilder extends MarkdownElementBuilder {
     TextStyle? parentStyle,
   ) {
     if (element.tag.isNotEmpty &&
-        element.tag == 'hashtag' &&
+        element.tag == 'mention' &&
         element.textContent.isNotEmpty) {
-      final tag = element.textContent.replaceFirst('#', '');
+      final user = element.textContent.replaceFirst('@', '');
       return GestureDetector(
         onTap: () {
           context.platformPushNamed(
-            Routes.tagFeedView,
-            queryParameters: {
-              RouteKeys.tag: tag,
-              RouteKeys.threadType: enumToString(threadType),
-            },
+            Routes.userProfileView,
+            queryParameters: {RouteKeys.accountName: user},
           );
         },
         child: Text(

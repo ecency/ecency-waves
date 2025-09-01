@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:waves/core/utilities/act.dart';
+import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/parser.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/element_builders/hash_tag_element_builder.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/element_builders/mention_element_builder.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/element_builders/raw_image_element_builder.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/markdown_image.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/markdown_syntax.dart/hash_tag_syntax.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/markdown_syntax.dart/mention_syntax.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/markdown/markdown_syntax.dart/raw_image_syntax.dart';
 
 class ThreadMarkDown extends StatelessWidget {
-  const ThreadMarkDown({super.key, required this.item});
+  const ThreadMarkDown({super.key, required this.item, this.threadType = ThreadFeedType.ecency});
 
   final ThreadFeedModel item;
+  final ThreadFeedType threadType;
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +28,11 @@ class ThreadMarkDown extends StatelessWidget {
         a: _threadLinkTextStyle(theme),
         p: _threadTextStyle(theme),
       ),
-      inlineSyntaxes: [HashtagSyntax(),RawImageSyntax()],
+      inlineSyntaxes: [HashtagSyntax(), MentionSyntax(), RawImageSyntax()],
       data: Parser.removeAllHtmlTags(item.body),
       builders: {
-        'hashtag': HashTagBuilder(theme: theme),
+        'hashtag': HashTagBuilder(theme: theme, threadType: threadType),
+        'mention': MentionBuilder(theme: theme),
         'rawImage': RawImageElementBuilder(theme: theme, item: item)
       },
       imageBuilder: (uri, title, alt) {
