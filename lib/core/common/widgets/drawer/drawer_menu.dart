@@ -7,6 +7,8 @@ import 'package:waves/core/common/widgets/drawer/drawer_header.dart';
 import 'package:waves/core/common/widgets/drawer/drawer_tile.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
+import 'package:waves/core/routes/route_keys.dart';
+import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class DrawerMenu extends StatelessWidget {
@@ -41,6 +43,29 @@ class DrawerMenu extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
+                        DrawerTile(
+                            onTap: () {
+                              Navigator.pop(context);
+                              context.platformPushNamed(Routes.exploreView);
+                            },
+                            text: 'Explore',
+                            icon: Icons.explore),
+                        if (isLoggedIn)
+                          DrawerTile(
+                              onTap: () {
+                                Navigator.pop(context);
+                                context.platformPushNamed(
+                                  Routes.userProfileView,
+                                  queryParameters: {
+                                    RouteKeys.accountName:
+                                        userController.userName!,
+                                    RouteKeys.threadType:
+                                        enumToString(ThreadFeedType.ecency),
+                                  },
+                                );
+                              },
+                              text: 'My Waves',
+                              icon: Icons.person),
                         DrawerTile(
                             onTap: () {
                               context.popAndPlatformPushNamed(

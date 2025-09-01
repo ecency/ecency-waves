@@ -13,4 +13,6 @@ class Routes {
   static const String commentDetailView = 'commentDetailView';
   static const String userProfileView = 'userProfile';
   static const String settingsView = 'settings';
+  static const String exploreView = 'explore';
+  static const String tagFeedView = 'tagFeed';
 }

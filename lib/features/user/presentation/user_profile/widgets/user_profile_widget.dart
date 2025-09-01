@@ -3,6 +3,7 @@ import 'package:waves/core/common/widgets/images/image_container.dart';
 import 'package:waves/features/user/models/user_model.dart';
 import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_follow_mute_buttons.dart';
 import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_user_info.dart';
+import 'package:waves/features/explore/presentation/widgets/snaps_list_view.dart';
 
 class UserProfileViewWidget extends StatefulWidget {
   const UserProfileViewWidget(
@@ -49,14 +50,18 @@ class _UserProfileViewWidgetState extends State<UserProfileViewWidget> {
                 SliverMainAxisGroup(
                   slivers: [
                     _coverImage(),
-                      UserProfileUserInfo(data: widget.data),
+                    UserProfileUserInfo(data: widget.data),
+                    SliverFillRemaining(
+                      hasScrollBody: true,
+                      child: const SnapsListView(),
+                    ),
                   ],
                 ),
               ],
             ),
           ],
         ),
-  
+
       ],
     );
   }

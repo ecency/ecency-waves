@@ -1,0 +1,131 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:waves/core/common/extensions/platform_navigation.dart';
+import 'package:waves/core/routes/route_keys.dart';
+import 'package:waves/core/routes/routes.dart';
+import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/explore/models/trending_author_model.dart';
+import 'package:waves/features/explore/models/trending_tag_model.dart';
+import 'package:waves/features/explore/presentation/controller/explore_controller.dart';
+import 'package:waves/features/explore/presentation/widgets/thread_type_dropdown.dart';
+
+class ExploreView extends StatelessWidget {
+  const ExploreView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: ChangeNotifierProvider(
+        create: (_) => ExploreController(),
+        child: Builder(builder: (context) {
+          final controller = context.read<ExploreController>();
+          return Scaffold(
+            appBar: AppBar(
+              title: ThreadTypeDropdown(
+                value: controller.threadType,
+                onChanged: controller.onChangeThreadType,
+              ),
+              bottom: const TabBar(
+                tabs: [
+                  Tab(text: 'Tags'),
+                  Tab(text: 'Users'),
+                ],
+              ),
+            ),
+            body: SafeArea(
+              child: TabBarView(
+                children: [
+                  _TagsTab(),
+                  _UsersTab(),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _TagsTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<ExploreController>();
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Selector<ExploreController, ViewState>(
+        selector: (_, c) => c.tagsState,
+        builder: (context, state, _) {
+          if (state == ViewState.loading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state == ViewState.data) {
+            final List<TrendingTagModel> tags = controller.tags;
+            return ListView.builder(
+              itemCount: tags.length,
+              itemBuilder: (context, index) {
+                final tag = tags[index];
+                return ListTile(
+                  title: Text('#${tag.tag}'),
+                  onTap: () {
+                    context.platformPushNamed(
+                      Routes.tagFeedView,
+                      queryParameters: {
+                        RouteKeys.tag: tag.tag,
+                        RouteKeys.threadType:
+                            enumToString(controller.threadType),
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          } else {
+            return const Center(child: Text('Error'));
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _UsersTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<ExploreController>();
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Selector<ExploreController, ViewState>(
+        selector: (_, c) => c.authorsState,
+        builder: (context, state, _) {
+          if (state == ViewState.loading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state == ViewState.data) {
+            final List<TrendingAuthorModel> authors = controller.authors;
+            return ListView.builder(
+              itemCount: authors.length,
+              itemBuilder: (context, index) {
+                final a = authors[index];
+                return ListTile(
+                  title: Text(a.author),
+                  onTap: () {
+                    context.platformPushNamed(
+                      Routes.userProfileView,
+                      queryParameters: {
+                        RouteKeys.accountName: a.author,
+                        RouteKeys.threadType:
+                            enumToString(controller.threadType),
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          } else {
+            return const Center(child: Text('Error'));
+          }
+        },
+      ),
+    );
+  }
+}

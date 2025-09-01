@@ -21,6 +21,9 @@ import 'package:waves/features/threads/models/thread_feeds/reported/report_repon
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
+import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
+import 'package:waves/features/explore/models/trending_tag_model.dart';
+import 'package:waves/features/explore/models/trending_author_model.dart';
 
 class ApiService {
   static const List<String> _rpcUrls = [
@@ -935,6 +938,144 @@ class ApiService {
       }
     } catch (e) {
       return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  // -------------------------- Peakd Snaps APIs --------------------------
+
+  Future<ActionListDataResponse<ThreadInfo>> getTagSnaps(
+      String container, String tag) async {
+    try {
+      final url = Uri.parse(
+          'https://peakd.com/api/public/snaps/tags?container=$container&tag=$tag');
+      final res = await http.get(url, headers: _jsonHeaders);
+      if (res.statusCode == 200) {
+        final decoded = _tryDecode(res.body);
+        if (decoded is List) {
+          final items = decoded
+              .map((e) => ThreadInfo(
+                  author: e['author'] as String,
+                  permlink: e['permlink'] as String))
+              .toList();
+          return ActionListDataResponse<ThreadInfo>(
+              data: items,
+              status: ResponseStatus.success,
+              isSuccess: true,
+              errorMessage: '');
+        }
+      }
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: res.body.isNotEmpty
+            ? res.body
+            : 'Server Error (${res.statusCode})',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionListDataResponse<ThreadInfo>> getAccountSnaps(
+      String container, String username) async {
+    try {
+      final url = Uri.parse(
+          'https://peakd.com/api/public/snaps/account?container=$container&username=$username');
+      final res = await http.get(url, headers: _jsonHeaders);
+      if (res.statusCode == 200) {
+        final decoded = _tryDecode(res.body);
+        if (decoded is List) {
+          final items = decoded
+              .map((e) => ThreadInfo(
+                  author: e['author'] as String,
+                  permlink: e['permlink'] as String))
+              .toList();
+          return ActionListDataResponse<ThreadInfo>(
+              data: items,
+              status: ResponseStatus.success,
+              isSuccess: true,
+              errorMessage: '');
+        }
+      }
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: res.body.isNotEmpty
+            ? res.body
+            : 'Server Error (${res.statusCode})',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionListDataResponse<TrendingTagModel>> getTrendingTags(
+      String container) async {
+    try {
+      final url = Uri.parse(
+          'https://peakd.com/api/public/snaps/trending/tags?container=$container');
+      final res = await http.get(url, headers: _jsonHeaders);
+      if (res.statusCode == 200) {
+        final decoded = _tryDecode(res.body);
+        if (decoded is List) {
+          final items = decoded
+              .map((e) => TrendingTagModel.fromJson(e))
+              .toList();
+          return ActionListDataResponse<TrendingTagModel>(
+              data: items,
+              status: ResponseStatus.success,
+              isSuccess: true,
+              errorMessage: '');
+        }
+      }
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: res.body.isNotEmpty
+            ? res.body
+            : 'Server Error (${res.statusCode})',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionListDataResponse<TrendingAuthorModel>> getTrendingAuthors(
+      String container) async {
+    try {
+      final url = Uri.parse(
+          'https://peakd.com/api/public/snaps/trending/authors?container=$container');
+      final res = await http.get(url, headers: _jsonHeaders);
+      if (res.statusCode == 200) {
+        final decoded = _tryDecode(res.body);
+        if (decoded is List) {
+          final items = decoded
+              .map((e) => TrendingAuthorModel.fromJson(e))
+              .toList();
+          return ActionListDataResponse<TrendingAuthorModel>(
+              data: items,
+              status: ResponseStatus.success,
+              isSuccess: true,
+              errorMessage: '');
+        }
+      }
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: res.body.isNotEmpty
+            ? res.body
+            : 'Server Error (${res.statusCode})',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
         status: ResponseStatus.failed,
         errorMessage: e.toString(),
       );

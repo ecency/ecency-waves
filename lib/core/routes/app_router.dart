@@ -20,6 +20,8 @@ import 'package:waves/features/threads/presentation/thread_feed/view/thread_feed
 import 'package:waves/features/user/presentation/user_profile/view/user_profile_view.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 import 'package:waves/features/welcome/view/welcome_view.dart';
+import 'package:waves/features/explore/presentation/view/explore_view.dart';
+import 'package:waves/features/explore/presentation/tag_feed/view/tag_feed_view.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -47,6 +49,24 @@ class AppRouter {
         path: '/',
         name: Routes.initialView,
         builder: (context, state) => const ThreadFeedView(),
+      ),
+      GoRoute(
+        path: '/${Routes.exploreView}',
+        name: Routes.exploreView,
+        builder: (context, state) => const ExploreView(),
+      ),
+      GoRoute(
+        path: '/${Routes.tagFeedView}',
+        name: Routes.tagFeedView,
+        builder: (context, state) {
+          final tag = state.uri.queryParameters[RouteKeys.tag]!;
+          final typeParam = state.uri.queryParameters[RouteKeys.threadType];
+          final threadType = typeParam != null
+              ? enumFromString<ThreadFeedType>(typeParam, ThreadFeedType.values,
+                  defaultValue: ThreadFeedType.ecency)
+              : ThreadFeedType.ecency;
+          return TagFeedView(tag: tag, threadType: threadType);
+        },
       ),
       GoRoute(
         path: '/${Routes.bookmarksView}',
@@ -131,8 +151,15 @@ class AppRouter {
         path: '/${Routes.userProfileView}',
         name: Routes.userProfileView,
         builder: (context, state) {
+          final name = state.uri.queryParameters[RouteKeys.accountName]!;
+          final typeParam = state.uri.queryParameters[RouteKeys.threadType];
+          final threadType = typeParam != null
+              ? enumFromString<ThreadFeedType>(typeParam, ThreadFeedType.values,
+                  defaultValue: ThreadFeedType.ecency)
+              : ThreadFeedType.ecency;
           return UserProfileView(
-            accountName: state.uri.queryParameters[RouteKeys.accountName]!,
+            accountName: name,
+            threadType: threadType,
           );
         },
       ),

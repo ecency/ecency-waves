@@ -3,4 +3,6 @@ class RouteKeys {
   static const String permlink = 'permlink';
   static const String depth = 'depth';
   static const String isHiveKeyChainLogin = 'isHiveKeyChainLogin';
+  static const String tag = 'tag';
+  static const String threadType = 'threadType';
 }

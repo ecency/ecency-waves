@@ -5,6 +5,7 @@ import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/server_error.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/explore/presentation/snaps/controller/snaps_feed_controller.dart';
 import 'package:waves/features/user/models/user_model.dart';
 import 'package:waves/features/user/presentation/user_profile/controller/user_profile_controller.dart';
 import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_widget.dart';
@@ -13,9 +14,11 @@ class UserProfileView extends StatelessWidget {
   const UserProfileView({
     super.key,
     required this.accountName,
+    required this.threadType,
   });
 
   final String accountName;
+  final ThreadFeedType threadType;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +28,10 @@ class UserProfileView extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => UserProfileController(accountName: accountName),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              SnapsFeedController.account(username: accountName, threadType: threadType),
         ),
       ],
       builder: (context, child) {
