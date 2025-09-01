@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/ui.dart';
-import 'package:waves/core/common/widgets/icon_with_text.dart';
+import 'package:gap/gap.dart';
+import 'package:waves/core/common/widgets/inkwell_wrapper.dart';
 import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/upvote_dialog.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/voters_dialog.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class VoteIconButton extends StatefulWidget {
@@ -48,16 +50,47 @@ class _VoteIconButtonState extends State<VoteIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    return IconWithText(
-      onTap: () => _onTap(
-        context,
-      ),
-      icon: isVoted ? Icons.favorite : Icons.favorite_border_outlined,
-      text: "${items.length}",
-      iconColor: isVoted ? theme.primaryColor : widget.iconColor,
-      iconGap: widget.iconGap,
-      borderRadius: const BorderRadius.all(Radius.circular(40)),
-      textStyle: widget.textStyle,
+    final iconColor =
+        isVoted ? theme.primaryColor : widget.iconColor ?? theme.primaryColorDark.withOpacity(0.9);
+    final textWidget = Text(
+      "${items.length}",
+      style: widget.textStyle ??
+          theme.textTheme.labelLarge!
+              .copyWith(color: iconColor),
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWellWrapper(
+          borderRadius: const BorderRadius.all(Radius.circular(40)),
+          onTap: () => _onTap(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Icon(
+              isVoted ? Icons.favorite : Icons.favorite_border_outlined,
+              size: 20,
+              color: iconColor,
+            ),
+          ),
+        ),
+        if (items.isNotEmpty) Gap(widget.iconGap ?? 5),
+        items.isNotEmpty
+            ? InkWellWrapper(
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                onTap: () => _showVoters(context),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  child: textWidget,
+                ),
+              )
+            : Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                child: textWidget,
+              )
+      ],
     );
   }
 
@@ -88,6 +121,14 @@ class _VoteIconButtonState extends State<VoteIconButton> {
         );
       }
     });
+  }
+
+  void _showVoters(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => VotersDialog(voters: items),
+    );
   }
 
   bool isVotedByUser(BuildContext context, UserController userController) {

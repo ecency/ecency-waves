@@ -259,15 +259,25 @@ class ThreadFeedModel extends Equatable {
   String get identifier => "$author-$permlink";
 
   List<String>? _extractImages() {
-    String pattern =
-        r"https?:\/\/(?!(?:.*?\/@[a-zA-Z0-9]+\/[a-zA-Z0-9]+))(?:[^)\s]+)";
-    RegExp urlPattern = RegExp(pattern);
-    Iterable<Match> matches = urlPattern.allMatches(body);
-    List<String?> urls = matches.map((match) => match.group(0)).toList();
-    urls.removeWhere((element) => element == null);
-    List<String> validUrls = urls.map((url) => url!).toList();
+    // 1) Match standard markdown image syntax ![alt](url)
+    final markdownImageRegex =
+        RegExp(r'!\[.*?\]\((https?:\/\/[^\s)]+)\)', caseSensitive: false);
+    // 2) Match bare image URLs (png/jpg/jpeg/gif/webp) that are not part of markdown
+    final rawImageRegex = RegExp(
+        r'(?<!!\[.*?\]\()https?:\/\/[^)\s]+\.(?:png|jpe?g|gif|webp)',
+        caseSensitive: false);
 
-    return validUrls.isNotEmpty ? validUrls : null;
+    final urls = <String>{};
+
+    for (final match in markdownImageRegex.allMatches(body)) {
+      urls.add(match.group(1)!);
+    }
+
+    for (final match in rawImageRegex.allMatches(body)) {
+      urls.add(match.group(0)!);
+    }
+
+    return urls.isNotEmpty ? urls.toList() : null;
   }
 
   static List<ThreadFeedModel> fromRawJson(String str) =>

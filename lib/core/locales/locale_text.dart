@@ -10,7 +10,7 @@ class LocaleText {
   static String get notLoggedIn => "not_logged_in".tr();
   static String get pleaseLoginFirst => "please_login_first".tr();
   static String get cancel => "cancel".tr();
-  static const String login = "login";
+  static String get login => "login".tr();
   static String get bookmarks => "bookmarks".tr();
   static String get darkMode => "dark_mode".tr();
   static String get lightMode => "light_mode".tr();
@@ -65,5 +65,5 @@ class LocaleText {
   static String get pollRevote => "poll_revote".tr();
   static String get theAccountDoesntExist => "the_account_doesnt_exist";
 
-  
+
 }
