@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 
@@ -20,11 +22,26 @@ class AuthTextField extends StatefulWidget {
 
 class _AuthTextFieldState extends State<AuthTextField> {
   late bool isPassword;
+  Timer? _debounce;
+  String _avatarUser = '';
 
   @override
   void initState() {
     isPassword = widget.isPassword;
+    if (widget.leading == null) {
+      widget.textEditingController.addListener(_onTextChanged);
+    }
     super.initState();
+  }
+
+  void _onTextChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() {
+        _avatarUser = widget.textEditingController.text.trim();
+      });
+    });
   }
 
   @override
@@ -43,17 +60,12 @@ class _AuthTextFieldState extends State<AuthTextField> {
               left: 8.0,
             ),
             child: widget.leading ??
-                ValueListenableBuilder(
-                  valueListenable: widget.textEditingController,
-                  builder: (context, value, child) {
-                    return UserProfileImage(
-                      key: ValueKey(widget.textEditingController.text),
-                      verticalPadding: 4,
-                      fillColor: theme.colorScheme.tertiaryContainer,
-                      url: value.text,
-                      radius: 17,
-                    );
-                  },
+                UserProfileImage(
+                  key: ValueKey(_avatarUser),
+                  verticalPadding: 4,
+                  fillColor: theme.colorScheme.tertiaryContainer,
+                  url: _avatarUser.length >= 3 ? _avatarUser : null,
+                  radius: 17,
                 ),
           ),
           Expanded(
@@ -138,5 +150,14 @@ class _AuthTextFieldState extends State<AuthTextField> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    if (widget.leading == null) {
+      widget.textEditingController.removeListener(_onTextChanged);
+    }
+    _debounce?.cancel();
+    super.dispose();
   }
 }

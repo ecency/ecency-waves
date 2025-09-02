@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 extension ImageThumb on BuildContext {
-  String userOwnerThumb(String value) {
-    return "https://images.ecency.com/u/$value/avatar?id=test";
+  String userOwnerThumb(String value, {String size = 'small'}) {
+    return "https://images.ecency.com/u/$value/avatar/$size";
   }
 
   String resizedImage(String value, {int? width, int? height}) {

@@ -5,20 +5,16 @@ import 'package:waves/core/common/widgets/inkwell_wrapper.dart';
 class UserProfileImage extends StatelessWidget {
   const UserProfileImage(
       {super.key,
-       this.url,
+      this.url,
       this.radius,
       this.verticalPadding = 12,
       this.fillColor,
-      this.resize = false,
-      this.fit,
       this.defaultIconSize,
       this.onTap});
 
   final String? url;
   final double? radius;
   final double verticalPadding;
-  final BoxFit? fit;
-  final bool resize;
   final VoidCallback? onTap;
   final double? defaultIconSize;
   final Color? fillColor;
@@ -34,16 +30,11 @@ class UserProfileImage extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: verticalPadding),
           child: CircleAvatar(
             radius: radius ?? 20,
-            foregroundImage:url!=null && url!.isNotEmpty ?  NetworkImage(
-              context.resizedImage(
-                resize
-                    ? context.resizedImage(context.userOwnerThumb(url!),
-                        height: height, width: width)
-                    : context.userOwnerThumb(url!),
-                height: height,
-                width: width,
-              ),
-            ) : null,
+            foregroundImage: url != null && url!.isNotEmpty
+                ? NetworkImage(
+                    context.userOwnerThumb(url!, size: _avatarSize),
+                  )
+                : null,
             backgroundColor: fillColor ?? theme.colorScheme.tertiary,
             child: Icon(
               Icons.account_circle,
@@ -53,19 +44,15 @@ class UserProfileImage extends StatelessWidget {
         ));
   }
 
-  int? get width {
+  String get _avatarSize {
     if (radius == null) {
-      return null;
+      return 'small';
+    } else if (radius! <= 20) {
+      return 'small';
+    } else if (radius! <= 40) {
+      return 'medium';
     } else {
-      return radius!.toInt() * 10;
-    }
-  }
-
-  int? get height {
-    if (radius == null) {
-      return null;
-    } else {
-      return radius!.toInt() * 6;
+      return 'large';
     }
   }
 }
