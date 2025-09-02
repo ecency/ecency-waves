@@ -38,6 +38,7 @@ class CommentDetailController extends ChangeNotifier {
         items = response.data!;
         items = Thread.filterTopLevelComments(permlink,
             items: items, depth: mainThread.depth + 1);
+        items = Thread.filterInvisibleContent(items);
         if (items.isNotEmpty) {
           viewState = ViewState.data;
         } else {

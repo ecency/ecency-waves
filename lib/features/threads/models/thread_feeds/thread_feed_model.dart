@@ -5,6 +5,7 @@ import 'package:waves/core/utilities/save_convert.dart';
 import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/beneficiary_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
+import 'package:waves/features/threads/models/thread_feeds/thread_stats.dart';
 
 class ThreadFeedModel extends Equatable {
   final int postId;
@@ -36,6 +37,7 @@ class ThreadFeedModel extends Equatable {
   final List<BeneficiaryModel>? beneficiaries;
   final String? maxAcceptedPayout;
   final int? percentHBD;
+  final ThreadStats? stats;
   final bool visited;
 
   const ThreadFeedModel({
@@ -69,6 +71,7 @@ class ThreadFeedModel extends Equatable {
     this.beneficiaries,
     this.maxAcceptedPayout,
     this.percentHBD,
+    this.stats,
   });
 
   ThreadFeedModel copyWith(
@@ -101,6 +104,7 @@ class ThreadFeedModel extends Equatable {
           List<BeneficiaryModel>? beneficiaries,
           String? maxAcceptedPayout,
           int? percentHBD,
+          ThreadStats? stats,
           bool? visited}) =>
       ThreadFeedModel(
         postId: postId ?? this.postId,
@@ -132,6 +136,7 @@ class ThreadFeedModel extends Equatable {
         beneficiaries: beneficiaries ?? this.beneficiaries,
         maxAcceptedPayout: maxAcceptedPayout ?? this.maxAcceptedPayout,
         percentHBD: percentHBD ?? this.percentHBD,
+        stats: stats ?? this.stats,
         visited: visited ?? this.visited,
       );
 
@@ -176,6 +181,7 @@ class ThreadFeedModel extends Equatable {
             json["beneficiaries"].map((x) => BeneficiaryModel.fromJson(x))),
         maxAcceptedPayout: json["max_accepted_payout"],
         percentHBD: json["percent_hbd"],
+        stats: ThreadStats.fromJson(json['stats']),
       );
 
   static List<dynamic> _parseReplies(dynamic value) {
@@ -220,6 +226,7 @@ class ThreadFeedModel extends Equatable {
           beneficiaries?.map((beneficiary) => beneficiary.toJson()).toList(),
       'max_accepted_payout': maxAcceptedPayout,
       'percent_hbd': percentHBD,
+      'stats': stats?.toJson(),
     };
   }
 

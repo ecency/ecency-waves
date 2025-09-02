@@ -19,4 +19,11 @@ class ThreadStats {
         totalVotes: asInt(json, 'total_votes'),
         flagWeight: asDouble(json, 'flag_weight'),
       );
+
+  Map<String, dynamic> toJson() => {
+        'hide': hide,
+        'gray': gray,
+        'total_votes': totalVotes,
+        'flag_weight': flagWeight,
+      };
 }

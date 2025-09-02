@@ -44,6 +44,30 @@ class Thread {
     return result;
   }
 
+  static bool isHidden(ThreadFeedModel entry) {
+    return (entry.netRshares ?? 0) < -7000000000 &&
+        (entry.activeVotes?.length ?? 0) > 3;
+  }
+
+  static bool isMuted(ThreadFeedModel entry) {
+    return (entry.stats?.gray ?? false) &&
+        (entry.netRshares ?? 0) >= 0 &&
+        (entry.authorReputation ?? 0) >= 0;
+  }
+
+  static bool isLowReputation(ThreadFeedModel entry) {
+    return (entry.stats?.gray ?? false) &&
+        (entry.netRshares ?? 0) >= 0 &&
+        (entry.authorReputation ?? 0) < 0;
+  }
+
+  static List<ThreadFeedModel> filterInvisibleContent(
+      List<ThreadFeedModel> items) {
+    return items
+        .where((e) => !(isHidden(e) || isMuted(e) || isLowReputation(e)))
+        .toList();
+  }
+
   static String getThreadImage({required ThreadFeedType type}) {
     switch (type) {
       case ThreadFeedType.ecency:

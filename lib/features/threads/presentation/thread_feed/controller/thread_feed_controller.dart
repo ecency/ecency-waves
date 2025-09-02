@@ -142,6 +142,8 @@ class ThreadFeedController extends ChangeNotifier
               reportedThreads: _localRepository.readReportedThreads(),
             );
 
+            viewItems = Thread.filterInvisibleContent(viewItems);
+
             if (viewItems.isEmpty && viewState != ViewState.data) {
               viewState = ViewState.empty;
             } else if (viewItems.isNotEmpty) {
@@ -217,7 +219,7 @@ class ThreadFeedController extends ChangeNotifier
         if (filtered.isEmpty && raw.isNotEmpty) {
           filtered = raw;
         }
-        return filtered;
+        return Thread.filterInvisibleContent(filtered);
       }
     }
     return null;
@@ -295,6 +297,7 @@ class ThreadFeedController extends ChangeNotifier
           if (newItems.isEmpty && raw.isNotEmpty) {
             newItems = raw;
           }
+          newItems = Thread.filterInvisibleContent(newItems);
           items = [...items, ...newItems];
           if (saveLocal) _localRepository.writeLocalThreads(items, type);
         }
