@@ -80,7 +80,10 @@ class _SnapsListViewState extends State<SnapsListView> {
                   itemBuilder: (context, index) {
                     return Column(
                       children: [
-                        ThreadTile(item: items[index]),
+                        ThreadTile(
+                          item: items[index],
+                          threadType: controller.threadType,
+                        ),
                         if (index == items.length - 1)
                           PaginationLoader(
                             pageVisibilityListener: (ctx) => ctx

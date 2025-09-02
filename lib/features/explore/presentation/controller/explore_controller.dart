@@ -4,18 +4,20 @@ import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/models/trending_author_model.dart';
 import 'package:waves/features/explore/models/trending_tag_model.dart';
 import 'package:waves/features/explore/repository/explore_repository.dart';
+import 'package:waves/features/settings/repository/settings_repository.dart';
 
 class ExploreController extends ChangeNotifier {
   final ExploreRepository _repository = getIt<ExploreRepository>();
 
-  ThreadFeedType threadType = ThreadFeedType.ecency;
+  ThreadFeedType threadType;
   ViewState tagsState = ViewState.loading;
   ViewState authorsState = ViewState.loading;
 
   List<TrendingTagModel> tags = [];
   List<TrendingAuthorModel> authors = [];
 
-  ExploreController() {
+  ExploreController()
+      : threadType = getIt<SettingsRepository>().readDefaultThread() {
     loadData();
   }
 

@@ -63,10 +63,14 @@ class AppRouter {
         builder: (context, state) {
           final tag = state.uri.queryParameters[RouteKeys.tag]!;
           final typeParam = state.uri.queryParameters[RouteKeys.threadType];
+          final defaultType = getIt<SettingsRepository>().readDefaultThread();
           final threadType = typeParam != null
-              ? enumFromString<ThreadFeedType>(typeParam, ThreadFeedType.values,
-                  defaultValue: ThreadFeedType.ecency)
-              : ThreadFeedType.ecency;
+              ? enumFromString<ThreadFeedType>(
+                  typeParam,
+                  ThreadFeedType.values,
+                  defaultValue: defaultType,
+                )
+              : defaultType;
           return TagFeedView(tag: tag, threadType: threadType);
         },
       ),
