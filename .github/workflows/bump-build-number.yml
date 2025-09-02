@@ -13,16 +13,33 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+      - name: Generate PR body
+        run: |
+          last_bump=$(git log --grep="chore: increment build number" -n 1 --pretty=format:%H || true)
+          if [ -z "$last_bump" ]; then
+            git log --pretty=format:'- %s' --reverse > commits.txt
+          else
+            git log --pretty=format:'- %s' --reverse "$last_bump"..HEAD > commits.txt
+          fi
+          {
+            echo "Automated build number bump."
+            echo
+            echo "### Commits since last build"
+            cat commits.txt
+          } > pr_body.md
       - name: Increment build number
         run: |
           current=$(grep '^version:' pubspec.yaml | sed -E 's/.*\+([0-9]+)/\1/')
           next=$((current + 1))
           sed -i -E "s/(version: [0-9]+\.[0-9]+\.[0-9]+\+)[0-9]+/\1$next/" pubspec.yaml
+          version=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "VERSION=$version" >> $GITHUB_ENV
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "chore: increment build number [skip ci]"
           branch: build-number-bump
           base: main
-          title: "chore: increment build number"
-          body: "Automated build number bump."
+          title: "chore: increment build number to ${{ env.VERSION }}"
+          body-path: pr_body.md
+          add-paths: pubspec.yaml
