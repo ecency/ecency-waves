@@ -22,7 +22,7 @@ class ThreadEarnings extends StatelessWidget {
       padding: const EdgeInsets.only(top: 2, right: 2, bottom: 2),
       icon: Icons.attach_money,
       iconColor: iconColor,
-      text: value.toStringAsFixed(2),
+      text: value.toStringAsFixed(3),
       textStyle: textStyle,
       iconGap: iconGap,
       borderRadius: const BorderRadius.all(Radius.circular(8)),

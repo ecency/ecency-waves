@@ -107,10 +107,10 @@ class _VoteIconButtonState extends State<VoteIconButton> {
                   setState(() {
                     items.add(voteModel);
                     isVoted = true;
-                    rootContext
-                        .read<ThreadFeedController>()
-                        .refreshOnUpvote(widget.item.postId, voteModel);
                   });
+                  rootContext
+                      .read<ThreadFeedController>()
+                      .refreshOnUpvote(widget.item.postId, voteModel);
                 }
               },
               author: widget.item.author,

@@ -248,7 +248,7 @@ class ThreadFeedController extends ChangeNotifier
     }
   }
 
-  void refreshOnUpvote(int postId, ActiveVoteModel newVote) {
+  Future<void> refreshOnUpvote(int postId, ActiveVoteModel newVote) async {
     final feedIndex = items.indexWhere((e) => e.postId == postId);
     final newFeedIndex = newFeeds.indexWhere((e) => e.postId == postId);
     if (feedIndex != -1) _updateVoteInItems(feedIndex, newVote, items);
@@ -258,6 +258,9 @@ class ThreadFeedController extends ChangeNotifier
     items = [...items];
     newFeeds = [...newFeeds];
     notifyListeners();
+    // Allow backend to register the vote before reloading the feed
+    await Future.delayed(const Duration(seconds: 5));
+    await refresh();
   }
 
   void refreshOnRootComment(ThreadFeedModel newComment) {
