@@ -8,6 +8,7 @@
 - Voters list with image detection.
 - Explore and My Waves sections for content discovery.
 - Linkified tags and user mentions with avatars on the Explore page.
+- Moderations, filter out Muted, Hidden, Gray, Low reputation content.
 
 ### Improved
 - API service and pagination with sticky RPC node and direct node usage.
