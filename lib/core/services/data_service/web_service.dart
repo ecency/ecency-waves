@@ -50,6 +50,7 @@ Future<String> getDecryptedHASTokenFromPlatform(
 Future<String> validatePostingKeyFromPlatform(
   String username,
   String postingKey,
+  String account,
 ) async {
   throw UnimplementedError();
 }

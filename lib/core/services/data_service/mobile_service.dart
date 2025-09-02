@@ -38,12 +38,14 @@ Future<String> getDecryptedHASTokenFromPlatform(
 Future<String> validatePostingKeyFromPlatform(
   String username,
   String postingKey,
+  String account,
 ) async {
   final String id = 'validatePostingKey${DateTime.now().toIso8601String()}';
   final String response = await platform.invokeMethod('validatePostingKey', {
     'id': id,
     'username': username,
     'postingKey': postingKey,
+    'account': account,
   });
   return response;
 }

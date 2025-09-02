@@ -48,6 +48,7 @@ class MainActivity : FlutterActivity() {
             val authKey = call.argument<String?>("authKey")
             val token = call.argument<String?>("token")
             val postingKey = call.argument<String?>("postingKey")
+            val account = call.argument<String?>("account")
             val author = call.argument<String?>("author")
             val permlink = call.argument<String?>("permlink")
             val parentPermlink = call.argument<String?>("parentPermlink")
@@ -98,9 +99,9 @@ class MainActivity : FlutterActivity() {
                     "getDecryptedHASToken('${js(id)}','${js(username)}','${js(encryptedData)}','${js(authKey)}');",
                     null
                 )
-            } else if (call.method == "validatePostingKey" && username != null && postingKey != null) {
+            } else if (call.method == "validatePostingKey" && username != null && postingKey != null && account != null) {
                 webView?.evaluateJavascript(
-                    "validatePostingKey('${js(id)}','${js(username)}','${js(postingKey)}');",
+                    "validatePostingKey('${js(id)}','${js(username)}','${js(postingKey)}','${js(account)}');",
                     null
                 )
             } else if (call.method == "commentOnContent" && username != null && author != null

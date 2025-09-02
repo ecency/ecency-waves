@@ -434,14 +434,57 @@ class ApiService {
   Future<ActionSingleDataResponse<String>> validatePostingKey(
       String accountName, String postingKey) async {
     try {
-      final jsonString =
-      await validatePostingKeyFromPlatform(accountName, postingKey);
+      final accountRes = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'condenser_api.get_accounts',
+        'params': [
+          [accountName],
+        ],
+        'id': 1,
+      });
+
+      if (accountRes == null || accountRes.statusCode != 200) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: _rpcErrorMessage(accountRes,
+              fallback: 'Account lookup failed'),
+        );
+      }
+
+      final decoded = _tryDecode(accountRes.body);
+      if (decoded is! Map || decoded['result'] == null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'Account lookup failed',
+        );
+      }
+
+      final accounts = decoded['result'];
+      if (accounts is! List || accounts.isEmpty) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'Account not found',
+        );
+      }
+
+      final accountJson = jsonEncode(accounts.first);
+
+      final jsonString = await validatePostingKeyFromPlatform(
+        accountName,
+        postingKey,
+        accountJson,
+      ).timeout(const Duration(seconds: 15));
       final response = ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
         ignoreFromJson: true,
       );
       return response;
+    } on TimeoutException {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Request timed out',
+      );
     } catch (e) {
       return ActionSingleDataResponse(
         status: ResponseStatus.failed,

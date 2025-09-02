@@ -146,40 +146,36 @@
       }
     }
 
-    async function validatePostingKey(id, accountName, postingKey) {
+    async function validatePostingKey(id, accountName, postingKey, accountJson) {
+      try {
+        const account = JSON.parse(accountJson);
+        const successObj = { valid: true, error: "", data: "true" };
+        const pubWif = account.posting.key_auths[0][0];
+        const pubActive = account.active.key_auths[0][0];
+        const pubOwner = account.owner.key_auths[0][0];
         try {
-          const accounts = await client.database.getAccounts([accountName]);
-          const successObj = { valid: true, error: "", data: "true" };
-          const pubWif = accounts[0].posting.key_auths[0][0];
-          const pubActive = accounts[0].active.key_auths[0][0];
-          const pubOwner = accounts[0].active.key_auths[0][0];
-          try {
-            const pKey = dhive.PrivateKey.fromString(postingKey)
-              .createPublic()
-              .toString();
-            if (pKey === pubWif) {
-              return replyToNative(successObj, id);
-            } else if (pKey === pubActive) {
-              return replyToNative(successObj, id);
-            } else if (pKey === pubOwner) {
-              return replyToNative(successObj, id);
-            } else {
-              return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
-            }
-          } catch (e) {
-            const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
-            const publicKeyFromPasswordBasedPostingKey = keyFromPassword.createPublic().toString();
-            if (publicKeyFromPasswordBasedPostingKey === pubWif) {
-              return replyToNative({ valid: true, error: "", data: keyFromPassword.toString() }, id);
-            } else {
-              return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
-            }
+          const pKey = dhive.PrivateKey.fromString(postingKey)
+            .createPublic()
+            .toString();
+          if (pKey === pubWif || pKey === pubActive || pKey === pubOwner) {
+            return replyToNative(successObj, id);
+          } else {
+            return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
           }
-        } catch (error) {
-          console.log("Error: ", error);
-          return replyToNative({ valid: false, error: error.message, data: null }, id);
+        } catch (e) {
+          const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
+          const publicKeyFromPasswordBasedPostingKey = keyFromPassword.createPublic().toString();
+          if (publicKeyFromPasswordBasedPostingKey === pubWif) {
+            return replyToNative({ valid: true, error: "", data: keyFromPassword.toString() }, id);
+          } else {
+            return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
+          }
         }
+      } catch (error) {
+        console.log("Error: ", error);
+        return replyToNative({ valid: false, error: error.message, data: null }, id);
       }
+    }
 
     async function commentOnContent(
       id,

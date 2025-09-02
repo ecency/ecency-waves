@@ -248,7 +248,34 @@
     // ---------- Stubs so native never hangs ----------
     function getRedirectUriData(id, username) { return fail(id, "getRedirectUriData not implemented in JS"); }
     function getDecryptedHASToken(id, username, encryptedData, authKey) { return fail(id, "getDecryptedHASToken not implemented in JS"); }
-    function validatePostingKey(id, username, postingKey) { return fail(id, "validatePostingKey not implemented in JS"); }
+    function validatePostingKey(id, accountName, postingKey, accountJson) {
+      try {
+        const account = JSON.parse(accountJson);
+        const pubWif = account.posting.key_auths[0][0];
+        const pubActive = account.active.key_auths[0][0];
+        const pubOwner = account.owner.key_auths[0][0];
+        try {
+          const pKey = dhive.PrivateKey.fromString(postingKey)
+            .createPublic()
+            .toString();
+          if (pKey === pubWif || pKey === pubActive || pKey === pubOwner) {
+            return ok(id, "true");
+          } else {
+            return fail(id, "Invalid Key supplied");
+          }
+        } catch (e) {
+          const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
+          const publicKeyFromPasswordBasedPostingKey = keyFromPassword.createPublic().toString();
+          if (publicKeyFromPasswordBasedPostingKey === pubWif) {
+            return ok(id, keyFromPassword.toString());
+          } else {
+            return fail(id, "Invalid Key supplied");
+          }
+        }
+      } catch (e) {
+        return fail(id, e);
+      }
+    }
     function getImageUploadProofWithPostingKey(id, username, postingKey) { return fail(id, "getImageUploadProofWithPostingKey not implemented in JS"); }
     function muteUser(id, username, author, postingKey, token, authKey) { return fail(id, "muteUser not implemented in JS"); }
   </script>

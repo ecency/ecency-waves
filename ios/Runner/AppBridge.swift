@@ -114,13 +114,14 @@ final class AppBridge: NSObject {
             case "validatePostingKey":
                 guard
                     let username  = args["username"]  as? String,
-                    let postingKey = args["postingKey"] as? String
+                    let postingKey = args["postingKey"] as? String,
+                    let account    = args["account"]    as? String
                 else {
                     debugPrint("bridge.validatePostingKey: missing params")
                     result(FlutterMethodNotImplemented)
                     return
                 }
-                let js = "validatePostingKey('\(jsEscape(id))','\(jsEscape(username))','\(jsEscape(postingKey))');"
+                let js = "validatePostingKey('\(jsEscape(id))','\(jsEscape(username))','\(jsEscape(postingKey))','\(jsEscape(account))');"
                 webVC.runThisJS(id: id, jsCode: js) { text in result(text) }
 
             case "commentOnContent":
