@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
@@ -27,6 +28,7 @@ class SnapsFeedController extends ChangeNotifier
   int _rootIndex = 0;
   String? _lastRootAuthor;
   String? _lastRootPermlink;
+  bool _isFallback = false;
 
   @override
   List<ThreadFeedModel> items = [];
@@ -63,15 +65,21 @@ class SnapsFeedController extends ChangeNotifier
     }
 
     if (snapRes.isSuccess && snapRes.data != null && snapRes.data!.isNotEmpty) {
-      _snapKeys
-          .addAll(snapRes.data!.map((e) => '${e.author}/${e.permlink}'));
+      _snapKeys.addAll(
+          snapRes.data!.map((e) => '${e.author}/${e.permlink}'));
       await _loadCurrentPage();
     } else {
       errorMessage = snapRes.errorMessage.isNotEmpty
           ? snapRes.errorMessage
           : null;
-      viewState = ViewState.empty;
-      notifyListeners();
+      if (username != null) {
+        _isFallback = true;
+        notifyListeners();
+        unawaited(_loadFallbackPage());
+      } else {
+        viewState = ViewState.empty;
+        notifyListeners();
+      }
     }
   }
 
@@ -98,6 +106,9 @@ class SnapsFeedController extends ChangeNotifier
         _roots.addAll(newRoots);
         _lastRootAuthor = _roots.last.author;
         _lastRootPermlink = _roots.last.permlink;
+      } else {
+        // No additional container posts to scan, so stop requesting more.
+        isPageEnded = true;
       }
     } else {
       isPageEnded = true;
@@ -154,12 +165,53 @@ class SnapsFeedController extends ChangeNotifier
     notifyListeners();
   }
 
+  Future<void> _loadFallbackPage() async {
+    int added = 0;
+    while (added < pageLimit && !isPageEnded) {
+      await _ensureRoots();
+      if (_rootIndex >= _roots.length) break;
+
+      final root = _roots[_rootIndex++];
+
+      if (root.author == username) {
+        items.add(root);
+        added++;
+        if (added >= pageLimit) continue;
+      }
+
+      final res = await _threadRepository.getcomments(
+        root.author,
+        root.permlink,
+        observer,
+      );
+      if (res.isSuccess && res.data != null && res.data!.isNotEmpty) {
+        for (final t in res.data!) {
+          if (t.author == username) {
+            items.add(t);
+            added++;
+            if (added >= pageLimit) break;
+          }
+        }
+      }
+    }
+
+    viewState = items.isEmpty ? ViewState.empty : ViewState.data;
+    if (_rootIndex >= _roots.length) {
+      isPageEnded = true;
+    }
+    notifyListeners();
+  }
+
   @override
   void loadNextPage() async {
     if (isNextPageLoading || isPageEnded) return;
     isNextPageLoading = true;
     notifyListeners();
-    await _loadCurrentPage();
+    if (_isFallback) {
+      await _loadFallbackPage();
+    } else {
+      await _loadCurrentPage();
+    }
     isNextPageLoading = false;
     notifyListeners();
   }
@@ -173,6 +225,7 @@ class SnapsFeedController extends ChangeNotifier
     _lastRootAuthor = null;
     _lastRootPermlink = null;
     errorMessage = null;
+    _isFallback = false;
     isPageEnded = false;
     viewState = ViewState.loading;
     init();

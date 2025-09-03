@@ -25,12 +25,12 @@ class HiveAuthController extends HiveTransactionController {
   final String accountName;
 
   HiveAuthController({
-    required this.accountName,
+    required String accountName,
     required super.onFailure,
     required super.ishiveKeyChainMethod,
     required super.showError,
     required super.onSuccess,
-  }) {
+  })  : accountName = accountName.toLowerCase() {
     _initAuthSocketSubscription();
   }
 
@@ -96,7 +96,7 @@ class HiveAuthController extends HiveTransactionController {
       ActionSingleDataResponse<AuthDecryptionResponse>
           decryptionResponse) async {
     UserAuthModel<HiveAuthModel> data = UserAuthModel(
-      accountName: accountName,
+      accountName: accountName.toLowerCase(),
       authType:
           ishiveKeyChainMethod ? AuthType.hiveKeyChain : AuthType.hiveAuth,
       imageUploadToken: decryptionResponse.data!.hsToken!,

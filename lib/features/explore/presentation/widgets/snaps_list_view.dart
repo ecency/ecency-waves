@@ -60,16 +60,16 @@ class _SnapsListViewState extends State<SnapsListView> {
       builder: (context, state, _) {
         final error =
             context.select<SnapsFeedController, String?>((c) => c.errorMessage);
+        if (error != null && error.isNotEmpty && error != _lastErrorMessage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) context.showSnackBar(error);
+          });
+          _lastErrorMessage = error;
+        }
         if (state == ViewState.loading) {
           return const LoadingState();
         }
         if (state == ViewState.empty) {
-          if (error != null && error.isNotEmpty && error != _lastErrorMessage) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) context.showSnackBar(error);
-            });
-            _lastErrorMessage = error;
-          }
           return const Emptystate(text: 'No content found');
         }
         final items =

@@ -23,16 +23,17 @@ class PostingAuthController extends ChangeNotifier {
       required VoidCallback onSuccess,
       required VoidCallback showLoader,
       required VoidCallback hideLoader}) async {
+    final normalizedAccount = accountName.toLowerCase();
     showLoader();
     ActionSingleDataResponse<String> response =
-        await _authRepository.validatePostingKey(accountName, postingKey);
+        await _authRepository.validatePostingKey(normalizedAccount, postingKey);
     if (response.isSuccess) {
       postingKey =
           _isKeyFromResponse(response.data) ? response.data! : postingKey;
       ActionSingleDataResponse<String> proofResponse = await _authRepository
-          .getImageUploadProofWithPostingKey(accountName, postingKey);
+          .getImageUploadProofWithPostingKey(normalizedAccount, postingKey);
       if (proofResponse.isSuccess) {
-        await _saveToLocal(accountName, postingKey, proofResponse.data!);
+        await _saveToLocal(normalizedAccount, postingKey, proofResponse.data!);
         showToast(LocaleText.smPostingLoginMessage);
         hideLoader();
         onSuccess();
@@ -54,7 +55,7 @@ class PostingAuthController extends ChangeNotifier {
   Future<void> _saveToLocal(
       String accountName, String postingKey, String token) async {
     UserAuthModel<PostingAuthModel> data = UserAuthModel(
-        accountName: accountName,
+        accountName: accountName.toLowerCase(),
         authType: AuthType.postingKey,
         imageUploadToken: token,
         auth: PostingAuthModel(

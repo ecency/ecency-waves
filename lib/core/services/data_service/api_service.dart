@@ -194,7 +194,8 @@ class ApiService {
     final stickyKey = 'acct_posts:${enumToString(type)}:$accountName';
 
     Future<http.Response> _do(Map<String, dynamic> payload) async {
-      final res = await _postWithFallback(payload, stickyKey: stickyKey);
+      final res = await _postWithFallback(payload,
+          stickyKey: stickyKey, timeout: const Duration(seconds: 3));
       if (res == null) return http.Response('RPC error: no node responded', 500);
 
       try {

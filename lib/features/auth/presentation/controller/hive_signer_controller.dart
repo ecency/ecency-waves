@@ -19,9 +19,9 @@ class HiveSignerController {
       required Function(String) onFailure}) {
     HiveSignerHelperModel? data = extractTokenFromUrl(url);
     if (data != null) {
-      if (!_userLocalRepository.isAccountDeleted(data.username)) {
-        _saveToLocal(data.username, data.token)
-            .then((_) => onSuccess(data.username));
+      final username = data.username.toLowerCase();
+      if (!_userLocalRepository.isAccountDeleted(username)) {
+        _saveToLocal(username, data.token).then((_) => onSuccess(username));
       } else {
         onFailure(LocaleText.theAccountDoesntExist.tr());
       }
@@ -43,7 +43,7 @@ class HiveSignerController {
 
   Future<void> _saveToLocal(String accountName, String token) async {
     UserAuthModel<HiveSignerAuthModel> data = UserAuthModel(
-        accountName: accountName,
+        accountName: accountName.toLowerCase(),
         authType: AuthType.hiveSign,
         imageUploadToken: token,
         auth: HiveSignerAuthModel(token: token));
