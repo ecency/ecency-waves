@@ -5,6 +5,7 @@ import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
+import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/presentation/snaps/controller/snaps_feed_controller.dart';
@@ -22,6 +23,7 @@ class SnapsListView extends StatefulWidget {
 class _SnapsListViewState extends State<SnapsListView> {
   final ScrollController _scrollController = ScrollController();
   bool _showBackToTopButton = false;
+  String? _lastErrorMessage;
 
   @override
   void initState() {
@@ -56,10 +58,18 @@ class _SnapsListViewState extends State<SnapsListView> {
     return Selector<SnapsFeedController, ViewState>(
       selector: (_, c) => c.viewState,
       builder: (context, state, _) {
+        final error =
+            context.select<SnapsFeedController, String?>((c) => c.errorMessage);
         if (state == ViewState.loading) {
           return const LoadingState();
         }
         if (state == ViewState.empty) {
+          if (error != null && error.isNotEmpty && error != _lastErrorMessage) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) context.showSnackBar(error);
+            });
+            _lastErrorMessage = error;
+          }
           return const Emptystate(text: 'No content found');
         }
         final items =

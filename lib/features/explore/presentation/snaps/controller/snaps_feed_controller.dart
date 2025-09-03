@@ -19,6 +19,7 @@ class SnapsFeedController extends ChangeNotifier
   final String? username;
   final String? observer;
   ThreadFeedType threadType;
+  String? errorMessage;
 
   final Set<String> _snapKeys = {};
   // Holds container root posts that are scanned for user content.
@@ -66,6 +67,9 @@ class SnapsFeedController extends ChangeNotifier
           .addAll(snapRes.data!.map((e) => '${e.author}/${e.permlink}'));
       await _loadCurrentPage();
     } else {
+      errorMessage = snapRes.errorMessage.isNotEmpty
+          ? snapRes.errorMessage
+          : null;
       viewState = ViewState.empty;
       notifyListeners();
     }
@@ -168,6 +172,7 @@ class SnapsFeedController extends ChangeNotifier
     _rootIndex = 0;
     _lastRootAuthor = null;
     _lastRootPermlink = null;
+    errorMessage = null;
     isPageEnded = false;
     viewState = ViewState.loading;
     init();

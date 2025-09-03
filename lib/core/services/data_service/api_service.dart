@@ -994,7 +994,9 @@ class ApiService {
     try {
       final url = Uri.parse(
           'https://peakd.com/api/public/snaps/tags?container=$container&tag=$tag');
-      final res = await http.get(url, headers: _jsonHeaders);
+      final res = await http
+          .get(url, headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         final decoded = _tryDecode(res.body);
         if (decoded is List) {
@@ -1015,6 +1017,12 @@ class ApiService {
         errorMessage: res.body.isNotEmpty
             ? res.body
             : 'Server Error (${res.statusCode})',
+      );
+    } on TimeoutException {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage:
+            'API seems slow or inaccessible, try again later.',
       );
     } catch (e) {
       return ActionListDataResponse(
@@ -1029,7 +1037,9 @@ class ApiService {
     try {
       final url = Uri.parse(
           'https://peakd.com/api/public/snaps/account?container=$container&username=$username');
-      final res = await http.get(url, headers: _jsonHeaders);
+      final res = await http
+          .get(url, headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         final decoded = _tryDecode(res.body);
         if (decoded is List) {
@@ -1051,6 +1061,12 @@ class ApiService {
             ? res.body
             : 'Server Error (${res.statusCode})',
       );
+    } on TimeoutException {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage:
+            'API seems slow or inaccessible, try again later.',
+      );
     } catch (e) {
       return ActionListDataResponse(
         status: ResponseStatus.failed,
@@ -1064,7 +1080,9 @@ class ApiService {
     try {
       final url = Uri.parse(
           'https://peakd.com/api/public/snaps/trending/tags?container=$container');
-      final res = await http.get(url, headers: _jsonHeaders);
+      final res = await http
+          .get(url, headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         final decoded = _tryDecode(res.body);
         if (decoded is List) {
@@ -1084,6 +1102,12 @@ class ApiService {
             ? res.body
             : 'Server Error (${res.statusCode})',
       );
+    } on TimeoutException {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage:
+            'API seems slow or inaccessible, try again later.',
+      );
     } catch (e) {
       return ActionListDataResponse(
         status: ResponseStatus.failed,
@@ -1097,7 +1121,9 @@ class ApiService {
     try {
       final url = Uri.parse(
           'https://peakd.com/api/public/snaps/trending/authors?container=$container');
-      final res = await http.get(url, headers: _jsonHeaders);
+      final res = await http
+          .get(url, headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         final decoded = _tryDecode(res.body);
         if (decoded is List) {
@@ -1116,6 +1142,12 @@ class ApiService {
         errorMessage: res.body.isNotEmpty
             ? res.body
             : 'Server Error (${res.statusCode})',
+      );
+    } on TimeoutException {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage:
+            'API seems slow or inaccessible, try again later.',
       );
     } catch (e) {
       return ActionListDataResponse(
