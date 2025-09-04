@@ -50,15 +50,11 @@ class Thread {
   }
 
   static bool isMuted(ThreadFeedModel entry) {
-    return (entry.stats?.gray ?? false) &&
-        (entry.netRshares ?? 0) >= 0 &&
-        (entry.authorReputation ?? 0) >= 0;
+    return entry.stats?.gray ?? false;
   }
 
   static bool isLowReputation(ThreadFeedModel entry) {
-    return (entry.stats?.gray ?? false) &&
-        (entry.netRshares ?? 0) >= 0 &&
-        (entry.authorReputation ?? 0) < 0;
+    return (entry.authorReputation ?? 0) < 0;
   }
 
   static List<ThreadFeedModel> filterInvisibleContent(
