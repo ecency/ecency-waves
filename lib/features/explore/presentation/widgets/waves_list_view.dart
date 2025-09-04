@@ -8,19 +8,19 @@ import 'package:waves/core/common/widgets/scroll_end_listener.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/features/explore/presentation/snaps/controller/snaps_feed_controller.dart';
+import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_feed_divider.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_tile.dart';
 
-class SnapsListView extends StatefulWidget {
-  const SnapsListView({super.key});
+class WavesListView extends StatefulWidget {
+  const WavesListView({super.key});
 
   @override
-  State<SnapsListView> createState() => _SnapsListViewState();
+  State<WavesListView> createState() => _WavesListViewState();
 }
 
-class _SnapsListViewState extends State<SnapsListView> {
+class _WavesListViewState extends State<WavesListView> {
   final ScrollController _scrollController = ScrollController();
   bool _showBackToTopButton = false;
   String? _lastErrorMessage;
@@ -53,13 +53,13 @@ class _SnapsListViewState extends State<SnapsListView> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.read<SnapsFeedController>();
+    final controller = context.read<WavesFeedController>();
 
-    return Selector<SnapsFeedController, ViewState>(
+    return Selector<WavesFeedController, ViewState>(
       selector: (_, c) => c.viewState,
       builder: (context, state, _) {
         final error =
-            context.select<SnapsFeedController, String?>((c) => c.errorMessage);
+            context.select<WavesFeedController, String?>((c) => c.errorMessage);
         if (error != null && error.isNotEmpty && error != _lastErrorMessage) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) context.showSnackBar(error);
@@ -73,7 +73,7 @@ class _SnapsListViewState extends State<SnapsListView> {
           return const Emptystate(text: 'No content found');
         }
         final items =
-            context.select<SnapsFeedController, List<ThreadFeedModel>>(
+            context.select<WavesFeedController, List<ThreadFeedModel>>(
                 (c) => c.items);
         return ScrollEndListener(
           loadNextPage: controller.loadNextPage,
@@ -97,7 +97,7 @@ class _SnapsListViewState extends State<SnapsListView> {
                         if (index == items.length - 1)
                           PaginationLoader(
                             pageVisibilityListener: (ctx) => ctx
-                                .select<SnapsFeedController, bool>(
+                                .select<WavesFeedController, bool>(
                                     (c) => c.isNextPageLoading),
                           ),
                       ],

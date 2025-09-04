@@ -7,7 +7,7 @@ import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/features/explore/presentation/snaps/controller/snaps_feed_controller.dart';
+import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_pop_up_menu.dart';
@@ -80,7 +80,7 @@ class ThreadUserInfoTile extends StatelessWidget {
   Future<Object?> _pushToUserProfile(BuildContext context) {
     ThreadFeedType threadType;
     try {
-      threadType = context.read<SnapsFeedController>().threadType;
+      threadType = context.read<WavesFeedController>().threadType;
     } catch (_) {
       threadType = context.read<ThreadFeedController>().threadType;
     }

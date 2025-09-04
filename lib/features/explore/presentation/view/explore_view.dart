@@ -19,34 +19,32 @@ class ExploreView extends StatelessWidget {
       length: 2,
       child: ChangeNotifierProvider(
         create: (_) => ExploreController(),
-        child: Builder(builder: (context) {
-          final controller = context.read<ExploreController>();
-          return Scaffold(
-            appBar: AppBar(
-              title: Selector<ExploreController, ThreadFeedType>(
-                selector: (_, c) => c.threadType,
-                builder: (context, type, _) => ThreadTypeDropdown(
-                  value: type,
+        child: Consumer<ExploreController>(
+          builder: (context, controller, _) {
+            return Scaffold(
+              appBar: AppBar(
+                title: ThreadTypeDropdown(
+                  value: controller.threadType,
                   onChanged: controller.onChangeThreadType,
                 ),
+                bottom: const TabBar(
+                  tabs: [
+                    Tab(text: 'Tags'),
+                    Tab(text: 'Users'),
+                  ],
+                ),
               ),
-              bottom: const TabBar(
-                tabs: [
-                  Tab(text: 'Tags'),
-                  Tab(text: 'Users'),
-                ],
+              body: SafeArea(
+                child: TabBarView(
+                  children: [
+                    _TagsTab(),
+                    _UsersTab(),
+                  ],
+                ),
               ),
-            ),
-            body: SafeArea(
-              child: TabBarView(
-                children: [
-                  _TagsTab(),
-                  _UsersTab(),
-                ],
-              ),
-            ),
-          );
-        }),
+            );
+          },
+        ),
       ),
     );
   }

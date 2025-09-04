@@ -21,7 +21,6 @@ import 'package:waves/features/threads/models/thread_feeds/reported/report_repon
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
-import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
 import 'package:waves/features/explore/models/trending_tag_model.dart';
 import 'package:waves/features/explore/models/trending_author_model.dart';
 
@@ -990,27 +989,37 @@ class ApiService {
 
   // -------------------------- Ecency Waves APIs --------------------------
 
-  Future<ActionListDataResponse<ThreadInfo>> getTagSnaps(
-      String container, String tag) async {
+  Future<ActionListDataResponse<ThreadFeedModel>> getTagWaves(
+      String container, String tag,
+      {int limit = 20, String? lastAuthor, String? lastPermlink}) async {
     try {
-      final url = Uri.parse(
-          'https://ecency.com/private-api/waves/tags?container=$container&tag=$tag');
+      final query = StringBuffer(
+          'https://ecency.com/private-api/waves/tags?container=$container&tag=$tag&limit=$limit');
+      if (lastAuthor != null) {
+        query.write('&start_author=$lastAuthor');
+      }
+      if (lastPermlink != null) {
+        query.write('&start_permlink=$lastPermlink');
+      }
+      final url = Uri.parse(query.toString());
       final res = await http
           .get(url, headers: _jsonHeaders)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         final decoded = _tryDecode(res.body);
         if (decoded is List) {
-          final items = decoded
-              .map((e) => ThreadInfo(
-                  author: e['author'] as String,
-                  permlink: e['permlink'] as String))
-              .toList();
-          return ActionListDataResponse<ThreadInfo>(
-              data: items,
-              status: ResponseStatus.success,
-              isSuccess: true,
-              errorMessage: '');
+          final items = decoded.map((e) {
+            final map = Map<String, dynamic>.from(e as Map);
+            map['post_id'] ??= map['id'];
+            map['created'] ??= map['timestamp'];
+            return ThreadFeedModel.fromJson(map);
+          }).toList();
+          return ActionListDataResponse<ThreadFeedModel>(
+            data: items,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: '',
+          );
         }
       }
       return ActionListDataResponse(
@@ -1022,8 +1031,7 @@ class ApiService {
     } on TimeoutException {
       return ActionListDataResponse(
         status: ResponseStatus.failed,
-        errorMessage:
-            'API seems slow or inaccessible, try again later.',
+        errorMessage: 'API seems slow or inaccessible, try again later.',
       );
     } catch (e) {
       return ActionListDataResponse(
@@ -1033,27 +1041,37 @@ class ApiService {
     }
   }
 
-  Future<ActionListDataResponse<ThreadInfo>> getAccountSnaps(
-      String container, String username) async {
+  Future<ActionListDataResponse<ThreadFeedModel>> getAccountWaves(
+      String container, String username,
+      {int limit = 20, String? lastAuthor, String? lastPermlink}) async {
     try {
-      final url = Uri.parse(
-          'https://ecency.com/private-api/waves/account?container=$container&username=$username');
+      final query = StringBuffer(
+          'https://ecency.com/private-api/waves/account?container=$container&username=$username&limit=$limit');
+      if (lastAuthor != null) {
+        query.write('&start_author=$lastAuthor');
+      }
+      if (lastPermlink != null) {
+        query.write('&start_permlink=$lastPermlink');
+      }
+      final url = Uri.parse(query.toString());
       final res = await http
           .get(url, headers: _jsonHeaders)
           .timeout(const Duration(seconds: 10));
       if (res.statusCode == 200) {
         final decoded = _tryDecode(res.body);
         if (decoded is List) {
-          final items = decoded
-              .map((e) => ThreadInfo(
-                  author: e['author'] as String,
-                  permlink: e['permlink'] as String))
-              .toList();
-          return ActionListDataResponse<ThreadInfo>(
-              data: items,
-              status: ResponseStatus.success,
-              isSuccess: true,
-              errorMessage: '');
+          final items = decoded.map((e) {
+            final map = Map<String, dynamic>.from(e as Map);
+            map['post_id'] ??= map['id'];
+            map['created'] ??= map['timestamp'];
+            return ThreadFeedModel.fromJson(map);
+          }).toList();
+          return ActionListDataResponse<ThreadFeedModel>(
+            data: items,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: '',
+          );
         }
       }
       return ActionListDataResponse(
@@ -1065,8 +1083,7 @@ class ApiService {
     } on TimeoutException {
       return ActionListDataResponse(
         status: ResponseStatus.failed,
-        errorMessage:
-            'API seems slow or inaccessible, try again later.',
+        errorMessage: 'API seems slow or inaccessible, try again later.',
       );
     } catch (e) {
       return ActionListDataResponse(

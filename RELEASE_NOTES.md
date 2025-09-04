@@ -15,10 +15,14 @@
 - Timeout handling and comment checks with surfaced errors.
 - Removed dbuzz integration and improved queries.
 - Rewrote `runThisJs` and platform bridges.
+- Tag and account waves feeds pull posts directly from the API.
 
 ### Fixed
 - Avatar resizing, keystroke request handling, profile fetching, and image proxy issues.
 - Keystore, placeholder colors, and content fetching/loading.
+- Wave timestamp parsing with timezone offsets causing format exceptions.
+- Crash when viewing profiles if wave depth was missing in API responses.
+- Explore dropdown not reflecting selected thread type.
 
 ## 1.1.0
 
@@ -26,7 +30,7 @@
 - Poll functionality including creation, voting, results, and theme options.
 - Delete-account option and welcome view requiring terms acceptance.
 - Hash tag extraction for wave tags.
-- Snaps feature.
+- Waves feature.
 - Key-based login with HiveAuth/HiveKeychain and upvote support.
 - Image upload across authentication methods.
 - Report, mute, and filter features.

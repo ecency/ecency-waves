@@ -142,7 +142,7 @@ class ThreadFeedModel extends Equatable {
 
   factory ThreadFeedModel.fromJson(Map<String, dynamic> json) =>
       ThreadFeedModel(
-        postId: json["post_id"],
+        postId: asInt(json, 'post_id'),
         author: asString(json, "author"),
         permlink: asString(json, "permlink"),
         category: asString(json, "category"),
@@ -153,7 +153,7 @@ class ThreadFeedModel extends Equatable {
         lastUpdate: json["last_update"] != null
             ? DateTime.parse(json["last_update"])
             : null,
-        depth: json["depth"],
+        depth: asInt(json, 'depth', defaultValue: 1),
         children: json["children"],
         netRshares: json["net_rshares"],
         lastPayout: json["last_payout"] != null
@@ -177,8 +177,10 @@ class ThreadFeedModel extends Equatable {
         parentPermlink: json["parent_permlink"],
         url: json["url"],
         rootTitle: json["root_title"],
-        beneficiaries: List<BeneficiaryModel>.from(
-            json["beneficiaries"].map((x) => BeneficiaryModel.fromJson(x))),
+        beneficiaries: (json['beneficiaries'] as List?)
+                ?.map((x) => BeneficiaryModel.fromJson(x))
+                .toList() ??
+            [],
         maxAcceptedPayout: json["max_accepted_payout"],
         percentHBD: json["percent_hbd"],
         stats: ThreadStats.fromJson(json['stats']),
@@ -245,10 +247,14 @@ class ThreadFeedModel extends Equatable {
   }
 
   static String _timeStamp(String data) {
-    if (data.substring(data.length - 1).toLowerCase() != 'z') {
-      return '${data}z';
+    if (data.toLowerCase().endsWith('z')) {
+      return data;
     }
-    return data;
+    final timePart = data.split('T').last;
+    if (timePart.contains('+') || timePart.contains('-')) {
+      return data;
+    }
+    return '${data}Z';
   }
 
   List<String>? get images {

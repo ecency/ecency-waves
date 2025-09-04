@@ -2,7 +2,7 @@ import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/services/data_service/api_service.dart';
 import 'package:waves/features/explore/models/trending_author_model.dart';
 import 'package:waves/features/explore/models/trending_tag_model.dart';
-import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
+import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 
 class ExploreRepository {
   final ApiService _apiService;
@@ -16,11 +16,15 @@ class ExploreRepository {
           String container) =>
       _apiService.getTrendingAuthors(container);
 
-  Future<ActionListDataResponse<ThreadInfo>> getTagSnaps(
-          String container, String tag) =>
-      _apiService.getTagSnaps(container, tag);
+  Future<ActionListDataResponse<ThreadFeedModel>> getTagWaves(
+          String container, String tag,
+          {int limit = 20, String? lastAuthor, String? lastPermlink}) =>
+      _apiService.getTagWaves(container, tag,
+          limit: limit, lastAuthor: lastAuthor, lastPermlink: lastPermlink);
 
-  Future<ActionListDataResponse<ThreadInfo>> getAccountSnaps(
-          String container, String username) =>
-      _apiService.getAccountSnaps(container, username);
+  Future<ActionListDataResponse<ThreadFeedModel>> getAccountWaves(
+          String container, String username,
+          {int limit = 20, String? lastAuthor, String? lastPermlink}) =>
+      _apiService.getAccountWaves(container, username,
+          limit: limit, lastAuthor: lastAuthor, lastPermlink: lastPermlink);
 }
