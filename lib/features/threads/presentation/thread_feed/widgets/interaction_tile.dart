@@ -34,70 +34,85 @@ class InteractionTile extends StatelessWidget {
     final iconColor = theme.primaryColorDark.withOpacity(0.8);
     const iconGap = 5.0;
     const borderRadius = BorderRadius.all(Radius.circular(40));
+    final rowChildren = <Widget>[
+      VoteIconButton(
+        item: item,
+        iconColor: iconColor,
+        iconGap: iconGap,
+        textStyle: style(theme),
+      ),
+    ];
+
+    if (item.pendingPayoutValue != null) {
+      rowChildren
+        ..add(gap())
+        ..add(ThreadEarnings(
+          pendingPayoutvalue: item.pendingPayoutValue,
+          iconColor: iconColor,
+          iconGap: iconGap,
+          textStyle: style(theme),
+        ));
+    }
+
+    rowChildren
+      ..add(gap())
+      ..add(
+        IconWithText(
+          onTap: () {
+            if (!removeCommentGesture) {
+              context.pushNamed(Routes.commentDetailView, extra: item);
+            }
+            // if (context.read<UserController>().isUserLoggedIn) {
+            //   context.pushNamed(
+            //     Routes.addCommentView,
+            //     queryParameters: {
+            //       RouteKeys.accountName: item.author,
+            //       RouteKeys.permlink: item.permlink
+            //     },
+            //   );
+            // }
+          },
+          icon: Icons.comment,
+          iconColor: iconColor,
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          text: "${item.children ?? 0}",
+          iconGap: iconGap,
+          textStyle: style(theme),
+        ),
+      )
+      ..add(gap())
+      ..add(
+        IconWithText(
+          onTap: () {
+            Share.share(
+                'https://ecency.com/${item.category}/@${item.author}/${item.permlink}');
+          },
+          borderRadius: borderRadius,
+          icon: Icons.share,
+          iconColor: iconColor,
+        ),
+      )
+      ..add(gap())
+      ..add(
+        BookmarkButton(
+            borderRadius: borderRadius,
+            iconColor: iconColor,
+            isBookmarked:
+                bookmarkProvider.isBookmarkPresent(item.idString),
+            onAdd: () {
+              bookmarkProvider.addBookmark(item.idString, item);
+            },
+            onRemove: () {
+              bookmarkProvider.removeBookmark(item.idString);
+            },
+            toastType: '${item.author}/${item.permlink}'),
+      );
+
     return Padding(
       padding: const EdgeInsets.only(right: 4),
       child: Row(
-        mainAxisAlignment:  MainAxisAlignment.spaceBetween,
-        children: [
-          VoteIconButton(
-            item: item,
-            iconColor: iconColor,
-            iconGap: iconGap,
-            textStyle: style(theme),
-          ),
-          gap(),
-          ThreadEarnings(
-            pendingPayoutvalue: item.pendingPayoutValue,
-            iconColor: iconColor,
-            iconGap: iconGap,
-            textStyle: style(theme),
-          ),
-          gap(),
-            IconWithText(
-              onTap: () {
-                if (!removeCommentGesture) {
-                  context.pushNamed(Routes.commentDetailView, extra: item);
-                }
-                // if (context.read<UserController>().isUserLoggedIn) {
-                //   context.pushNamed(
-                //     Routes.addCommentView,
-                //     queryParameters: {
-                //       RouteKeys.accountName: item.author,
-                //       RouteKeys.permlink: item.permlink
-                //     },
-                //   );
-                // }
-              },
-              icon: Icons.comment,
-              iconColor: iconColor,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              text: "${item.children ?? 0}",
-              iconGap: iconGap,
-              textStyle: style(theme),
-            ),
-          gap(),
-          IconWithText(
-            onTap: () {
-              Share.share(
-                  'https://ecency.com/${item.category}/@${item.author}/${item.permlink}');
-            },
-            borderRadius: borderRadius,
-            icon: Icons.share,
-            iconColor: iconColor,
-          ),
-          gap(),
-          BookmarkButton(
-              borderRadius: borderRadius,
-              iconColor: iconColor,
-              isBookmarked: bookmarkProvider.isBookmarkPresent(item.idString),
-              onAdd: () {
-                bookmarkProvider.addBookmark(item.idString, item);
-              },
-              onRemove: () {
-                bookmarkProvider.removeBookmark(item.idString);
-              },
-              toastType: '${item.author}/${item.permlink}'),
-        ],
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: rowChildren,
       ),
     );
   }
