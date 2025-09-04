@@ -23,9 +23,12 @@ class ExploreView extends StatelessWidget {
           final controller = context.read<ExploreController>();
           return Scaffold(
             appBar: AppBar(
-              title: ThreadTypeDropdown(
-                value: controller.threadType,
-                onChanged: controller.onChangeThreadType,
+              title: Selector<ExploreController, ThreadFeedType>(
+                selector: (_, c) => c.threadType,
+                builder: (context, type, _) => ThreadTypeDropdown(
+                  value: type,
+                  onChanged: controller.onChangeThreadType,
+                ),
               ),
               bottom: const TabBar(
                 tabs: [
@@ -68,6 +71,7 @@ class _TagsTab extends StatelessWidget {
                 final tag = tags[index];
                 return ListTile(
                   title: Text('#${tag.tag}'),
+                  trailing: _PostsBadge(count: tag.posts),
                   onTap: () {
                     context.platformPushNamed(
                       Routes.tagFeedView,
@@ -112,6 +116,7 @@ class _UsersTab extends StatelessWidget {
                     url: a.author,
                   ),
                   title: Text(a.author),
+                  trailing: _PostsBadge(count: a.posts),
                   onTap: () {
                     context.platformPushNamed(
                       Routes.userProfileView,
@@ -129,6 +134,25 @@ class _UsersTab extends StatelessWidget {
             return const Center(child: Text('Error'));
           }
         },
+      ),
+    );
+  }
+}
+
+class _PostsBadge extends StatelessWidget {
+  const _PostsBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return CircleAvatar(
+      radius: 14,
+      backgroundColor: theme.colorScheme.primaryContainer,
+      child: Text(
+        '$count',
+        style: theme.textTheme.bodySmall,
       ),
     );
   }

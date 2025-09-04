@@ -15,25 +15,28 @@ class TagFeedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => SnapsFeedController.tag(tag: tag, threadType: threadType),
-      child: Builder(builder: (context) {
-        final controller = context.read<SnapsFeedController>();
-        return Scaffold(
-          appBar: AppBar(
-            title: Row(
-              children: [
-                Text('#$tag'),
-                const Spacer(),
-                ThreadTypeDropdown(
-                  value: controller.threadType,
-                  onChanged: controller.updateThreadType,
-                ),
-              ],
+        child: Builder(builder: (context) {
+          final controller = context.read<SnapsFeedController>();
+          return Scaffold(
+            appBar: AppBar(
+              title: Row(
+                children: [
+                  Text('#$tag'),
+                  const Spacer(),
+                  Selector<SnapsFeedController, ThreadFeedType>(
+                    selector: (_, c) => c.threadType,
+                    builder: (context, type, _) => ThreadTypeDropdown(
+                      value: type,
+                      onChanged: controller.updateThreadType,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          body: SafeArea(
-            child: Selector<SnapsFeedController, ViewState>(
-              selector: (_, c) => c.viewState,
-              builder: (context, state, _) {
+            body: SafeArea(
+              child: Selector<SnapsFeedController, ViewState>(
+                selector: (_, c) => c.viewState,
+                builder: (context, state, _) {
                 if (state == ViewState.loading) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state == ViewState.data) {
