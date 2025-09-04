@@ -145,9 +145,12 @@ class _PostsBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return CircleAvatar(
-      radius: 14,
-      backgroundColor: theme.colorScheme.primaryContainer,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Text(
         '$count',
         style: theme.textTheme.bodySmall,
