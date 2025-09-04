@@ -41,6 +41,10 @@ class _UserProfileFollowMuteButtonsState
 
   @override
   Widget build(BuildContext context) {
+    final userName = context.read<UserController>().userName;
+    if (userName != null && userName == widget.author) {
+      return const SizedBox.shrink();
+    }
     return DuoTextButtons(
       buttonHeight: widget.buttonHeight,
       buttonOneText: "Mute",

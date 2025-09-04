@@ -988,13 +988,13 @@ class ApiService {
     }
   }
 
-  // -------------------------- Peakd Snaps APIs --------------------------
+  // -------------------------- Ecency Waves APIs --------------------------
 
   Future<ActionListDataResponse<ThreadInfo>> getTagSnaps(
       String container, String tag) async {
     try {
       final url = Uri.parse(
-          'https://peakd.com/api/public/snaps/tags?container=$container&tag=$tag');
+          'https://ecency.com/private-api/waves/tags?container=$container&tag=$tag');
       final res = await http
           .get(url, headers: _jsonHeaders)
           .timeout(const Duration(seconds: 10));
@@ -1037,7 +1037,7 @@ class ApiService {
       String container, String username) async {
     try {
       final url = Uri.parse(
-          'https://peakd.com/api/public/snaps/account?container=$container&username=$username');
+          'https://ecency.com/private-api/waves/account?container=$container&username=$username');
       final res = await http
           .get(url, headers: _jsonHeaders)
           .timeout(const Duration(seconds: 10));
@@ -1080,7 +1080,7 @@ class ApiService {
       String container) async {
     try {
       final url = Uri.parse(
-          'https://peakd.com/api/public/snaps/trending/tags?container=$container');
+          'https://ecency.com/private-api/waves/trending/tags?container=$container');
       final res = await http
           .get(url, headers: _jsonHeaders)
           .timeout(const Duration(seconds: 10));
@@ -1121,7 +1121,7 @@ class ApiService {
       String container) async {
     try {
       final url = Uri.parse(
-          'https://peakd.com/api/public/snaps/trending/authors?container=$container');
+          'https://ecency.com/private-api/waves/trending/authors?container=$container');
       final res = await http
           .get(url, headers: _jsonHeaders)
           .timeout(const Duration(seconds: 10));
