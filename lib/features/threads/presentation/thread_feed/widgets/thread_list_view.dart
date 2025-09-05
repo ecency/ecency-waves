@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/back_to_top_button.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
+import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/core/routes/routes.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_feed_divider.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_tile.dart';
+import 'package:waves/features/user/view/user_controller.dart';
 
 class ThreadListView extends StatefulWidget {
   const ThreadListView({super.key});
@@ -80,7 +86,7 @@ class _ThreadListViewState extends State<ThreadListView> {
                     );
                   },
                 ),
-
+                _composePrompt(theme, controller),
                 Expanded(
                   child: ScrollEndListener(
                     loadNextPage: () =>
@@ -174,6 +180,44 @@ class _ThreadListViewState extends State<ThreadListView> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Top input bar encouraging users to publish new content.
+  Widget _composePrompt(ThemeData theme, ThreadFeedController controller) {
+    final userController = context.read<UserController>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: kScreenHorizontalPaddingDigit, vertical: 10),
+      child: Row(
+        children: [
+          UserProfileImage(url: userController.userName),
+          const Gap(10),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                context.authenticatedAction(action: () {
+                  context.pushNamed(Routes.addCommentView).then((value) {
+                    if (value != null && value is ThreadFeedModel) {
+                      controller.refreshOnRootComment(value);
+                    }
+                  });
+                });
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                decoration: BoxDecoration(
+                    color: theme.colorScheme.tertiaryContainer,
+                    border:
+                        Border.all(color: theme.colorScheme.tertiary),
+                    borderRadius: const BorderRadius.all(Radius.circular(20))),
+                child: const Text("What's happening?"),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

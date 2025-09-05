@@ -32,13 +32,17 @@ class AddCommentBottomActionBar extends StatefulWidget {
       required this.isRoot,
       required this.authorParam,
       required this.permlinkParam,
-      required this.depthParam});
+      required this.depthParam,
+      this.rootThreadInfo});
 
   final TextEditingController commentTextEditingController;
   final bool isRoot;
   final String? authorParam;
   final String? permlinkParam;
   final int? depthParam;
+  // When creating a root post we might target a specific container host.
+  // [rootThreadInfo] provides the author/permlink pair for that host.
+  final ThreadInfo? rootThreadInfo;
 
   @override
   State<AddCommentBottomActionBar> createState() =>
@@ -108,7 +112,9 @@ class _AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         if (comment.isEmpty) {
           context.showSnackBar(LocaleText.replyCannotBeEmpty);
         } else if (widget.isRoot &&
+            widget.rootThreadInfo == null &&
             context.read<ThreadFeedController>().rootThreadInfo == null) {
+          // Unable to determine which container to post to
           context.pop();
         } else if (userData.isPostingKeyLogin) {
           _postingKeyCommentTransaction(comment, userData, context);
@@ -355,7 +361,8 @@ class _AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
 
   ThreadInfo threadInfo(BuildContext context) {
     if (widget.isRoot) {
-      return context.read<ThreadFeedController>().rootThreadInfo!;
+      return widget.rootThreadInfo ??
+          context.read<ThreadFeedController>().rootThreadInfo!;
     } else {
       return ThreadInfo(
           author: widget.authorParam!, permlink: widget.permlinkParam!);

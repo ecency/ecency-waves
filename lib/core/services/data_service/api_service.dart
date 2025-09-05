@@ -307,27 +307,42 @@ class ApiService {
         }).toList();
       }
 
-      // 1) Try condenser: top-level replies (stable list)
+      List<dynamic> entries = [];
+
+      // Always fetch the root post first so payout fields are present
+      final rootRes = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'condenser_api.get_content',
+        'params': [accountName, permlink],
+        'id': 1,
+      });
+      if (rootRes != null) {
+        final decoded = jsonDecode(rootRes.body);
+        final root = (decoded is Map) ? decoded['result'] : null;
+        if (root is Map && (root['id'] ?? 0) != 0) {
+          entries.add(root);
+        }
+      }
+
+      // Fetch top-level replies
       final repliesRes = await _postWithFallback({
         'jsonrpc': '2.0',
         'method': 'condenser_api.get_content_replies',
         'params': [accountName, permlink],
         'id': 1,
       });
-
-      List<dynamic> entries = [];
       if (repliesRes != null) {
         final decoded = jsonDecode(repliesRes.body);
         if (!(decoded is Map && decoded['error'] != null)) {
           final result = (decoded is Map) ? decoded['result'] : decoded;
           if (result is List) {
-            entries = result;
+            entries.addAll(result);
           }
         }
       }
 
-      // 2) If empty, fallback to bridge.get_discussion (handle both shapes)
-      if (entries.isEmpty) {
+      // If we still only have the root (no replies), try bridge.get_discussion
+      if (entries.length <= 1) {
         final discussionRes = await _postWithFallback({
           'jsonrpc': '2.0',
           'method': 'bridge.get_discussion',
@@ -359,23 +374,16 @@ class ApiService {
         }
       }
 
-      // 3) If still empty, at least return the root post
-      if (entries.isEmpty) {
-        final rootRes = await _postWithFallback({
-          'jsonrpc': '2.0',
-          'method': 'condenser_api.get_content',
-          'params': [accountName, permlink],
-          'id': 1,
-        }, timeout: const Duration(seconds: 4));
-
-        if (rootRes != null) {
-          final decoded = jsonDecode(rootRes.body);
-          final root = (decoded is Map) ? decoded['result'] : null;
-          if (root is Map && (root['id'] ?? 0) != 0) {
-            entries.add(root);
-          }
+      // Deduplicate entries based on author/permlink
+      final seen = <String>{};
+      entries = entries.where((e) {
+        if (e is Map) {
+          final key = '${e['author']}/${e['permlink']}';
+          if (seen.contains(key)) return false;
+          seen.add(key);
         }
-      }
+        return true;
+      }).toList();
 
       final list = ThreadFeedModel.parseThreads(_normalize(entries));
       return ActionListDataResponse<ThreadFeedModel>(

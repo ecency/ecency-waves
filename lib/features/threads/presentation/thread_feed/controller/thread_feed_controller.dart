@@ -264,6 +264,16 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   void refreshOnRootComment(ThreadFeedModel newComment) {
+    final host = rootThreadInfo;
+    // Only insert the new comment if it targets the same container as the
+    // currently viewed feed. This avoids showing newly published posts in the
+    // wrong host feed when users publish to a different container.
+    if (threadType != ThreadFeedType.all &&
+        host != null &&
+        (newComment.parentAuthor != host.author ||
+            newComment.parentPermlink != host.permlink)) {
+      return;
+    }
     items = [newComment, ...items];
     if (viewState == ViewState.empty) viewState = ViewState.data;
     if (newFeeds.isNotEmpty) newFeeds = [newComment, ...newFeeds];

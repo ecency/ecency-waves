@@ -93,4 +93,23 @@ class Thread {
         return "All";
     }
   }
+
+  /// Returns the container account name for a given [ThreadFeedType].
+  ///
+  /// This is used when publishing new root content to decide which
+  /// host/container the post should be sent to.
+  static String getThreadAccountName({required ThreadFeedType type}) {
+    switch (type) {
+      case ThreadFeedType.ecency:
+        return 'ecency.waves';
+      case ThreadFeedType.peakd:
+        return 'peak.snaps';
+      case ThreadFeedType.liketu:
+        return 'liketu.moments';
+      case ThreadFeedType.leo:
+        return 'leothreads';
+      case ThreadFeedType.all:
+        return 'All';
+    }
+  }
 }
