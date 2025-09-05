@@ -45,13 +45,6 @@ class DrawerMenu extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        DrawerTile(
-                            onTap: () {
-                              Navigator.pop(context);
-                              context.platformPushNamed(Routes.exploreView);
-                            },
-                            text: 'Explore',
-                            icon: Icons.explore),
                         if (isLoggedIn)
                           DrawerTile(
                               onTap: () {
@@ -71,6 +64,13 @@ class DrawerMenu extends StatelessWidget {
                               },
                               text: 'My Waves',
                               icon: Icons.person),
+                        DrawerTile(
+                            onTap: () {
+                              Navigator.pop(context);
+                              context.platformPushNamed(Routes.exploreView);
+                            },
+                            text: 'Explore',
+                            icon: Icons.explore),
                         DrawerTile(
                             onTap: () {
                               context.popAndPlatformPushNamed(
