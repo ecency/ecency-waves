@@ -41,6 +41,7 @@ class _UserProfileViewWidgetState extends State<UserProfileViewWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final coverImage = widget.data.postingJsonMetadata?.profile?.coverImage;
     return Stack(
       children: [
         CustomScrollView(
@@ -49,7 +50,8 @@ class _UserProfileViewWidgetState extends State<UserProfileViewWidget> {
               slivers: [
                 SliverMainAxisGroup(
                   slivers: [
-                    _coverImage(),
+                    if (coverImage != null && coverImage.isNotEmpty)
+                      _coverImage(),
                     UserProfileUserInfo(data: widget.data),
                     SliverFillRemaining(
                       hasScrollBody: true,
@@ -61,7 +63,6 @@ class _UserProfileViewWidgetState extends State<UserProfileViewWidget> {
             ),
           ],
         ),
-
       ],
     );
   }
