@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/ui.dart';
@@ -9,6 +10,7 @@ import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
@@ -39,7 +41,22 @@ class UpvoteDialog extends StatefulWidget {
 }
 
 class _UpvoteDialogState extends State<UpvoteDialog> {
-  double weight = 0.01;
+  static const double _defaultWeight = 0.01;
+  static const String _voteWeightKeyPrefix = 'last_vote_weight_';
+
+  final GetStorage _storage = getIt<GetStorage>();
+  String? _userName;
+  double weight = _defaultWeight;
+
+  @override
+  void initState() {
+    super.initState();
+    _userName = context.read<UserController>().userName;
+    final storedWeight = _readStoredWeight();
+    if (storedWeight != null) {
+      weight = storedWeight;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -140,9 +157,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
               const Gap(10),
               UpvoteSlider(
                 initialWeight: weight,
-                onChanged: (weight) {
-                  this.weight = weight;
-                },
+                onChanged: _onWeightChanged,
               ),
               const Gap(30),
             ],
@@ -251,12 +266,56 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   Widget percentageButtons(double value) {
     return UpVotePercentageButtons(
         onTap: (weight) {
-          if (mounted) {
-            setState(() {
-              this.weight = weight;
-            });
-          }
+          _onWeightChanged(weight, shouldUpdateUI: true);
         },
         percentageValue: value);
+  }
+
+  void _onWeightChanged(double newWeight, {bool shouldUpdateUI = false}) {
+    final double normalizedWeight = _normalizeWeight(newWeight);
+    if (shouldUpdateUI) {
+      if (!mounted) return;
+      setState(() {
+        weight = normalizedWeight;
+      });
+    } else {
+      weight = normalizedWeight;
+    }
+    _persistWeight(normalizedWeight);
+  }
+
+  double? _readStoredWeight() {
+    if (_userName == null) return null;
+    final storedValue = _storage.read(_storageKey(_userName!));
+    if (storedValue == null) {
+      return null;
+    }
+    if (storedValue is num) {
+      return _normalizeWeight(storedValue.toDouble());
+    }
+    if (storedValue is String) {
+      final parsedValue = double.tryParse(storedValue);
+      if (parsedValue != null) {
+        return _normalizeWeight(parsedValue);
+      }
+    }
+    return null;
+  }
+
+  void _persistWeight(double value) {
+    if (_userName == null) return;
+    _storage.write(_storageKey(_userName!), value);
+  }
+
+  double _normalizeWeight(double value) {
+    if (value.isNaN) {
+      return _defaultWeight;
+    }
+    final num normalized = value.clamp(_defaultWeight, 1.0);
+    return normalized.toDouble();
+  }
+
+  String _storageKey(String userName) {
+    return '$_voteWeightKeyPrefix$userName';
   }
 }
