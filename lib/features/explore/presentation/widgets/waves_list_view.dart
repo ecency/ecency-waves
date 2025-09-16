@@ -54,6 +54,8 @@ class _WavesListViewState extends State<WavesListView> {
   @override
   Widget build(BuildContext context) {
     final controller = context.read<WavesFeedController>();
+    final double backToTopBottomOffset =
+        16 + MediaQuery.of(context).padding.bottom;
 
     return Selector<WavesFeedController, ViewState>(
       selector: (_, c) => c.viewState,
@@ -107,8 +109,7 @@ class _WavesListViewState extends State<WavesListView> {
                 ),
               ),
               Positioned(
-                // Avoid overlap with the compose FAB
-                bottom: 96,
+                bottom: backToTopBottomOffset,
                 right: 16,
                 child: Visibility(
                   visible: _showBackToTopButton,

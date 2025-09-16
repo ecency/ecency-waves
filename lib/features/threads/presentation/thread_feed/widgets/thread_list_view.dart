@@ -57,6 +57,8 @@ class _ThreadListViewState extends State<ThreadListView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = context.read<ThreadFeedController>();
+    final double backToTopBottomOffset =
+        16 + MediaQuery.of(context).padding.bottom;
 
     return Stack(
       children: [
@@ -163,8 +165,7 @@ class _ThreadListViewState extends State<ThreadListView> {
 
         // Back to top button
         Positioned(
-          // Push above the compose FAB
-          bottom: 96,
+          bottom: backToTopBottomOffset,
           right: 16,
           child: Visibility(
             visible: showBackToTopButton,
