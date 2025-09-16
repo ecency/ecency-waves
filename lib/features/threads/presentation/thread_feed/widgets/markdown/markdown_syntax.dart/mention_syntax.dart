@@ -3,7 +3,8 @@
 import 'package:markdown/markdown.dart' as md;
 
 class MentionSyntax extends md.InlineSyntax {
-  MentionSyntax() : super(r'@\w+');
+  MentionSyntax()
+      : super(r'@[A-Za-z0-9_](?:[A-Za-z0-9_.-]*[A-Za-z0-9_])?');
 
   @override
   bool onMatch(md.InlineParser parser, Match match) {

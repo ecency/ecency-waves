@@ -3,7 +3,8 @@
 import 'package:markdown/markdown.dart' as md;
 
 class HashtagSyntax extends md.InlineSyntax {
-  HashtagSyntax() : super(r'#\w+');
+  HashtagSyntax()
+      : super(r'#[A-Za-z0-9_](?:[A-Za-z0-9_-]*[A-Za-z0-9_])?');
 
   @override
   bool onMatch(md.InlineParser parser, Match match) {
