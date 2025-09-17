@@ -112,24 +112,26 @@ class _AddCommentViewState extends State<AddCommentView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (isRoot)
-                  DropdownButton<ThreadFeedType>(
-                    value: _selectedType,
-                    items: ThreadFeedType.values
-                        .where((e) => e != ThreadFeedType.all)
-                        .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(Thread.gethreadName(type: e)),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedType = val;
-                          _rootThreadInfo = null;
-                        });
-                        _loadRootThreadInfo(val);
-                      }
-                    },
+                  Center(
+                    child: DropdownButton<ThreadFeedType>(
+                      value: _selectedType,
+                      items: ThreadFeedType.values
+                          .where((e) => e != ThreadFeedType.all)
+                          .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(Thread.gethreadName(type: e)),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedType = val;
+                            _rootThreadInfo = null;
+                          });
+                          _loadRootThreadInfo(val);
+                        }
+                      },
+                    ),
                   ),
                 TextField(
                   keyboardType: TextInputType.multiline,

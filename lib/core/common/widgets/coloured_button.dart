@@ -8,15 +8,19 @@ class ColoredButton extends StatelessWidget {
       this.icon,
       required this.onPressed,
       this.backgroundColor,
+      this.foregroundColor,
       this.isBoldText = false,
-      this.borderRadius});
+      this.borderRadius,
+      this.height});
 
   final String text;
   final IconData? icon;
   final VoidCallback onPressed;
   final Color? backgroundColor;
+  final Color? foregroundColor;
   final BorderRadius? borderRadius;
   final bool isBoldText;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +32,14 @@ class ColoredButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final Color effectiveBackground =
         backgroundColor ?? colorScheme.primary;
-    final Color effectiveForeground = _resolveForegroundColor(
-      theme,
-      colorScheme,
-      effectiveBackground,
-    );
+    final Color effectiveForeground = foregroundColor ??
+        _resolveForegroundColor(
+          theme,
+          colorScheme,
+          effectiveBackground,
+        );
     return SizedBox(
-      height: 30,
+      height: height ?? 30,
       child: FilledButton(
           style: FilledButton.styleFrom(
             shape: RoundedRectangleBorder(

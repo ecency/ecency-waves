@@ -402,9 +402,11 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
           children: [
             Expanded(
               child: ColoredButton(
-                backgroundColor: theme.colorScheme.primary,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                foregroundColor: theme.colorScheme.onPrimary,
                 icon: Icons.card_giftcard_outlined,
                 isBoldText: true,
+                height: 44,
                 borderRadius:
                     const BorderRadius.only(bottomLeft: Radius.circular(20)),
                 text: LocaleText.tip,
@@ -414,8 +416,10 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
             const Gap(2),
             Expanded(
               child: ColoredButton(
-                backgroundColor: theme.colorScheme.primary,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                foregroundColor: theme.colorScheme.onPrimary,
                 isBoldText: true,
+                height: 44,
                 borderRadius:
                     const BorderRadius.only(bottomRight: Radius.circular(20)),
                 text: LocaleText.upvote,

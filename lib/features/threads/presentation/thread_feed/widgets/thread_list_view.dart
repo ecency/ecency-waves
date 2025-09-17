@@ -209,11 +209,36 @@ class _ThreadListViewState extends State<ThreadListView> {
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 decoration: BoxDecoration(
-                    color: theme.colorScheme.tertiaryContainer,
-                    border:
-                        Border.all(color: theme.colorScheme.tertiary),
-                    borderRadius: const BorderRadius.all(Radius.circular(20))),
-                child: const Text("What's happening?"),
+                  color: theme.colorScheme.tertiaryContainer,
+                  border: Border.all(color: theme.colorScheme.tertiary),
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "What's happening?",
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onTertiaryContainer,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.add,
+                        size: 18,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

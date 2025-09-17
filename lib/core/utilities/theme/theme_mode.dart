@@ -41,7 +41,7 @@ class ThemeController extends ChangeNotifier {
           onPrimary: _staticColor,
           onSecondary: _lightGrey,
           onTertiary: _successColor, // color used for success
-          onTertiaryContainer: _tertiaryColor.withOpacity(0.3),
+          onTertiaryContainer: Colors.grey.shade700,
           primaryContainer: _primaryThemeColor,
           secondaryContainer: const Color.fromRGBO(5, 206, 179, 1),
           tertiaryContainer: _secondaryColorTwo,
@@ -117,7 +117,7 @@ class ThemeController extends ChangeNotifier {
           onPrimary: _staticColor,
           onTertiary: _successColor, // color used for success
           onSecondary: Colors.grey.shade800,
-          onTertiaryContainer: Colors.grey.shade900.withOpacity(0.3),
+          onTertiaryContainer: Colors.grey.shade700,
           primaryContainer: _primaryThemeColor,
           secondaryContainer: const Color.fromRGBO(5, 206, 179, 1),
           tertiaryContainer: _primaryColorTwo,
