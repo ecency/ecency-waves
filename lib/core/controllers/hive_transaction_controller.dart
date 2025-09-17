@@ -35,6 +35,7 @@ class HiveTransactionController {
       listenersProvider: listenersProvider,
       isHiveKeyChainMethod: ishiveKeyChainMethod,
       accountName: accountName,
+      host: socketProvider.connectedServer,
       authKey: authKey,
       onTimeOut: () => onServerFailure(message: LocaleText.emTimeOutMessage),
     );

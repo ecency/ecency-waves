@@ -15,12 +15,17 @@ class SocketWaitAction {
     required TransactionListenersProvider listenersProvider,
     required bool isHiveKeyChainMethod,
     required String accountName,
+    required String host,
     required String authKey,
     required VoidCallback onTimeOut,
   }) {
     String uuid = data.value;
     String jsonString =
-        SocketWaitModel(accountName: accountName, uuid: uuid, authKey: authKey)
+        SocketWaitModel(
+                accountName: accountName,
+                uuid: uuid,
+                authKey: authKey,
+                host: host)
             .toJsonString();
     String qr = Act.generateQrString(socketInputType, jsonString);
     listenersProvider.qrListener.value = qr;

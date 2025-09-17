@@ -8,16 +8,20 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class SocketProvider {
   late WebSocketChannel _socket;
-  final String _connectedServer = socketServer;
+  late String _connectedServer;
   int timeOutValue = 30;
 
   final _controller = StreamController<SocketResponse>.broadcast();
   Stream<SocketResponse> get stream => _controller.stream;
 
   SocketProvider() {
-    _socket = WebSocketChannel.connect(
-      Uri.parse(_connectedServer),
-    );
+    _initializeSocket();
+  }
+
+  String get connectedServer => _connectedServer;
+
+  void _initializeSocket() {
+    _socket = _connectToAvailableServer();
     _socket.stream.listen((message) {
       var map = json.decode(message) as Map<String, dynamic>;
       var command = map['cmd'] as String?;
@@ -61,11 +65,34 @@ class SocketProvider {
     }, onError: (e) => _reconnect(), onDone: _reconnect, cancelOnError: true);
   }
 
+  WebSocketChannel _connectToAvailableServer() {
+    Object? lastError;
+    for (final server in socketServers) {
+      try {
+        final channel = WebSocketChannel.connect(Uri.parse(server));
+        _connectedServer = server;
+        return channel;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError ??
+        WebSocketChannelException('Failed to connect to any HiveAuth server');
+  }
+
   Future<void> _reconnect() async {
     await Future.delayed(const Duration(seconds: 2));
-    _socket = WebSocketChannel.connect(
-      Uri.parse(_connectedServer),
-    );
+    try {
+      _socket.sink.close();
+    } catch (_) {}
+    while (true) {
+      try {
+        _initializeSocket();
+        break;
+      } catch (_) {
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
   }
 
   void sendDataToSocket(String jsonString) {
