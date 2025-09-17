@@ -117,8 +117,8 @@
       const message = JSON.stringify(messageObj);
       const auth_data = {
         app: {
-          name: "Ecency-Waves",
-          description: "Ecency - Waves - MobileApp",
+          name: "Waves",
+          description: "Ecency - Waves - Mobile App",
         },
         token: undefined,
         challenge: {
@@ -544,12 +544,6 @@
         ((account[normalizedType] && account[normalizedType].key_auths) || [])
           .map((entry) => entry[0])
       );
-
-      if (normalizedType === "active") {
-        ((account.owner && account.owner.key_auths) || []).forEach((entry) => {
-          allowedKeys.add(entry[0]);
-        });
-      }
 
       if (!allowedKeys.has(publicKey)) {
         const error = new Error(

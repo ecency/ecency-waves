@@ -318,8 +318,14 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     String activeKey,
     String accountName,
   ) async {
-    final preparedKey =
-        await _normalizeActiveKey(accountName, activeKey.trim());
+    String preparedKey;
+    try {
+      preparedKey =
+          await _normalizeActiveKey(accountName, activeKey.trim());
+    } catch (error) {
+      _showTipFeedback(_tipErrorMessage(error), success: false);
+      return;
+    }
     widget.rootContext.showLoader();
     String? feedbackMessage;
     var success = false;
@@ -393,36 +399,47 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   }
 
   Future<String> _normalizeActiveKey(String accountName, String key) async {
-    if (!_looksLikeMasterPassword(key)) {
-      return key;
-    }
-
     final usernameLiteral = jsonEncode(accountName.toLowerCase());
-    final passwordLiteral = jsonEncode(key);
+    final keyLiteral = jsonEncode(key);
     final jsCode = '''
-      const username = $usernameLiteral;
-      const password = $passwordLiteral;
-      return dhive.PrivateKey.fromLogin(username, password, "active").toString();
+      (async () => {
+        const username = $usernameLiteral;
+        const rawKey = $keyLiteral;
+
+        const privateKey = resolvePrivateKey(username, rawKey, "active");
+        const publicKey = privateKey.createPublic().toString();
+        await ensureKeyMatchesAccount(username, publicKey, "active");
+        return privateKey.toString();
+      })()
     ''';
 
-    try {
-      final response = await runThisJS_(jsCode);
-      final decoded = jsonDecode(response);
-      if (decoded is Map<String, dynamic> && decoded['valid'] == true) {
+    final response = await runThisJS_(jsCode);
+    final decoded = jsonDecode(response);
+    if (decoded is Map<String, dynamic>) {
+      if (decoded['valid'] == true) {
         final data = decoded['data'];
         if (data is String && data.isNotEmpty) {
           return data;
         }
       }
-    } catch (_) {
-      // Ignore conversion errors and fall back to the original key input.
+
+      final error = decoded['error'];
+      if (error is String && error.isNotEmpty) {
+        throw Exception(error);
+      }
     }
 
-    return key;
+    throw Exception(LocaleText.emTipFailureMessage);
   }
 
-  bool _looksLikeMasterPassword(String key) =>
-      key.length >= 50 && key.startsWith('P');
+  String _tipErrorMessage(Object error) {
+    final rawMessage = error.toString();
+    const exceptionPrefix = 'Exception: ';
+    if (rawMessage.startsWith(exceptionPrefix)) {
+      return rawMessage.substring(exceptionPrefix.length);
+    }
+    return rawMessage;
+  }
 
   String _tipMemo() {
     return 'Tip for @${widget.author}/${widget.permlink} via Ecency Waves';

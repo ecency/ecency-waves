@@ -383,12 +383,6 @@
           .map((entry) => entry[0])
       );
 
-      if (normalizedType === "active") {
-        ((account.owner && account.owner.key_auths) || []).forEach((entry) => {
-          allowedKeys.add(entry[0]);
-        });
-      }
-
       if (!allowedKeys.has(publicKey)) {
         const error = new Error(
           `Provided key is not authorized for ${normalizedType} operations`
