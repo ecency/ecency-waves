@@ -15,7 +15,7 @@
     "timeout_timer_for_hiveAuth_qr": "Timeout Timer for HiveAuth QR",
     "sorry_we_are_unable_to_reach_our_server": "Sorry, we're unable to reach our server",
     "try_again": "Try Again",
-    "reply_cannot_be_empty": "Reply cannot be empty",
+    "reply_cannot_be_empty": "Content cannot be empty",
     "add_a_comment": "Add a comment",
     "add_your_reply": "Add your reply",
     "key_chain": "KeyChain",

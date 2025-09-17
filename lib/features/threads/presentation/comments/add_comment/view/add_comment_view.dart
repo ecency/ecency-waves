@@ -166,7 +166,7 @@ class _AddCommentViewState extends State<AddCommentView> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
+                    backgroundColor: theme.primaryColor,
                     foregroundColor: theme.colorScheme.onPrimary,
                   ),
                   onPressed: () =>
