@@ -11,6 +11,7 @@ import 'package:waves/features/threads/presentation/comments/add_comment/widgets
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
 import 'package:waves/features/threads/repository/thread_repository.dart';
+import 'package:waves/features/explore/presentation/widgets/thread_type_dropdown.dart';
 
 class AddCommentView extends StatefulWidget {
   const AddCommentView({
@@ -35,6 +36,8 @@ class _AddCommentViewState extends State<AddCommentView> {
   final FocusNode _nodeText = FocusNode();
   ThreadFeedType? _selectedType;
   ThreadInfo? _rootThreadInfo;
+  final GlobalKey<AddCommentBottomActionBarState> _bottomActionBarKey =
+      GlobalKey<AddCommentBottomActionBarState>();
 
   KeyboardActionsConfig _buildConfig(BuildContext context) {
     return KeyboardActionsConfig(
@@ -102,7 +105,7 @@ class _AddCommentViewState extends State<AddCommentView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: _appBar(),
+      appBar: _appBar(theme),
       body: KeyboardActions(
         config: _buildConfig(context),
         child: SafeArea(
@@ -111,28 +114,6 @@ class _AddCommentViewState extends State<AddCommentView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (isRoot)
-                  Center(
-                    child: DropdownButton<ThreadFeedType>(
-                      value: _selectedType,
-                      items: ThreadFeedType.values
-                          .where((e) => e != ThreadFeedType.all)
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(Thread.gethreadName(type: e)),
-                              ))
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedType = val;
-                            _rootThreadInfo = null;
-                          });
-                          _loadRootThreadInfo(val);
-                        }
-                      },
-                    ),
-                  ),
                 TextField(
                   keyboardType: TextInputType.multiline,
                   controller: commentTextEditingController,
@@ -156,6 +137,7 @@ class _AddCommentViewState extends State<AddCommentView> {
       ),
       bottomNavigationBar: SafeArea(
         child: AddCommentBottomActionBar(
+            key: _bottomActionBarKey,
             commentTextEditingController: commentTextEditingController,
             isRoot: isRoot,
             authorParam: widget.author,
@@ -166,10 +148,33 @@ class _AddCommentViewState extends State<AddCommentView> {
     );
   }
 
-  AppBar _appBar() {
+  AppBar _appBar(theme) {
     return isRoot
         ? AppBar(
-            title: const Text("Publish"),
+            title: ThreadTypeDropdown(
+              value: _selectedType ?? ThreadFeedType.ecency,
+              onChanged: (val) {
+                setState(() {
+                  _selectedType = val;
+                  _rootThreadInfo = null;
+                });
+                _loadRootThreadInfo(val);
+              },
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                  ),
+                  onPressed: () =>
+                      _bottomActionBarKey.currentState?.publish(),
+                  child: const Text('Post'),
+                ),
+              ),
+            ],
           )
         : AppBar(
             leadingWidth: 30,

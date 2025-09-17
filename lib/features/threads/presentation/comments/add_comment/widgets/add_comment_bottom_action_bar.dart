@@ -46,10 +46,10 @@ class AddCommentBottomActionBar extends StatefulWidget {
 
   @override
   State<AddCommentBottomActionBar> createState() =>
-      _AddCommentBottomActionBarState();
+      AddCommentBottomActionBarState();
 }
 
-class _AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
+class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
   int imageUploadId = 0;
   List<ImageUploadModel> images = [];
   List<String> uploadedImageLinks = [];
@@ -64,8 +64,6 @@ class _AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
 
   @override
   Widget build(BuildContext context) {
-    final UserAuthModel userData = context.read<UserController>().userData!;
-
     return Container(
       color: theme.colorScheme.tertiaryContainer,
       child: Padding(
@@ -95,7 +93,7 @@ class _AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
                   ],
                 ),
                 const Spacer(),
-                _publishButton(context, userData),
+                if (!widget.isRoot) _publishButton(),
               ],
             ),
           ],
@@ -104,29 +102,35 @@ class _AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
     );
   }
 
-  FloatingActionButton _publishButton(
-      BuildContext context, UserAuthModel<dynamic> userData) {
+  void publish() {
+    final userData = context.read<UserController>().userData!;
+    _onPublish(userData);
+  }
+
+  FloatingActionButton _publishButton() {
     return FloatingActionButton(
-      onPressed: () {
-        String comment = widget.commentTextEditingController.text.trim();
-        if (comment.isEmpty) {
-          context.showSnackBar(LocaleText.replyCannotBeEmpty);
-        } else if (widget.isRoot &&
-            widget.rootThreadInfo == null &&
-            context.read<ThreadFeedController>().rootThreadInfo == null) {
-          // Unable to determine which container to post to
-          context.pop();
-        } else if (userData.isPostingKeyLogin) {
-          _postingKeyCommentTransaction(comment, userData, context);
-        } else if (userData.isHiveSignerLogin) {
-          _hiveSignerCommentTransaction(comment, userData, context);
-        } else {
-          _onTransactionDecision(
-              comment, AuthType.hiveKeyChain, context, userData);
-        }
-      },
+      onPressed: publish,
       child: const Icon(Icons.reply),
     );
+  }
+
+  void _onPublish(UserAuthModel<dynamic> userData) {
+    String comment = widget.commentTextEditingController.text.trim();
+    if (comment.isEmpty) {
+      context.showSnackBar(LocaleText.replyCannotBeEmpty);
+    } else if (widget.isRoot &&
+        widget.rootThreadInfo == null &&
+        context.read<ThreadFeedController>().rootThreadInfo == null) {
+      // Unable to determine which container to post to
+      context.pop();
+    } else if (userData.isPostingKeyLogin) {
+      _postingKeyCommentTransaction(comment, userData, context);
+    } else if (userData.isHiveSignerLogin) {
+      _hiveSignerCommentTransaction(comment, userData, context);
+    } else {
+      _onTransactionDecision(
+          comment, AuthType.hiveKeyChain, context, userData);
+    }
   }
 
   Future<List<XFile>> imagePicker(
