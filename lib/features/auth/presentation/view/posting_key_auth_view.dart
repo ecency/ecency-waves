@@ -48,7 +48,7 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
                     textEditingController: accountNameController),
                 const Gap(15),
                 AuthTextField(
-                    hintText: "password or private key",
+                    hintText: "posting private key",
                     isPassword: true,
                     leading: const Padding(
                       padding: EdgeInsets.only(left: 8.0),

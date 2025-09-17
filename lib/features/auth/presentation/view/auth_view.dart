@@ -29,7 +29,7 @@ class AuthView extends StatelessWidget {
               AuthButton(
                   authType: AuthType.postingKey,
                   onTap: () => context.pushNamed(Routes.postingKeyAuthView),
-                  label: "Private Key"),
+                  label: "Posting Key"),
               const Gap(15),
               AuthButton(
                   authType: AuthType.hiveSign,
