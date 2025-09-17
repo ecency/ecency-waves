@@ -69,8 +69,9 @@ class SocketProvider {
     Object? lastError;
     for (final server in socketServers) {
       try {
-        final channel = WebSocketChannel.connect(Uri.parse(server));
-        _connectedServer = server;
+        final normalizedServer = _normalizeServerUrl(server);
+        final channel = WebSocketChannel.connect(Uri.parse(normalizedServer));
+        _connectedServer = normalizedServer;
         return channel;
       } catch (error) {
         lastError = error;
@@ -78,6 +79,13 @@ class SocketProvider {
     }
     throw lastError ??
         WebSocketChannelException('Failed to connect to any HiveAuth server');
+  }
+
+  String _normalizeServerUrl(String server) {
+    if (server.endsWith('/')) {
+      return server;
+    }
+    return '$server/';
   }
 
   Future<void> _reconnect() async {
