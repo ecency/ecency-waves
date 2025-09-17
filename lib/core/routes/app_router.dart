@@ -13,6 +13,7 @@ import 'package:waves/features/auth/presentation/view/posting_key_auth_view.dart
 import 'package:waves/features/bookmarks/views/thread_bookmark/bookmark_view.dart';
 import 'package:waves/features/explore/presentation/tag_feed/view/tag_feed_view.dart';
 import 'package:waves/features/explore/presentation/view/explore_view.dart';
+import 'package:waves/features/search/presentation/view/search_view.dart';
 import 'package:waves/features/settings/presentation/setting/view/setting_view.dart';
 import 'package:waves/features/settings/repository/settings_repository.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
@@ -56,6 +57,11 @@ class AppRouter {
         path: '/${Routes.exploreView}',
         name: Routes.exploreView,
         builder: (context, state) => const ExploreView(),
+      ),
+      GoRoute(
+        path: '/${Routes.searchView}',
+        name: Routes.searchView,
+        builder: (context, state) => const SearchView(),
       ),
       GoRoute(
         path: '/${Routes.tagFeedView}',

@@ -8,6 +8,7 @@ import 'package:waves/features/threads/repository/thread_repository.dart';
 import 'package:waves/features/user/repository/user_local_repository.dart';
 import 'package:waves/features/user/repository/user_repository.dart';
 import 'package:waves/features/explore/repository/explore_repository.dart';
+import 'package:waves/features/search/repository/search_repository.dart';
 
 class RepositoriesGetIt extends GetItFeature {
   @override
@@ -26,5 +27,7 @@ class RepositoriesGetIt extends GetItFeature {
         SettingsRepository(localService: getIt.call(), apiService: getIt.call()));
     getIt.registerLazySingleton<ExploreRepository>(
         () => ExploreRepository(apiService: getIt<ApiService>()));
+    getIt.registerLazySingleton<SearchRepository>(
+        () => SearchRepository(apiService: getIt<ApiService>()));
   }
 }

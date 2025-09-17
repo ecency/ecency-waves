@@ -23,6 +23,8 @@ import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 import 'package:waves/features/explore/models/trending_tag_model.dart';
 import 'package:waves/features/explore/models/trending_author_model.dart';
+import 'package:waves/features/search/models/search_tag_model.dart';
+import 'package:waves/features/search/models/search_user_model.dart';
 
 class ApiService {
   static const List<String> _rpcUrls = [
@@ -1092,6 +1094,120 @@ class ApiService {
       return ActionListDataResponse(
         status: ResponseStatus.failed,
         errorMessage: 'API seems slow or inaccessible, try again later.',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionListDataResponse<SearchUserModel>> searchUsers(String query,
+      {int limit = 20}) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return ActionListDataResponse<SearchUserModel>(
+        data: const <SearchUserModel>[],
+        status: ResponseStatus.success,
+        isSuccess: true,
+        valid: true,
+        errorMessage: '',
+      );
+    }
+
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'condenser_api.lookup_accounts',
+        'params': [trimmed, limit],
+        'id': 1,
+      });
+
+      if (response == null || response.statusCode != 200) {
+        return ActionListDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage:
+              _rpcErrorMessage(response, fallback: 'Account search failed'),
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['result'] is List) {
+        final accounts = (decoded['result'] as List)
+            .whereType<String>()
+            .map(SearchUserModel.fromName)
+            .where((user) => user.name.isNotEmpty)
+            .toList();
+        return ActionListDataResponse<SearchUserModel>(
+          data: accounts,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          valid: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Account search failed',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionListDataResponse<SearchTagModel>> searchTags(String query,
+      {int limit = 20}) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return ActionListDataResponse<SearchTagModel>(
+        data: const <SearchTagModel>[],
+        status: ResponseStatus.success,
+        isSuccess: true,
+        valid: true,
+        errorMessage: '',
+      );
+    }
+
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'condenser_api.get_trending_tags',
+        'params': [trimmed, limit],
+        'id': 1,
+      });
+
+      if (response == null || response.statusCode != 200) {
+        return ActionListDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage:
+              _rpcErrorMessage(response, fallback: 'Tag search failed'),
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['result'] is List) {
+        final tagResults = (decoded['result'] as List)
+            .whereType<Map<String, dynamic>>()
+            .map(SearchTagModel.fromJson)
+            .where((tag) => tag.name.isNotEmpty)
+            .toList();
+        return ActionListDataResponse<SearchTagModel>(
+          data: tagResults,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          valid: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Tag search failed',
       );
     } catch (e) {
       return ActionListDataResponse(

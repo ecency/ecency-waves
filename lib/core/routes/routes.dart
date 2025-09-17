@@ -15,4 +15,5 @@ class Routes {
   static const String settingsView = 'settings';
   static const String exploreView = 'explore';
   static const String tagFeedView = 'tagFeed';
+  static const String searchView = 'search';
 }
