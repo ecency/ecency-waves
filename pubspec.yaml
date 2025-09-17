@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  sentry_flutter: ^9.6.0
   flutter:
     sdk: flutter
 
@@ -69,6 +70,7 @@ dependencies:
   markdown: any
   firebase_core: ^4.0.0
 dev_dependencies:
+  sentry_dart_plugin: ^3.1.1
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.14.3
@@ -129,3 +131,9 @@ flutter:
           weight: 900
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: ecency-waves
+  org: ecency

@@ -10,6 +10,7 @@ import 'package:waves/core/routes/app_router.dart';
 import 'package:waves/core/services/user_local_service.dart';
 import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'core/dependency_injection/dependency_injection.dart' as get_it;
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,11 +27,29 @@ void main() async {
     }
   }
 
-  runApp(EasyLocalization(
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = 'https://5fa2d9d54d3fda955c613c6b3182c60c@o4507985141956608.ingest.de.sentry.io/4510033051779152';
+      // Adds request headers and IP for users, for more info visit:
+      // https://docs.sentry.io/platforms/dart/guides/flutter/data-management/data-collected/
+      options.sendDefaultPii = true;
+      options.enableLogs = true;
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+      // We recommend adjusting this value in production.
+      options.tracesSampleRate = 1.0;
+      // The sampling rate for profiling is relative to tracesSampleRate
+      // Setting to 1.0 will profile 100% of sampled transactions:
+      options.profilesSampleRate = 1.0;
+      // Configure Session Replay
+      options.replay.sessionSampleRate = 0.1;
+      options.replay.onErrorSampleRate = 1.0;
+    },
+    appRunner: () => runApp(SentryWidget(child: EasyLocalization(
       path: 'assets/translations',
       supportedLocales: AppLocales.supportedLocales,
       fallbackLocale: AppLocales.fallbackLocale,
-      child: const MyApp()));
+      child: const MyApp()))),
+  );
 }
 
 class MyApp extends StatelessWidget {
