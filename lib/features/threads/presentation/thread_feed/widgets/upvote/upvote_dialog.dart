@@ -414,18 +414,44 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     ''';
 
     final response = await runThisJS_(jsCode);
-    final decoded = jsonDecode(response);
+    final rawPayload = response.trim();
+
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(rawPayload);
+    } catch (_) {
+      decoded = rawPayload;
+    }
+
+    String? readKey(dynamic value) {
+      if (value is String) {
+        final trimmed = value.trim();
+        return trimmed.isEmpty ? null : trimmed;
+      }
+
+      if (value is Map<String, dynamic>) {
+        return readKey(value['data']);
+      }
+
+      return null;
+    }
+
     if (decoded is Map<String, dynamic>) {
       if (decoded['valid'] == true) {
-        final data = decoded['data'];
-        if (data is String && data.isNotEmpty) {
-          return data;
+        final key = readKey(decoded['data']);
+        if (key != null) {
+          return key;
         }
       }
 
       final error = decoded['error'];
       if (error is String && error.isNotEmpty) {
         throw Exception(error);
+      }
+    } else {
+      final key = readKey(decoded);
+      if (key != null) {
+        return key;
       }
     }
 

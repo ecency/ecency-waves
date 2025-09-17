@@ -2,25 +2,10 @@
 <html>
 
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <meta charset="UTF-8" />
   <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
-
-
+  <meta name="description" content="Ecency Waves" />
   <title>waves</title>
-
 </head>
 
 <body>
@@ -33,26 +18,37 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://bundle.run/buffer@6.0.3"></script>
   <script>
-    let timestamp = new Date().getTime() / 1000;
-    let messageObj;
+    window.addEventListener("load", function () {
+      if (window._flutter && window._flutter.loader) {
+        window._flutter.loader.loadEntrypoint({
+          serviceWorker: { serviceWorkerVersion: null },
+          onEntrypointLoaded: function (engineInitializer) {
+            engineInitializer.initializeEngine().then(function (appRunner) {
+              appRunner.runApp();
+            });
+          },
+        });
+      }
+    });
+
     const HIVE_NODES = [
       "https://api.hive.blog",
       "https://api.deathwing.me",
       "https://hive-api.arcange.eu",
-      "https://hived.emre.sh",
+      "https://rpc.mahdiyari.info",
       "https://api.openhive.network",
       "https://rpc.ausbit.dev",
-      "https://rpc.mahdiyari.info",
+      "https://techcoderx.com",
+      "https://hived.emre.sh",
       "https://hive-api.3speak.tv",
       "https://anyx.io",
-      "https://techcoderx.com",
       "https://api.hive.blue",
       "https://api.c0ff33a.uk",
       "https://api.pharesim.me",
       "https://hived.privex.io",
       "https://hive.roelandp.nl",
     ];
-    var client = new dhive.Client(HIVE_NODES);
+    const client = new dhive.Client(HIVE_NODES);
 
     try {
       if (hive && hive.api && typeof hive.api.setOptions === "function") {
@@ -62,354 +58,182 @@
       if (hive && hive.config && typeof hive.config.set === "function") {
         hive.config.set(
           "alternative_api_endpoints",
-          HIVE_NODES.slice(1)
+          HIVE_NODES.slice(1),
         );
       }
     } catch (configurationError) {
       console.warn("Unable to configure hive-js endpoints", configurationError);
     }
 
-    function b64uEnc(str) {
-      const b64uLookup = { "/": "_", _: "/", "+": "-", "-": "+", "=": ".", ".": "=" };
-      return window.Base64.encode(str).replace(/(\+|\/|=)/g, (m) => b64uLookup[m]);
+    const hasAndroid = typeof Android !== "undefined"
+      && Android
+      && typeof Android.postMessage === "function";
+    const hasIOS = typeof window.webkit !== "undefined"
+      && window.webkit
+      && window.webkit.messageHandlers
+      && window.webkit.messageHandlers.app
+      && typeof window.webkit.messageHandlers.app.postMessage === "function";
+
+    function replyToNative(result, id, stringifyResult = true) {
+      const payload = stringifyResult && typeof result !== "string"
+        ? JSON.stringify(result)
+        : result;
+
+      if (id) {
+        if (hasAndroid) {
+          try {
+            Android.postMessage(payload, id);
+          } catch (androidError) {
+            console.warn("Android bridge error", androidError);
+          }
+        }
+        if (hasIOS) {
+          try {
+            window.webkit.messageHandlers.app.postMessage({ id, data: payload });
+          } catch (iosError) {
+            console.warn("iOS bridge error", iosError);
+          }
+        }
+      }
+
+      return payload;
     }
+
+    function deliver(id, payload) {
+      return replyToNative(payload, id, true);
+    }
+
+    const ok = (id, data) => deliver(id, { valid: true, data, error: "" });
+    const fail = (id, err) => {
+      const message = (err && err.message) ? err.message : String(err);
+      return deliver(id, { valid: false, data: null, error: message });
+    };
+
+    function b64ToUtf8(b64) {
+      try {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i += 1) {
+          bytes[i] = bin.charCodeAt(i);
+        }
+        return new TextDecoder("utf-8").decode(bytes);
+      } catch (e) {
+        try {
+          return atob(b64);
+        } catch (_) {
+          return "";
+        }
+      }
+    }
+
+    function b64uEnc(str) {
+      const b64uLookup = {
+        "/": "_",
+        _: "/",
+        "+": "-",
+        "-": "+",
+        "=": ".",
+        ".": "=",
+      };
+      return window.Base64.encode(str).replace(/(\+|\/|=)/g, (match) => b64uLookup[match]);
+    }
+
+    let messageObj = null;
 
     async function runThisJS(jsCode, id) {
       try {
-        console.log("In Run This JS - " + id)
-        console.log("JS is = " + jsCode)
-        const response = await eval(jsCode);
-        console.log("Got response for request id - " + id)
-        replyToNative({
-          data: response,
-          valid: true,
-          error: "",
-        }, id);
-      } catch (e) {
-        replyToNative({
-          data: null,
-          valid: false,
-          error: e.message,
-        }, id);
+        const executor = new Function(`
+          "use strict";
+          return (async () => { ${jsCode} })();
+        `);
+        const result = await executor();
+        return ok(id, result);
+      } catch (error) {
+        return fail(id, error);
       }
     }
 
-    function doWeHaveHiveKeychainExtension() {
-      const keychain = window.hive_keychain;
-      return new Promise((res) => {
-        const data = {
-          valid: true,
-          data: keychain !== null && keychain !== undefined,
-          error: "",
-        };
-        res(replyToNative(data, id));
-      });
-    }
-
-    async function getRedirectUriData(identifier, uname) {
-      let username = uname.toLowerCase();
-      const timestamp = new Date().getTime() / 1000;
-      messageObj = {
-        signed_message: { type: "code", app: "ecency.app" },
-        authors: [username],
-        timestamp: timestamp,
-      };
-      const message = JSON.stringify(messageObj);
-      const auth_data = {
-        app: {
-          name: "Waves",
-          description: "Ecency - Waves - Mobile App",
-        },
-        token: undefined,
-        challenge: {
-          key_type: "posting",
-          challenge: message,
-        },
-      };
-      let auth_key = uuidv4();
-      const data = CryptoJS.AES.encrypt(
-        JSON.stringify(auth_data),
-        auth_key
-      ).toString();
-      replyToNative({
-        valid: true,
-        error: "",
-        data: { encrypted_data: data, auth_key: auth_key },
-      }, identifier);
-    }
-
-    async function getDecryptedHASToken(id, username, data, authKey) {
+    function doWeHaveHiveKeychainExtension(id) {
       try {
-        const decryptedData = JSON.parse(
-          CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
+        return ok(id, !!window.hive_keychain);
+      } catch (error) {
+        return fail(id, error);
+      }
+    }
+
+    function signInWithHiveKeychain(id, username, message) {
+      try {
+        const keychain = window.hive_keychain;
+        if (!keychain) {
+          return fail(id, "Hive Keychain extension not found");
+        }
+        keychain.requestSignBuffer(username, message, "Active", (response) => {
+          const valid = !!(response && response.success);
+          deliver(id, {
+            valid,
+            data: response,
+            error: valid ? "" : (response && response.error) ? response.error : "Keychain error",
+          });
+        });
+        return "";
+      } catch (error) {
+        return fail(id, error);
+      }
+    }
+
+    function getRedirectUriData(id, uname) {
+      try {
+        const username = String(uname || "").toLowerCase();
+        const timestamp = Date.now() / 1000;
+        messageObj = {
+          signed_message: { type: "code", app: "ecency.app" },
+          authors: [username],
+          timestamp,
+        };
+        const message = JSON.stringify(messageObj);
+        const authData = {
+          app: {
+            name: "Waves",
+            description: "Ecency - Waves - Mobile App",
+          },
+          token: undefined,
+          challenge: {
+            key_type: "posting",
+            challenge: message,
+          },
+        };
+        const authKey = uuidv4();
+        const encrypted = CryptoJS.AES.encrypt(
+          JSON.stringify(authData),
+          authKey,
+        ).toString();
+        return ok(id, { encrypted_data: encrypted, auth_key: authKey });
+      } catch (error) {
+        return fail(id, error);
+      }
+    }
+
+    function getDecryptedHASToken(id, username, data, authKey) {
+      try {
+        const decrypted = JSON.parse(
+          CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8),
         );
-        const token = decryptedData.token;
-        const expire = decryptedData.expire;
-        const challenge = decryptedData.challenge.challenge;
+        const token = decrypted.token;
+        const expire = decrypted.expire;
+        const challenge = decrypted.challenge && decrypted.challenge.challenge;
+        if (!messageObj) {
+          messageObj = {
+            signed_message: { type: "code", app: "ecency.app" },
+            authors: [String(username || "").toLowerCase()],
+            timestamp: Date.now() / 1000,
+          };
+        }
         messageObj.signatures = [challenge];
         const hsToken = b64uEnc(JSON.stringify(messageObj));
-        replyToNative({
-          valid: true,
-          error: "",
-          data: { token: token, expire: expire, hsToken: hsToken },
-        }, id);
-      } catch (e) {
-        replyToNative({
-          valid: false,
-          error: e.toString(),
-          data: "",
-        }, id);
-      }
-    }
-
-    async function validatePostingKey(id, accountName, postingKey, accountJson) {
-      try {
-        const account = JSON.parse(accountJson);
-        const successObj = { valid: true, error: "", data: "true" };
-        const pubWif = account.posting.key_auths[0][0];
-        const pubActive = account.active.key_auths[0][0];
-        const pubOwner = account.owner.key_auths[0][0];
-        try {
-          const pKey = dhive.PrivateKey.fromString(postingKey)
-            .createPublic()
-            .toString();
-          if (pKey === pubWif || pKey === pubActive || pKey === pubOwner) {
-            return replyToNative(successObj, id);
-          } else {
-            return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
-          }
-        } catch (e) {
-          const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
-          const publicKeyFromPasswordBasedPostingKey = keyFromPassword.createPublic().toString();
-          if (publicKeyFromPasswordBasedPostingKey === pubWif) {
-            return replyToNative({ valid: true, error: "", data: keyFromPassword.toString() }, id);
-          } else {
-            return replyToNative({ valid: false, error: 'Invalid Key supplied', data: null }, id);
-          }
-        }
+        return ok(id, { token, expire, hsToken });
       } catch (error) {
-        console.log("Error: ", error);
-        return replyToNative({ valid: false, error: error.message, data: null }, id);
+        return fail(id, error);
       }
-    }
-
-    async function commentOnContent(
-      id,
-      username,
-      author,
-      parentPermlink,
-      permlink,
-      comment,
-      tags,
-      postingKey,
-      token,
-      authKey
-    ) {
-      let description = atob(comment);
-      console.log(description);
-      description = decodeURIComponent(escape(description));
-      console.log(description);
-      // let permlink2 = new Date()
-      //   .toISOString()
-      //   .replace(/[^a-zA-Z0-9]+/g, "")
-      //   .toLowerCase();
-      // permlink2 = `re-${username}-${permlink2}`;
-      // console.log(permlink2)
-
-      let op = [
-        "comment",
-        {
-          parent_author: author,
-          parent_permlink: parentPermlink,
-          author: username,
-          permlink: permlink,
-          title: "",
-          body: description,
-          json_metadata: JSON.stringify({
-            tags: JSON.parse(tags),
-            app: "ecency-waves",
-            format: "markdown+html",
-          }),
-        },
-      ];
-      performOperations(
-        id,
-        [op],
-        "commentOnContent",
-        username,
-        postingKey,
-        token,
-        authKey
-      );
-    }
-
-    function voteContent(
-      id,
-      username,
-      author,
-      permlink,
-      weight,
-      postingKey,
-      token,
-      authKey
-    ) {
-      let op = [
-        "vote",
-        {
-          voter: username,
-          author: author,
-          permlink: permlink,
-          weight: parseInt(weight),
-        },
-      ];
-      performOperations(
-        id,
-        [op],
-        "voteContent",
-        username,
-        postingKey,
-        token,
-        authKey
-      );
-    }
-
-    function transfer(
-      id,
-      username,
-      to,
-      amount,
-      asset,
-      memo,
-      privateKey,
-      token,
-      authKey
-    ) {
-      if (!privateKey) {
-        return replyToNative({
-          valid: false,
-          error: "Missing active key or master password",
-          data: null,
-        }, id);
-      }
-
-      if (!username) {
-        return replyToNative({
-          valid: false,
-          error: "Missing sender username",
-          data: null,
-        }, id);
-      }
-
-      if (!to) {
-        return replyToNative({
-          valid: false,
-          error: "Missing recipient",
-          data: null,
-        }, id);
-      }
-
-      if (!asset) {
-        return replyToNative({
-          valid: false,
-          error: "Missing asset symbol",
-          data: null,
-        }, id);
-      }
-
-      const parsedAmount = Number.parseFloat(amount);
-      if (!Number.isFinite(parsedAmount)) {
-        return replyToNative({
-          valid: false,
-          error: "Invalid amount supplied",
-          data: null,
-        }, id);
-      }
-
-      const normalizedAmount = `${parsedAmount.toFixed(3)} ${String(asset).toUpperCase()}`;
-      const op = [
-        "transfer",
-        {
-          from: username,
-          to: to,
-          amount: normalizedAmount,
-          memo: memo || "",
-        },
-      ];
-
-      performOperations(
-        id,
-        [op],
-        "transfer",
-        username,
-        privateKey,
-        token,
-        authKey,
-        "active"
-      );
-    }
-
-    //Add poll vote method here
-    function castPollVote(
-      id,
-      username,
-      pollId,
-      choices,
-      postingKey,
-      token,
-      authKey
-    ) {
-      let op = [
-        "custom_json",
-        {
-          "id": "polls",
-          "required_auths": [],
-          "required_posting_auths": [
-            username
-          ],
-          "json": JSON.stringify({ "poll": pollId, "action": "vote", "choices": choices })
-        }
-
-      ];
-      performOperations(
-        id,
-        [op],
-        "polls",
-        username,
-        postingKey,
-        token,
-        authKey
-      );
-    }
-
-    function muteUser(
-      id,
-      username,
-      author,
-      postingKey,
-      token,
-      authKey
-    ) {
-      let op = [
-        "custom_json",
-        {
-          "id": "follow",
-          "required_auths": [],
-          "required_posting_auths": [
-            username
-          ],
-          "json": JSON.stringify(["follow", { "follower": username, "following": author, "what": ["ignore"] }])
-        }
-
-      ];
-      performOperations(
-        id,
-        [op],
-        "mute",
-        username,
-        postingKey,
-        token,
-        authKey
-      );
     }
 
     function resolvePrivateKey(username, rawKey, keyType) {
@@ -424,7 +248,7 @@
           return dhive.PrivateKey.fromLogin(
             username,
             rawKey,
-            keyType || "posting"
+            keyType || "posting",
           );
         } catch (loginError) {
           const error = new Error("Invalid key supplied");
@@ -468,9 +292,7 @@
       const txId = extractTransactionId(result);
 
       if (!txId) {
-        const error = new Error(
-          "Broadcast response did not include a transaction id"
-        );
+        const error = new Error("Broadcast response did not include a transaction id");
         error.data = { provider, result };
         throw error;
       }
@@ -490,44 +312,9 @@
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
-    }
-
-    async function sendOperationsWithKey(
-      username,
-      rawKey,
-      keyType,
-      operations
-    ) {
-      const normalizedType = keyType || "posting";
-      const privateKey = resolvePrivateKey(username, rawKey, normalizedType);
-      const publicKey = privateKey.createPublic().toString();
-
-      await ensureKeyMatchesAccount(username, publicKey, normalizedType);
-
-      try {
-        const primaryResult = await client.broadcast.sendOperations(
-          operations,
-          privateKey
-        );
-
-        return normalizeBroadcastPayload("dhive", primaryResult);
-      } catch (primaryError) {
-        console.warn("dhive broadcast failed, attempting hive-js", primaryError);
-
-        const fallbackResult = await broadcastWithHiveJs(
-          operations,
-          privateKey.toString(),
-          normalizedType
-        ).catch((fallbackError) => {
-          fallbackError.cause = primaryError;
-          throw fallbackError;
-        });
-
-        return normalizeBroadcastPayload("hive-js", fallbackResult);
-      }
     }
 
     async function ensureKeyMatchesAccount(username, publicKey, keyType) {
@@ -540,17 +327,70 @@
         throw error;
       }
 
-      const allowedKeys = new Set(
-        ((account[normalizedType] && account[normalizedType].key_auths) || [])
-          .map((entry) => entry[0])
-      );
+      const authorityFields = [];
+
+      if (normalizedType === "posting") {
+        authorityFields.push(account.posting);
+      }
+
+      if (normalizedType === "active" || normalizedType === "posting") {
+        authorityFields.push(account.active);
+      }
+
+      authorityFields.push(account.owner);
+
+      const allowedKeys = new Set();
+      authorityFields.forEach((authority) => {
+        if (!authority || !Array.isArray(authority.key_auths)) {
+          return;
+        }
+
+        authority.key_auths.forEach((entry) => {
+          if (Array.isArray(entry) && typeof entry[0] === "string") {
+            allowedKeys.add(entry[0]);
+          }
+        });
+      });
 
       if (!allowedKeys.has(publicKey)) {
-        const error = new Error(
-          `Provided key is not authorized for ${normalizedType} operations`
-        );
+        const error = new Error(`Provided key is not authorized for ${normalizedType} operations`);
         error.data = { username, keyType: normalizedType };
         throw error;
+      }
+    }
+
+    async function sendOperationsWithKey(
+      username,
+      rawKey,
+      keyType,
+      operations,
+    ) {
+      const normalizedType = keyType || "posting";
+      const privateKey = resolvePrivateKey(username, rawKey, normalizedType);
+      const publicKey = privateKey.createPublic().toString();
+
+      await ensureKeyMatchesAccount(username, publicKey, normalizedType);
+
+      try {
+        const primaryResult = await client.broadcast.sendOperations(
+          operations,
+          privateKey,
+        );
+
+        return normalizeBroadcastPayload("dhive", primaryResult);
+      } catch (primaryError) {
+        console.warn("dhive broadcast failed, attempting hive-js", primaryError);
+
+        const fallbackResult = await broadcastWithHiveJs(
+          operations,
+          privateKey.toString(),
+          normalizedType,
+        ).catch((fallbackError) => {
+          fallbackError.cause = primaryError;
+          throw fallbackError;
+        });
+
+        return normalizeBroadcastPayload("hive-js", fallbackResult);
       }
     }
 
@@ -562,69 +402,316 @@
       key,
       token,
       authKey,
-      keyType = "posting"
+      keyType = "posting",
     ) {
       const resolvedKeyType = keyType || "posting";
       if (
-        token !== undefined &&
-        authKey !== undefined &&
-        token.length > 0 &&
-        authKey.length > 0
+        typeof token === "string" && token.length > 0 &&
+        typeof authKey === "string" && authKey.length > 0
       ) {
-        const sign_data = {
+        const signData = {
           key_type: resolvedKeyType,
           ops: operations,
           broadcast: true,
           nonce: Date.now(),
         };
-        const data = CryptoJS.AES.encrypt(
-          JSON.stringify(sign_data),
-          authKey
+        const encrypted = CryptoJS.AES.encrypt(
+          JSON.stringify(signData),
+          authKey,
         ).toString();
-        replyToNative({
-          valid: true,
-          error: "",
-          data: data,
-        }, id);
-      } else {
-        sendOperationsWithKey(username, key, resolvedKeyType, operations)
-          .then((result) => {
-            replyToNative({
-              valid: true,
-              error: "",
-              data: result,
-            }, id);
-          })
-          .catch((error) => {
-            console.error(error);
-            replyToNative({
-              valid: false,
-              error: error && error.message ? error.message : String(error),
-              data: error && error.data ? error.data : "",
-            }, id);
-          });
+        return ok(id, encrypted);
+      }
+
+      return sendOperationsWithKey(username, key, resolvedKeyType, operations)
+        .then((result) => ok(id, result))
+        .catch((error) => fail(id, error));
+    }
+
+    async function commentOnContent(
+      id,
+      username,
+      parentAuthor,
+      parentPermlink,
+      permlink,
+      commentBase64,
+      tagsInput,
+      postingKey,
+      token,
+      authKey,
+    ) {
+      try {
+        if (!postingKey) {
+          return fail(id, "Missing postingKey");
+        }
+
+        const body = typeof commentBase64 === "string"
+          ? b64ToUtf8(commentBase64)
+          : String(commentBase64 || "");
+
+        let tags = [];
+        if (Array.isArray(tagsInput)) {
+          tags = tagsInput;
+        } else if (typeof tagsInput === "string" && tagsInput.length) {
+          try {
+            const parsed = JSON.parse(tagsInput);
+            if (Array.isArray(parsed)) {
+              tags = parsed;
+            }
+          } catch (_) {
+            // ignore
+          }
+        }
+
+        const jsonMetadata = { app: "waves", tags, format: "markdown" };
+
+        const op = ['comment', {
+          parent_author: parentAuthor,
+          parent_permlink: parentPermlink,
+          author: username,
+          permlink,
+          title: "",
+          body,
+          json_metadata: JSON.stringify(jsonMetadata),
+        }];
+
+        return performOperations(
+          id,
+          [op],
+          "commentOnContent",
+          username,
+          postingKey,
+          token,
+          authKey,
+        );
+      } catch (error) {
+        return fail(id, error);
       }
     }
 
-    async function getImageUploadProofWithPostingKey(id, account, key) {
-      const timestamp = new Date().getTime() / 1000;
-      const messageObj = {
-        signed_message: { type: "code", app: "ecency.app" },
-        authors: [account],
-        timestamp: timestamp,
-      };
-      const message = JSON.stringify(messageObj);
-      const signature = hive.auth.signMessage(message, key);
-      messageObj.signatures = [signature];
-      const result = b64uEnc(JSON.stringify(messageObj));
-      replyToNative(result, id, false);
+    function voteContent(
+      id,
+      username,
+      author,
+      permlink,
+      weight,
+      postingKey,
+      token,
+      authKey,
+    ) {
+      try {
+        const op = ['vote', {
+          voter: username,
+          author,
+          permlink,
+          weight: parseInt(weight, 10),
+        }];
+
+        return performOperations(
+          id,
+          [op],
+          "voteContent",
+          username,
+          postingKey,
+          token,
+          authKey,
+        );
+      } catch (error) {
+        return fail(id, error);
+      }
     }
 
-    function replyToNative(result, id, stringifyResult = true) {
-      if (stringifyResult) {
-        window.webkit.messageHandlers.app.postMessage({ data: JSON.stringify(result), id: id });
-      } else {
-        window.webkit.messageHandlers.app.postMessage({ data: result, id: id });
+    function transfer(
+      id,
+      username,
+      to,
+      amount,
+      asset,
+      memo,
+      privateKey,
+      token,
+      authKey,
+    ) {
+      try {
+        if (!privateKey) {
+          return fail(id, "Missing active key or master password");
+        }
+        if (!username) {
+          return fail(id, "Missing sender username");
+        }
+        if (!to) {
+          return fail(id, "Missing recipient");
+        }
+        if (!asset) {
+          return fail(id, "Missing asset symbol");
+        }
+
+        const parsedAmount = Number.parseFloat(amount);
+        if (!Number.isFinite(parsedAmount)) {
+          return fail(id, "Invalid amount supplied");
+        }
+
+        const amountLiteral = `${parsedAmount.toFixed(3)} ${String(asset).toUpperCase()}`;
+
+        const op = ['transfer', {
+          from: username,
+          to,
+          amount: amountLiteral,
+          memo: memo || '',
+        }];
+
+        return performOperations(
+          id,
+          [op],
+          "transfer",
+          username,
+          privateKey,
+          token,
+          authKey,
+          "active",
+        );
+      } catch (error) {
+        return fail(id, error);
+      }
+    }
+
+    function castPollVote(
+      id,
+      username,
+      pollId,
+      choices,
+      postingKey,
+      token,
+      authKey,
+    ) {
+      try {
+        if (!username) {
+          return fail(id, "Missing username");
+        }
+        if (!pollId) {
+          return fail(id, "Missing pollId");
+        }
+        if (!postingKey) {
+          return fail(id, "Missing postingKey");
+        }
+
+        let normalizedChoices = [];
+        if (Array.isArray(choices)) {
+          normalizedChoices = choices.map((choice) => parseInt(choice, 10)).filter(Number.isFinite);
+        } else if (typeof choices === "string") {
+          try {
+            const parsed = JSON.parse(choices);
+            if (Array.isArray(parsed)) {
+              normalizedChoices = parsed.map((choice) => parseInt(choice, 10)).filter(Number.isFinite);
+            }
+          } catch (_) {
+            // ignore
+          }
+        }
+
+        if (!normalizedChoices.length) {
+          return fail(id, "Invalid vote: no choices provided");
+        }
+
+        const payload = {
+          poll: String(pollId),
+          action: "vote",
+          choices: normalizedChoices,
+        };
+
+        const op = ['custom_json', {
+          id: 'polls',
+          json: JSON.stringify(payload),
+          required_auths: [],
+          required_posting_auths: [username],
+        }];
+
+        return performOperations(
+          id,
+          [op],
+          "polls",
+          username,
+          postingKey,
+          token,
+          authKey,
+        );
+      } catch (error) {
+        return fail(id, error);
+      }
+    }
+
+    function muteUser(
+      id,
+      username,
+      author,
+      postingKey,
+      token,
+      authKey,
+    ) {
+      try {
+        const op = ['custom_json', {
+          id: 'follow',
+          required_auths: [],
+          required_posting_auths: [username],
+          json: JSON.stringify(['follow', { follower: username, following: author, what: ['ignore'] }]),
+        }];
+
+        return performOperations(
+          id,
+          [op],
+          "mute",
+          username,
+          postingKey,
+          token,
+          authKey,
+        );
+      } catch (error) {
+        return fail(id, error);
+      }
+    }
+
+    function validatePostingKey(id, accountName, postingKey, accountJson) {
+      try {
+        const account = JSON.parse(accountJson);
+        const pubPosting = account.posting && account.posting.key_auths && account.posting.key_auths[0] && account.posting.key_auths[0][0];
+        const pubActive = account.active && account.active.key_auths && account.active.key_auths[0] && account.active.key_auths[0][0];
+        const pubOwner = account.owner && account.owner.key_auths && account.owner.key_auths[0] && account.owner.key_auths[0][0];
+        try {
+          const pKey = dhive.PrivateKey.fromString(postingKey)
+            .createPublic()
+            .toString();
+          if (pKey === pubPosting || pKey === pubActive || pKey === pubOwner) {
+            return ok(id, "true");
+          }
+          return fail(id, "Invalid Key supplied");
+        } catch (wifError) {
+          const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
+          const derivedPublic = keyFromPassword.createPublic().toString();
+          if (derivedPublic === pubPosting) {
+            return ok(id, keyFromPassword.toString());
+          }
+          return fail(id, "Invalid Key supplied");
+        }
+      } catch (error) {
+        return fail(id, error);
+      }
+    }
+
+    function getImageUploadProofWithPostingKey(id, account, key) {
+      try {
+        const timestamp = Date.now() / 1000;
+        const message = {
+          signed_message: { type: "code", app: "ecency.app" },
+          authors: [account],
+          timestamp,
+        };
+        const stringified = JSON.stringify(message);
+        const signature = hive.auth.signMessage(stringified, key);
+        message.signatures = [signature];
+        const result = b64uEnc(JSON.stringify(message));
+        replyToNative(result, id, false);
+        return result;
+      } catch (error) {
+        return fail(id, error);
       }
     }
   </script>
