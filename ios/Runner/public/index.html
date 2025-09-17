@@ -257,6 +257,80 @@
       );
     }
 
+    function transfer(
+      id,
+      username,
+      to,
+      amount,
+      asset,
+      memo,
+      postingKey,
+      token,
+      authKey
+    ) {
+      if (!postingKey) {
+        return replyToNative({
+          valid: false,
+          error: "Missing postingKey",
+          data: null,
+        }, id);
+      }
+
+      if (!username) {
+        return replyToNative({
+          valid: false,
+          error: "Missing sender username",
+          data: null,
+        }, id);
+      }
+
+      if (!to) {
+        return replyToNative({
+          valid: false,
+          error: "Missing recipient",
+          data: null,
+        }, id);
+      }
+
+      if (!asset) {
+        return replyToNative({
+          valid: false,
+          error: "Missing asset symbol",
+          data: null,
+        }, id);
+      }
+
+      const parsedAmount = Number.parseFloat(amount);
+      if (!Number.isFinite(parsedAmount)) {
+        return replyToNative({
+          valid: false,
+          error: "Invalid amount supplied",
+          data: null,
+        }, id);
+      }
+
+      const normalizedAmount = `${parsedAmount.toFixed(3)} ${String(asset).toUpperCase()}`;
+      const op = [
+        "transfer",
+        {
+          from: username,
+          to: to,
+          amount: normalizedAmount,
+          memo: memo || "",
+        },
+      ];
+
+      performOperations(
+        id,
+        [op],
+        "transfer",
+        username,
+        postingKey,
+        token,
+        authKey
+      );
+    }
+
     //Add poll vote method here
     function castPollVote(
       id,

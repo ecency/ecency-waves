@@ -181,6 +181,24 @@ final class AppBridge: NSObject {
                 let js = "castPollVote('\(jsEscape(id))','\(jsEscape(username))','\(jsEscape(pollId))',\(choicesLiteral),'\(jsEscape(postingKey))','\(jsEscape(token))','\(jsEscape(authKey))');"
                 webVC.runThisJS(id: id, jsCode: js) { text in result(text) }
 
+            case "transfer":
+                guard
+                    let username  = args["username"]  as? String,
+                    let recipient = args["to"]        as? String,
+                    let amount    = args["amount"]    as? String,
+                    let asset     = args["asset"]     as? String,
+                    let postingKey = args["postingKey"] as? String
+                else {
+                    debugPrint("bridge.transfer: missing params")
+                    result(FlutterMethodNotImplemented)
+                    return
+                }
+                let memo    = args["memo"] as? String ?? ""
+                let token   = args["token"] as? String ?? ""
+                let authKey = args["authKey"] as? String ?? ""
+                let js = "transfer('\\(jsEscape(id))','\\(jsEscape(username))','\\(jsEscape(recipient))','\\(jsEscape(amount))','\\(jsEscape(asset))','\\(jsEscape(memo))','\\(jsEscape(postingKey))','\\(jsEscape(token))','\\(jsEscape(authKey))');"
+                webVC.runThisJS(id: id, jsCode: js) { text in result(text) }
+
             case "muteUser":
                 guard
                     let username  = args["username"]  as? String,

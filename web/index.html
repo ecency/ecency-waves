@@ -200,6 +200,37 @@
       }
     }
 
+    // ---------- Transfer ----------
+    // Android/iOS call: transfer(id, username, to, amount, asset, memo, postingKey, token, authKey)
+    async function transfer(id, username, to, amount, asset, memo, postingKey, token, authKey) {
+      try {
+        if (!postingKey) return fail(id, "Missing postingKey");
+        if (!username) return fail(id, "Missing sender username");
+        if (!to) return fail(id, "Missing recipient");
+        if (!asset) return fail(id, "Missing asset symbol");
+
+        const parsedAmount = Number.parseFloat(amount);
+        if (!Number.isFinite(parsedAmount)) {
+          return fail(id, "Invalid amount supplied");
+        }
+
+        const amountLiteral = `${parsedAmount.toFixed(3)} ${String(asset).toUpperCase()}`;
+        const pk = dhive.PrivateKey.fromString(postingKey);
+
+        const op = ['transfer', {
+          from: username,
+          to,
+          amount: amountLiteral,
+          memo: memo || '',
+        }];
+
+        const result = await client.broadcast.sendOperations([op], pk);
+        return ok(id, { tx: result.id || null, result });
+      } catch (e) {
+        return fail(id, e);
+      }
+    }
+
     // ---------- Poll vote (custom_json) — stub ----------
     // Android calls:
     // castPollVote(id, username, pollId, choicesArray, postingKey, token, authKey)

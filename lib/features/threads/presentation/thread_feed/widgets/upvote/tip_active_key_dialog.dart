@@ -70,8 +70,12 @@ class _TipActiveKeyDialogState extends State<TipActiveKeyDialog> {
         ),
         FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: colorScheme.primary,
+            backgroundColor: theme.primaryColor,
             foregroundColor: colorScheme.onPrimary,
+            disabledForegroundColor:
+                theme.colorScheme.onSurface.withOpacity(0.38),
+            disabledBackgroundColor:
+                theme.colorScheme.onSurface.withOpacity(0.12),
           ),
           onPressed: canSubmit
               ? () => Navigator.of(context).pop(_controller.text.trim())

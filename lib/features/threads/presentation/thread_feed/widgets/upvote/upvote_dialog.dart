@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get_storage/get_storage.dart';
@@ -12,6 +13,9 @@ import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/act.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
+import 'package:waves/core/services/data_service/service.dart'
+    if (dart.library.io) 'package:waves/core/services/data_service/mobile_service.dart'
+    if (dart.library.html) 'package:waves/core/services/data_service/web_service.dart';
 import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
@@ -55,6 +59,8 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   final ThreadRepository _threadRepository = getIt<ThreadRepository>();
   String? _userName;
   double weight = _defaultWeight;
+  String? _tipFeedbackMessage;
+  bool _tipFeedbackSuccess = false;
 
   @override
   void initState() {
@@ -136,6 +142,12 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
   Future<void> _onTipTap(BuildContext context) async {
     final UserAuthModel userData = context.read<UserController>().userData!;
+    if (_tipFeedbackMessage != null) {
+      setState(() {
+        _tipFeedbackMessage = null;
+        _tipFeedbackSuccess = false;
+      });
+    }
     final selection = await showDialog<TipSelection>(
       context: context,
       builder: (dialogContext) => TipDialog(
@@ -173,7 +185,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       return;
     }
 
-    widget.rootContext.showSnackBar(LocaleText.tipRequiresAuth);
+    _showTipFeedback(LocaleText.tipRequiresAuth, success: false);
   }
 
   void _startTipTransaction(TipSelection selection, AuthType authType) {
@@ -251,7 +263,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       final uri = _buildHotSigningUri(method, selection, accountName);
       await Act.launchThisUrl(uri.toString());
     } catch (e) {
-      widget.rootContext.showSnackBar(e.toString());
+      _showTipFeedback(e.toString(), success: false);
     }
   }
 
@@ -306,7 +318,11 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     String activeKey,
     String accountName,
   ) async {
+    final preparedKey =
+        await _normalizeActiveKey(accountName, activeKey.trim());
     widget.rootContext.showLoader();
+    String? feedbackMessage;
+    var success = false;
     try {
       final response = await _threadRepository.transfer(
         accountName,
@@ -314,24 +330,26 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         selection.amount,
         selection.tokenSymbol,
         _tipMemo(),
-        activeKey,
+        preparedKey,
         null,
         null,
       );
 
       if (response.isSuccess) {
-        widget.rootContext.showSnackBar(LocaleText.smTipSuccessMessage);
+        feedbackMessage = LocaleText.smTipSuccessMessage;
+        success = true;
       } else {
-        widget.rootContext.showSnackBar(
-          response.errorMessage.isNotEmpty
-              ? response.errorMessage
-              : LocaleText.emTipFailureMessage,
-        );
+        feedbackMessage = response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : LocaleText.emTipFailureMessage;
       }
     } catch (e) {
-      widget.rootContext.showSnackBar(e.toString());
+      feedbackMessage = e.toString();
     } finally {
       widget.rootContext.hideLoader();
+    }
+    if (feedbackMessage != null) {
+      _showTipFeedback(feedbackMessage, success: success);
     }
   }
 
@@ -340,6 +358,8 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     UserAuthModel<HiveSignerAuthModel> userData,
   ) async {
     widget.rootContext.showLoader();
+    String? feedbackMessage;
+    var success = false;
     try {
       await SignTransactionHiveSignerController().initTransferProcess(
         recipient: widget.author,
@@ -348,14 +368,61 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         memo: _tipMemo(),
         authdata: userData,
         onSuccess: () {},
-        showToast: (message) => widget.rootContext.showSnackBar(message),
+        showToast: (message) {
+          feedbackMessage = message;
+          success = message == LocaleText.smTipSuccessMessage;
+        },
       );
     } catch (e) {
-      widget.rootContext.showSnackBar(e.toString());
+      feedbackMessage = e.toString();
     } finally {
       widget.rootContext.hideLoader();
     }
+    if (feedbackMessage != null) {
+      _showTipFeedback(feedbackMessage!, success: success);
+    }
   }
+
+  void _showTipFeedback(String message, {required bool success}) {
+    if (!mounted) return;
+    setState(() {
+      _tipFeedbackMessage = message;
+      _tipFeedbackSuccess = success;
+    });
+    widget.rootContext.showSnackBar(message);
+  }
+
+  Future<String> _normalizeActiveKey(String accountName, String key) async {
+    if (!_looksLikeMasterPassword(key)) {
+      return key;
+    }
+
+    final usernameLiteral = jsonEncode(accountName.toLowerCase());
+    final passwordLiteral = jsonEncode(key);
+    final jsCode = '''
+      const username = $usernameLiteral;
+      const password = $passwordLiteral;
+      return dhive.PrivateKey.fromLogin(username, password, "active").toString();
+    ''';
+
+    try {
+      final response = await runThisJS_(jsCode);
+      final decoded = jsonDecode(response);
+      if (decoded is Map<String, dynamic> && decoded['valid'] == true) {
+        final data = decoded['data'];
+        if (data is String && data.isNotEmpty) {
+          return data;
+        }
+      }
+    } catch (_) {
+      // Ignore conversion errors and fall back to the original key input.
+    }
+
+    return key;
+  }
+
+  bool _looksLikeMasterPassword(String key) =>
+      key.length >= 50 && key.startsWith('P');
 
   String _tipMemo() {
     return 'Tip for @${widget.author}/${widget.permlink} via Ecency Waves';
@@ -363,6 +430,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
   Widget _upVoteSlider(ThemeData theme, BuildContext context) {
     final UserAuthModel userData = context.read<UserController>().userData!;
+    final colorScheme = theme.colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -398,6 +466,49 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
             ],
           ),
         ),
+        if (_tipFeedbackMessage != null) ...[
+          const Gap(16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: _tipFeedbackSuccess
+                    ? colorScheme.secondaryContainer
+                    : colorScheme.errorContainer,
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _tipFeedbackSuccess
+                          ? Icons.check_circle
+                          : Icons.error_outline,
+                      size: 20,
+                      color: _tipFeedbackSuccess
+                          ? colorScheme.onSecondaryContainer
+                          : colorScheme.onErrorContainer,
+                    ),
+                    const Gap(12),
+                    Expanded(
+                      child: Text(
+                        _tipFeedbackMessage!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: _tipFeedbackSuccess
+                              ? colorScheme.onSecondaryContainer
+                              : colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
         Row(
           children: [
             Expanded(

@@ -60,6 +60,10 @@ class MainActivity : FlutterActivity() {
             val pollId = call.argument<String?>("pollId")
             val choices: List<Int> = call.argument<List<Int>>("choices") ?: emptyList()
             val tags: List<String> = call.argument<List<String>>("tags") ?: emptyList()
+            val to = call.argument<String?>("to")
+            val amount = call.argument<String?>("amount")
+            val asset = call.argument<String?>("asset")
+            val memo = call.argument<String?>("memo")
 
             if (id == null) {
                 result.error(
@@ -132,6 +136,13 @@ class MainActivity : FlutterActivity() {
             } else if (call.method == "getImageUploadProofWithPostingKey" && username != null && postingKey != null) {
                 webView?.evaluateJavascript(
                     "getImageUploadProofWithPostingKey('${js(id)}','${js(username)}','${js(postingKey)}');",
+                    null
+                )
+            } else if (call.method == "transfer" && username != null && to != null
+                && amount != null && asset != null && postingKey != null
+            ) {
+                webView?.evaluateJavascript(
+                    "transfer('${js(id)}','${js(username)}','${js(to)}','${js(amount)}','${js(asset)}','${js(memo)}','${js(postingKey)}','${js(token)}','${js(authKey)}');",
                     null
                 )
             } else if (call.method == "muteUser" && username != null && author != null
