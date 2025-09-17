@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/extensions/ui.dart';
@@ -104,6 +105,25 @@ class DrawerMenu extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
+                const Gap(12),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox.shrink();
+                    }
+                    final packageInfo = snapshot.data!;
+                    final version = packageInfo.version;
+                    final buildNumber = packageInfo.buildNumber;
+                    final theme = Theme.of(context);
+                    return Text(
+                      'Version $version ($buildNumber)',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.hintColor,
+                      ),
+                    );
+                  },
                 ),
               ],
             );
