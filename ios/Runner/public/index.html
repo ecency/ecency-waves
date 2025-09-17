@@ -35,9 +35,9 @@
   <script>
     let timestamp = new Date().getTime() / 1000;
     let messageObj;
-    var client = new dhive.Client([
+    const HIVE_NODES = [
       "https://api.hive.blog",
-      "https://api.deathwings.me",
+      "https://api.deathwing.me",
       "https://hive-api.arcange.eu",
       "https://hived.emre.sh",
       "https://api.openhive.network",
@@ -51,7 +51,23 @@
       "https://api.pharesim.me",
       "https://hived.privex.io",
       "https://hive.roelandp.nl",
-    ]);
+    ];
+    var client = new dhive.Client(HIVE_NODES);
+
+    try {
+      if (hive && hive.api && typeof hive.api.setOptions === "function") {
+        hive.api.setOptions({ useAppbaseApi: true, url: HIVE_NODES[0] });
+      }
+
+      if (hive && hive.config && typeof hive.config.set === "function") {
+        hive.config.set(
+          "alternative_api_endpoints",
+          HIVE_NODES.slice(1)
+        );
+      }
+    } catch (configurationError) {
+      console.warn("Unable to configure hive-js endpoints", configurationError);
+    }
 
     function b64uEnc(str) {
       const b64uLookup = { "/": "_", _: "/", "+": "-", "-": "+", "=": ".", ".": "=" };
@@ -264,14 +280,14 @@
       amount,
       asset,
       memo,
-      postingKey,
+      privateKey,
       token,
       authKey
     ) {
-      if (!postingKey) {
+      if (!privateKey) {
         return replyToNative({
           valid: false,
-          error: "Missing postingKey",
+          error: "Missing active key or master password",
           data: null,
         }, id);
       }
@@ -325,9 +341,10 @@
         [op],
         "transfer",
         username,
-        postingKey,
+        privateKey,
         token,
-        authKey
+        authKey,
+        "active"
       );
     }
 
@@ -395,15 +412,165 @@
       );
     }
 
+    function resolvePrivateKey(username, rawKey, keyType) {
+      if (!rawKey) {
+        throw new Error("Missing key");
+      }
+
+      try {
+        return dhive.PrivateKey.fromString(rawKey);
+      } catch (wifError) {
+        try {
+          return dhive.PrivateKey.fromLogin(
+            username,
+            rawKey,
+            keyType || "posting"
+          );
+        } catch (loginError) {
+          const error = new Error("Invalid key supplied");
+          error.cause = loginError;
+          error.data = { reason: loginError.message };
+          throw error;
+        }
+      }
+    }
+
+    function extractTransactionId(result) {
+      if (!result || typeof result !== "object") {
+        return null;
+      }
+
+      if (typeof result.id === "string" && result.id.length) {
+        return result.id;
+      }
+
+      if (typeof result.tx_id === "string" && result.tx_id.length) {
+        return result.tx_id;
+      }
+
+      if (typeof result.transaction_id === "string" && result.transaction_id.length) {
+        return result.transaction_id;
+      }
+
+      if (
+        result.result &&
+        typeof result.result === "object" &&
+        typeof result.result.id === "string" &&
+        result.result.id.length
+      ) {
+        return result.result.id;
+      }
+
+      return null;
+    }
+
+    function normalizeBroadcastPayload(provider, result) {
+      const txId = extractTransactionId(result);
+
+      if (!txId) {
+        const error = new Error(
+          "Broadcast response did not include a transaction id"
+        );
+        error.data = { provider, result };
+        throw error;
+      }
+
+      return { provider, txId, result };
+    }
+
+    function broadcastWithHiveJs(operations, privateKey, keyType) {
+      return new Promise((resolve, reject) => {
+        const authField = keyType === "active" ? "active" : "posting";
+        hive.broadcast.send(
+          { extensions: [], operations },
+          { [authField]: privateKey },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+    }
+
+    async function sendOperationsWithKey(
+      username,
+      rawKey,
+      keyType,
+      operations
+    ) {
+      const normalizedType = keyType || "posting";
+      const privateKey = resolvePrivateKey(username, rawKey, normalizedType);
+      const publicKey = privateKey.createPublic().toString();
+
+      await ensureKeyMatchesAccount(username, publicKey, normalizedType);
+
+      try {
+        const primaryResult = await client.broadcast.sendOperations(
+          operations,
+          privateKey
+        );
+
+        return normalizeBroadcastPayload("dhive", primaryResult);
+      } catch (primaryError) {
+        console.warn("dhive broadcast failed, attempting hive-js", primaryError);
+
+        const fallbackResult = await broadcastWithHiveJs(
+          operations,
+          privateKey.toString(),
+          normalizedType
+        ).catch((fallbackError) => {
+          fallbackError.cause = primaryError;
+          throw fallbackError;
+        });
+
+        return normalizeBroadcastPayload("hive-js", fallbackResult);
+      }
+    }
+
+    async function ensureKeyMatchesAccount(username, publicKey, keyType) {
+      const normalizedType = keyType || "posting";
+      const [account] = await client.database.getAccounts([username]);
+
+      if (!account) {
+        const error = new Error("Account not found");
+        error.data = { username };
+        throw error;
+      }
+
+      const allowedKeys = new Set(
+        ((account[normalizedType] && account[normalizedType].key_auths) || [])
+          .map((entry) => entry[0])
+      );
+
+      if (normalizedType === "active") {
+        ((account.owner && account.owner.key_auths) || []).forEach((entry) => {
+          allowedKeys.add(entry[0]);
+        });
+      }
+
+      if (!allowedKeys.has(publicKey)) {
+        const error = new Error(
+          `Provided key is not authorized for ${normalizedType} operations`
+        );
+        error.data = { username, keyType: normalizedType };
+        throw error;
+      }
+    }
+
     function performOperations(
       id,
       operations,
       operationName,
       username,
-      postingKey,
+      key,
       token,
-      authKey
+      authKey,
+      keyType = "posting"
     ) {
+      const resolvedKeyType = keyType || "posting";
       if (
         token !== undefined &&
         authKey !== undefined &&
@@ -411,7 +578,7 @@
         authKey.length > 0
       ) {
         const sign_data = {
-          key_type: "posting",
+          key_type: resolvedKeyType,
           ops: operations,
           broadcast: true,
           nonce: Date.now(),
@@ -426,30 +593,20 @@
           data: data,
         }, id);
       } else {
-        async function tryPublish(operations, key) {
-          try {
-            return client.broadcast.sendOperations(
-              operations,
-              dhive.PrivateKey.fromString(key)
-            );
-          } catch (e) {
-            return e;
-          }
-        }
-        tryPublish(operations, postingKey)
+        sendOperationsWithKey(username, key, resolvedKeyType, operations)
           .then((result) => {
             replyToNative({
               valid: true,
               error: "",
-              data: "",
+              data: result,
             }, id);
           })
           .catch((error) => {
             console.error(error);
             replyToNative({
               valid: false,
-              error: error.message,
-              data: "",
+              error: error && error.message ? error.message : String(error),
+              data: error && error.data ? error.data : "",
             }, id);
           });
       }
