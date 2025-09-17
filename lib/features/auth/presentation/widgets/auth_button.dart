@@ -14,6 +14,7 @@ class AuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Hero(
       tag: enumToString(authType),
       child: SizedBox(
@@ -21,35 +22,39 @@ class AuthButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
-              shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                      color: theme.primaryColorDark.withOpacity(0.5)),
-                  borderRadius: const BorderRadius.all(Radius.circular(40))),
-              surfaceTintColor: theme.primaryColorLight,
-              backgroundColor: theme.primaryColorLight),
-          child: child(theme, label),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: colorScheme.outline.withOpacity(0.5)),
+              borderRadius: const BorderRadius.all(Radius.circular(40)),
+            ),
+            surfaceTintColor: Colors.transparent,
+            backgroundColor: colorScheme.surfaceVariant,
+            foregroundColor: colorScheme.onSurface,
+          ),
+          child: child(theme, colorScheme, label),
         ),
       ),
     );
   }
 
-  Widget child(ThemeData theme, String label) {
+  Widget child(ThemeData theme, ColorScheme colorScheme, String label) {
     if (authType == AuthType.hiveKeyChain) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hive-keychain-logo.png', label);
+          theme, colorScheme, 'assets/images/auth/hive-keychain-logo.png', label);
     } else if (authType == AuthType.hiveAuth) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hiveauth_icon.png', label);
+          theme, colorScheme, 'assets/images/auth/hiveauth_icon.png', label);
     } else if (authType == AuthType.hiveSign) {
       return _buttonChildren(
-          theme, 'assets/images/auth/hive-signer-logo.png', label);
+          theme, colorScheme, 'assets/images/auth/hive-signer-logo.png', label);
     } else {
-      return _buttonChildren(theme, null, label);
+      return _buttonChildren(theme, colorScheme, null, label);
     }
   }
 
-  Row _buttonChildren(ThemeData theme, String? input, String text) {
+  Row _buttonChildren(
+      ThemeData theme, ColorScheme colorScheme, String? input, String text) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -62,11 +67,12 @@ class AuthButton extends StatelessWidget {
                   height: 30,
                 ),
               )
-            : const Icon(Icons.key),
+            : Icon(Icons.key, color: colorScheme.onSurface),
         const Gap(10),
         Text(
           text,
-          style: theme.textTheme.bodyMedium,
+          style: theme.textTheme.bodyMedium
+              ?.copyWith(color: colorScheme.onSurface),
         )
       ],
     );

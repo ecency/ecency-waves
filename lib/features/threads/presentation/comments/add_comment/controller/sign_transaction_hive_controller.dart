@@ -21,6 +21,9 @@ class SignTransactionHiveController extends HiveTransactionController {
   final String? comment;
   final List<String>? imageLinks;
   final double? weight;
+  final double? amount;
+  final String? assetSymbol;
+  final String? memo;
   final SignTransactionType transactionType;
   String? _generatedPermlink;
   final String? pollId;
@@ -38,6 +41,9 @@ class SignTransactionHiveController extends HiveTransactionController {
       this.comment,
       this.imageLinks,
       this.weight,
+      this.amount,
+      this.assetSymbol,
+      this.memo,
       this.pollId,
       this.choices})
       : assert(
@@ -51,7 +57,11 @@ class SignTransactionHiveController extends HiveTransactionController {
         assert(
             !(transactionType == SignTransactionType.pollvote &&
                 (weight == null || permlink == null)),
-            "pollId and choices parameters are required") {
+            "pollId and choices parameters are required"),
+        assert(
+            !(transactionType == SignTransactionType.transfer &&
+                (amount == null || assetSymbol == null)),
+            "amount and assetSymbol parameters are required") {
     _initSignTransactionSocketSubscription();
   }
 
@@ -86,6 +96,8 @@ class SignTransactionHiveController extends HiveTransactionController {
         return LocaleText.smCommentPublishMessage;
       case SignTransactionType.mute:
         return "User is muted successfully";
+      case SignTransactionType.transfer:
+        return LocaleText.smTipSuccessMessage;
     }
   }
 
@@ -98,6 +110,8 @@ class SignTransactionHiveController extends HiveTransactionController {
         return LocaleText.emCommentDeclineMessage;
       case SignTransactionType.mute:
         return "Mute operation is failed";
+      case SignTransactionType.transfer:
+        return LocaleText.emTipFailureMessage;
     }
   }
 
@@ -167,6 +181,17 @@ class SignTransactionHiveController extends HiveTransactionController {
         return _threadRepository.muteUser(
           authData.accountName,
           author,
+          null,
+          authData.auth.authKey,
+          authData.auth.token,
+        );
+      case SignTransactionType.transfer:
+        return _threadRepository.transfer(
+          authData.accountName,
+          author,
+          amount!,
+          assetSymbol!,
+          memo ?? '',
           null,
           authData.auth.authKey,
           authData.auth.token,

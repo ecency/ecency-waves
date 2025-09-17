@@ -45,6 +45,19 @@ Future<String> voteContentFromPlatform(
   return _error();
 }
 
+Future<String> transferFromPlatform(
+  String username,
+  String to,
+  String amount,
+  String asset,
+  String memo,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  return _error();
+}
+
 Future<String> castPollVoteFromPlatform(
   String username,
   String pollId,

@@ -10,14 +10,25 @@ class UpVotePercentageButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor = isDark
+        ? Colors.black87
+        : theme.colorScheme.onPrimary;
     return GestureDetector(
       onTap: () {
         onTap(percentageValue);
       },
       child: CircleAvatar(
         radius: 20,
-        child: Text("${(percentageValue * 100).round()}",
-            style: theme.textTheme.bodyMedium),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: textColor,
+        child: Text(
+          "${(percentageValue * 100).round()}",
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
       ),
     );
   }

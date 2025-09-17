@@ -75,6 +75,20 @@ class ThreadRepository {
         username, pollId, choices, postingKey, authKey, token);
   }
 
+  Future<ActionSingleDataResponse<String>> transfer(
+    String username,
+    String recipient,
+    double amount,
+    String assetSymbol,
+    String memo,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    return await _apiService.transfer(
+        username, recipient, amount, assetSymbol, memo, postingKey, authKey, token);
+  }
+
 
 
   Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(

@@ -136,4 +136,39 @@ class SignTransactionHiveSignerController {
       onFailure();
     }
   }
+
+  Future<void> initTransferProcess({
+    required String recipient,
+    required double amount,
+    required String assetSymbol,
+    required String memo,
+    required UserAuthModel<HiveSignerAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required Function(String) showToast,
+  }) async {
+    final formattedAmount = amount.toStringAsFixed(3);
+    ActionSingleDataResponse response = await _threadRepository
+        .broadcastTransactionUsingHiveSigner<TransferBroadcastModel>(
+      authdata.auth.token,
+      BroadcastModel(
+        type: BroadCastType.transfer,
+        data: TransferBroadcastModel(
+          from: authdata.accountName,
+          to: recipient,
+          amount: formattedAmount,
+          assetSymbol: assetSymbol,
+          memo: memo,
+        ),
+      ),
+    );
+    if (response.isSuccess) {
+      showToast(LocaleText.smTipSuccessMessage);
+      onSuccess();
+    } else {
+      final error = response.errorMessage.isNotEmpty
+          ? response.errorMessage
+          : LocaleText.emTipFailureMessage;
+      showToast(error);
+    }
+  }
 }

@@ -25,14 +25,25 @@ class ColoredButton extends StatelessWidget {
   }
 
   SizedBox _button(ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    final Color effectiveBackground =
+        backgroundColor ?? colorScheme.primary;
+    final Color effectiveForeground = _resolveForegroundColor(
+      theme,
+      colorScheme,
+      effectiveBackground,
+    );
     return SizedBox(
       height: 30,
       child: FilledButton(
           style: FilledButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                  borderRadius: borderRadius ??
-                      const BorderRadius.all(Radius.circular(10))),
-              backgroundColor: backgroundColor ?? theme.primaryColor),
+            shape: RoundedRectangleBorder(
+              borderRadius: borderRadius ??
+                  const BorderRadius.all(Radius.circular(10)),
+            ),
+            backgroundColor: effectiveBackground,
+            foregroundColor: effectiveForeground,
+          ),
           onPressed: onPressed,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -43,6 +54,7 @@ class ColoredButton extends StatelessWidget {
                   child: Icon(
                     icon,
                     size: 18,
+                    color: effectiveForeground,
                   ),
                 ),
               AutoSizeText(
@@ -51,10 +63,39 @@ class ColoredButton extends StatelessWidget {
                 style: theme.textTheme.bodyMedium!
                     .copyWith(
                       fontWeight: isBoldText ? FontWeight.bold : null,
-                      color: theme.colorScheme.onPrimary),
+                      color: effectiveForeground,
+                    ),
               ),
             ],
           )),
     );
+  }
+
+  Color _resolveForegroundColor(
+      ThemeData theme, ColorScheme colorScheme, Color background) {
+    if (background == colorScheme.primary) {
+      if (theme.brightness == Brightness.dark) {
+        return Colors.black87;
+      }
+      return colorScheme.onPrimary;
+    }
+    if (background == colorScheme.secondary) return colorScheme.onSecondary;
+    if (background == colorScheme.tertiary) return colorScheme.onTertiary;
+    if (background == colorScheme.primaryContainer) {
+      return colorScheme.onPrimaryContainer;
+    }
+    if (background == colorScheme.secondaryContainer) {
+      return colorScheme.onSecondaryContainer;
+    }
+    if (background == colorScheme.tertiaryContainer) {
+      return colorScheme.onTertiaryContainer;
+    }
+    if (background == colorScheme.surface) return colorScheme.onSurface;
+    if (background == colorScheme.surfaceVariant) {
+      return colorScheme.onSurface;
+    }
+    return ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+        ? Colors.white
+        : Colors.black;
   }
 }

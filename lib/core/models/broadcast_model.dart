@@ -18,6 +18,8 @@ class BroadcastModel<T> {
       return model.toJson();
     } else if (model is MuteBroadcastModel) {
       return model.toJson();
+    } else if (model is TransferBroadcastModel) {
+      return model.toJson();
     } else {
       throw Exception('Unknown type');
     }
@@ -125,6 +127,31 @@ class MuteBroadcastModel {
           "what": ["ignore"]
         }
       ])
+    };
+  }
+}
+
+class TransferBroadcastModel {
+  final String from;
+  final String to;
+  final String amount;
+  final String assetSymbol;
+  final String memo;
+
+  const TransferBroadcastModel({
+    required this.from,
+    required this.to,
+    required this.amount,
+    required this.assetSymbol,
+    required this.memo,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'from': from,
+      'to': to,
+      'amount': '${amount} $assetSymbol',
+      'memo': memo,
     };
   }
 }

@@ -10,6 +10,7 @@ import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/core/utilities/act.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
@@ -19,8 +20,12 @@ import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_hive_signer_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/tip_dialog.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/tip_active_key_dialog.dart';
+import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/tip_signing_dialog.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/upvote_percentage_buttons.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/upvote_slider.dart';
+import 'package:waves/features/threads/repository/thread_repository.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class UpvoteDialog extends StatefulWidget {
@@ -43,8 +48,11 @@ class UpvoteDialog extends StatefulWidget {
 class _UpvoteDialogState extends State<UpvoteDialog> {
   static const double _defaultWeight = 0.01;
   static const String _voteWeightKeyPrefix = 'last_vote_weight_';
+  static const List<double> _tipAmountOptions = [0.1, 0.5, 1, 2, 3, 5, 10];
+  static const List<String> _tipTokenOptions = ['HIVE', 'HBD'];
 
   final GetStorage _storage = getIt<GetStorage>();
+  final ThreadRepository _threadRepository = getIt<ThreadRepository>();
   String? _userName;
   double weight = _defaultWeight;
 
@@ -126,6 +134,233 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     );
   }
 
+  Future<void> _onTipTap(BuildContext context) async {
+    final UserAuthModel userData = context.read<UserController>().userData!;
+    final selection = await showDialog<TipSelection>(
+      context: context,
+      builder: (dialogContext) => TipDialog(
+        amountOptions: _tipAmountOptions,
+        tokenOptions: _tipTokenOptions,
+      ),
+    );
+
+    if (!mounted || selection == null) {
+      return;
+    }
+
+    if (userData.isPostingKeyLogin) {
+      await _handlePostingKeyTip(
+        context,
+        selection,
+        userData as UserAuthModel<PostingAuthModel>,
+      );
+      return;
+    }
+
+    if (userData.isHiveSignerLogin) {
+      await _hiveSignerTipTransaction(
+        selection,
+        userData as UserAuthModel<HiveSignerAuthModel>,
+      );
+      return;
+    }
+
+    if (userData.isHiveKeychainLogin || userData.isHiveAuthLogin) {
+      final authType = userData.isHiveKeychainLogin
+          ? AuthType.hiveKeyChain
+          : AuthType.hiveAuth;
+      _startTipTransaction(selection, authType);
+      return;
+    }
+
+    widget.rootContext.showSnackBar(LocaleText.tipRequiresAuth);
+  }
+
+  void _startTipTransaction(TipSelection selection, AuthType authType) {
+    final memo = _tipMemo();
+    final navigationData = SignTransactionNavigationModel(
+      transactionType: SignTransactionType.transfer,
+      author: widget.author,
+      permlink: widget.permlink,
+      amount: selection.amount,
+      assetSymbol: selection.tokenSymbol,
+      memo: memo,
+      ishiveKeyChainMethod: authType == AuthType.hiveKeyChain,
+    );
+    context.pushNamed(Routes.hiveSignTransactionView, extra: navigationData);
+  }
+
+  Future<void> _handlePostingKeyTip(
+    BuildContext context,
+    TipSelection selection,
+    UserAuthModel<PostingAuthModel> userData,
+  ) async {
+    final method = await showDialog<TipSigningMethod>(
+      context: context,
+      builder: (dialogContext) => const TipSigningDialog(),
+    );
+
+    if (!mounted || method == null) {
+      return;
+    }
+
+    switch (method) {
+      case TipSigningMethod.activeKey:
+        final activeKey = await showDialog<String>(
+          context: context,
+          builder: (dialogContext) =>
+              TipActiveKeyDialog(accountName: userData.accountName),
+        );
+
+        if (!mounted || activeKey == null) {
+          return;
+        }
+
+        await _submitTipWithActiveKey(selection, activeKey, userData.accountName);
+        break;
+      case TipSigningMethod.hiveSigner:
+        await _launchHotSigning(
+          method,
+          selection,
+          userData.accountName,
+        );
+        break;
+      case TipSigningMethod.hiveKeychain:
+        await _launchHotSigning(
+          method,
+          selection,
+          userData.accountName,
+        );
+        break;
+      case TipSigningMethod.hiveAuth:
+        await _launchHotSigning(
+          method,
+          selection,
+          userData.accountName,
+        );
+        break;
+    }
+  }
+
+  Future<void> _launchHotSigning(
+    TipSigningMethod method,
+    TipSelection selection,
+    String accountName,
+  ) async {
+    try {
+      final uri = _buildHotSigningUri(method, selection, accountName);
+      await Act.launchThisUrl(uri.toString());
+    } catch (e) {
+      widget.rootContext.showSnackBar(e.toString());
+    }
+  }
+
+  Uri _buildHotSigningUri(
+    TipSigningMethod method,
+    TipSelection selection,
+    String accountName,
+  ) {
+    final formattedAmount = selection.amount.toStringAsFixed(3);
+    final amountParameter = '$formattedAmount ${selection.tokenSymbol.toUpperCase()}';
+    final memo = _tipMemo();
+
+    switch (method) {
+      case TipSigningMethod.hiveSigner:
+        return Uri.https('hivesigner.com', '/sign/transfer', {
+          'from': accountName,
+          'to': widget.author,
+          'amount': amountParameter,
+          'memo': memo,
+        });
+      case TipSigningMethod.hiveKeychain:
+        return Uri(
+          scheme: 'hive',
+          host: 'sign',
+          path: '/transfer',
+          queryParameters: {
+            'from': accountName,
+            'to': widget.author,
+            'amount': amountParameter,
+            'memo': memo,
+          },
+        );
+      case TipSigningMethod.hiveAuth:
+        return Uri(
+          scheme: 'has',
+          host: 'sign',
+          path: '/transfer',
+          queryParameters: {
+            'from': accountName,
+            'to': widget.author,
+            'amount': amountParameter,
+            'memo': memo,
+          },
+        );
+      case TipSigningMethod.activeKey:
+        throw UnsupportedError('Active key signing does not use hot signing');
+    }
+  }
+
+  Future<void> _submitTipWithActiveKey(
+    TipSelection selection,
+    String activeKey,
+    String accountName,
+  ) async {
+    widget.rootContext.showLoader();
+    try {
+      final response = await _threadRepository.transfer(
+        accountName,
+        widget.author,
+        selection.amount,
+        selection.tokenSymbol,
+        _tipMemo(),
+        activeKey,
+        null,
+        null,
+      );
+
+      if (response.isSuccess) {
+        widget.rootContext.showSnackBar(LocaleText.smTipSuccessMessage);
+      } else {
+        widget.rootContext.showSnackBar(
+          response.errorMessage.isNotEmpty
+              ? response.errorMessage
+              : LocaleText.emTipFailureMessage,
+        );
+      }
+    } catch (e) {
+      widget.rootContext.showSnackBar(e.toString());
+    } finally {
+      widget.rootContext.hideLoader();
+    }
+  }
+
+  Future<void> _hiveSignerTipTransaction(
+    TipSelection selection,
+    UserAuthModel<HiveSignerAuthModel> userData,
+  ) async {
+    widget.rootContext.showLoader();
+    try {
+      await SignTransactionHiveSignerController().initTransferProcess(
+        recipient: widget.author,
+        amount: selection.amount,
+        assetSymbol: selection.tokenSymbol,
+        memo: _tipMemo(),
+        authdata: userData,
+        onSuccess: () {},
+        showToast: (message) => widget.rootContext.showSnackBar(message),
+      );
+    } catch (e) {
+      widget.rootContext.showSnackBar(e.toString());
+    } finally {
+      widget.rootContext.hideLoader();
+    }
+  }
+
+  String _tipMemo() {
+    return 'Tip for @${widget.author}/${widget.permlink} via Ecency Waves';
+  }
+
   Widget _upVoteSlider(ThemeData theme, BuildContext context) {
     final UserAuthModel userData = context.read<UserController>().userData!;
     return Column(
@@ -163,26 +398,40 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
             ],
           ),
         ),
-        SizedBox(
-          height: 45,
-          child: ColoredButton(
-            backgroundColor: theme.colorScheme.tertiary,
-            isBoldText: true,
-            borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20)),
-            text: LocaleText.upvote,
-            onPressed: () {
-              Navigator.pop(context);
-              if (userData.isPostingKeyLogin) {
-                _postingKeyVoteTransaction(userData, context);
-              } else if (userData.isHiveSignerLogin) {
-                _hiveSignerTransaction(userData, context);
-              } else {
-                _onTransactionDecision(AuthType.hiveKeyChain, context);
-              }
-            },
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: ColoredButton(
+                backgroundColor: theme.colorScheme.primary,
+                icon: Icons.card_giftcard_outlined,
+                isBoldText: true,
+                borderRadius:
+                    const BorderRadius.only(bottomLeft: Radius.circular(20)),
+                text: LocaleText.tip,
+                onPressed: () => _onTipTap(context),
+              ),
+            ),
+            const Gap(2),
+            Expanded(
+              child: ColoredButton(
+                backgroundColor: theme.colorScheme.primary,
+                isBoldText: true,
+                borderRadius:
+                    const BorderRadius.only(bottomRight: Radius.circular(20)),
+                text: LocaleText.upvote,
+                onPressed: () {
+                  Navigator.pop(context);
+                  if (userData.isPostingKeyLogin) {
+                    _postingKeyVoteTransaction(userData, context);
+                  } else if (userData.isHiveSignerLogin) {
+                    _hiveSignerTransaction(userData, context);
+                  } else {
+                    _onTransactionDecision(AuthType.hiveKeyChain, context);
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );

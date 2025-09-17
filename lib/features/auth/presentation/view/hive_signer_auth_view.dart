@@ -46,7 +46,7 @@ class _HiveSignerAuthViewState extends State<HiveSignerAuthView> {
         ),
       )
       ..loadRequest(Uri.parse(
-          'https://hivesigner.com/oauth2/authorize?client_id=ecency.app&redirect_uri=https://example.com/callback/&scope=vote,comment'));
+          'https://hivesigner.com/oauth2/authorize?client_id=ecency.app&redirect_uri=https://example.com/callback/&scope=vote,comment,transfer'));
     super.initState();
   }
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 class UpvoteSlider extends StatefulWidget {
-  const UpvoteSlider(
-      {super.key, required this.onChanged, required this.initialWeight});
+  const UpvoteSlider({
+    super.key,
+    required this.onChanged,
+    required this.initialWeight,
+  });
 
   final Function(double) onChanged;
   final double initialWeight;
@@ -34,7 +37,7 @@ class _UpvoteSliderState extends State<UpvoteSlider> {
         Slider(
           value: sliderValue,
           min: 0.01,
-          inactiveColor: theme.colorScheme.tertiary ,
+          inactiveColor: theme.colorScheme.tertiary,
           label: '${(sliderValue * 100).round()} %',
           onChanged: (value) {
             widget.onChanged(value);

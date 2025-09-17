@@ -4,6 +4,7 @@ import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/transactions/transaction_widget_view.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
+import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/models/hive_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
@@ -29,9 +30,15 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       comment: widget.data.comment,
       imageLinks: widget.data.imageLinks,
       weight: widget.data.weight,
+      amount: widget.data.amount,
+      assetSymbol: widget.data.assetSymbol,
+      memo: widget.data.memo,
       showError: (error) => context.showSnackBar(error),
       onSuccess: (data) {
-        context.showSnackBar(LocaleText.smCommentPublishMessage);
+        if (hiveSignTransactionController.transactionType ==
+            SignTransactionType.comment) {
+          context.showSnackBar(LocaleText.smCommentPublishMessage);
+        }
         Navigator.pop(context, data);
       },
       authData: context.read<UserController>().userData!

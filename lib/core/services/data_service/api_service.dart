@@ -649,6 +649,42 @@ class ApiService {
     }
   }
 
+  Future<ActionSingleDataResponse<String>> transfer(
+      String username,
+      String recipient,
+      double amount,
+      String assetSymbol,
+      String memo,
+      String? postingKey,
+      String? authKey,
+      String? token,
+      ) async {
+    try {
+      final formattedAmount = amount.toStringAsFixed(3);
+      final jsonString = await transferFromPlatform(
+        username,
+        recipient,
+        formattedAmount,
+        assetSymbol,
+        memo,
+        postingKey,
+        authKey,
+        token,
+      );
+      final response = ActionSingleDataResponse<String>.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
   Future<ActionSingleDataResponse<String>> muteUser(
       String username,
       String author,

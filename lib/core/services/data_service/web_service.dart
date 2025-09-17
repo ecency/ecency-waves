@@ -81,6 +81,19 @@ Future<String> voteContentFromPlatform(
   throw UnimplementedError();
 }
 
+Future<String> transferFromPlatform(
+  String username,
+  String to,
+  String amount,
+  String asset,
+  String memo,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) async {
+  throw UnimplementedError();
+}
+
 Future<String> castPollVoteFromPlatform(
   String username,
   String pollId,

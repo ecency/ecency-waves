@@ -100,6 +100,31 @@ Future<String> voteContentFromPlatform(
   return response;
 }
 
+Future<String> transferFromPlatform(
+  String username,
+  String to,
+  String amount,
+  String asset,
+  String memo,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) async {
+  final String id = 'transfer${DateTime.now().toIso8601String()}';
+  final String response = await platform.invokeMethod('transfer', {
+    'id': id,
+    'username': username,
+    'to': to,
+    'amount': amount,
+    'asset': asset,
+    'memo': memo,
+    'postingKey': postingKey ?? '',
+    'token': token ?? '',
+    'authKey': authKey ?? '',
+  });
+  return response;
+}
+
 //ADD custom json support for vote poll support here
 
 Future<String> getImageUploadProofWithPostingKeyFromPlatform(

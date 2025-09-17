@@ -31,6 +31,12 @@ class LocaleText {
   static String get hiveAuth => "hive_auth".tr();
   static String get continueUsing => "continue_using".tr();
   static String get upvote => "upvote".tr();
+  static String get tip => "tip".tr();
+  static String get activePrivateKey => "active_private_key".tr();
+  static String get tipEnterActiveKey => "tip_enter_active_key".tr();
+  static String get tipActiveKeyRequired => "tip_active_key_required".tr();
+  static String tipActiveKeyInstructions(String account) =>
+      "tip_active_key_instructions".tr(args: [account]);
   static String get done => "done".tr();
   static String get addAccount => "add_account".tr();
   static String get switchAccount => "switch_account".tr();
@@ -47,6 +53,11 @@ class LocaleText {
   static String get smCommentPublishMessage =>
       "sm_comment_publish_message".tr();
   static String get smVoteSuccessMessage => "sm_vote_success_message".tr();
+  static String get smTipSuccessMessage => "sm_tip_success_message".tr();
+  static String get emTipFailureMessage => "em_tip_failure_message".tr();
+  static String get tipRequiresAuth => "tip_requires_auth".tr();
+  static String get selectTipAmount => "select_tip_amount".tr();
+  static String get selectToken => "select_token".tr();
   static String get somethingWentWrong => "something_went_wrong".tr();
   static const String loginWithPostingKey = "login_with_posting_key";
   static const String pleaseEnterTheUsername = "please_enter_the_username";
