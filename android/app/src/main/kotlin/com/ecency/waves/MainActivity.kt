@@ -13,7 +13,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.WebViewFactory
 import android.widget.FrameLayout
 import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
@@ -189,7 +188,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun handleWebViewSetupError(error: Throwable) {
-        val message = if (error is WebViewFactory.MissingWebViewPackageException) {
+        val message = if (error::class.java.name == "android.webkit.WebViewFactory\$MissingWebViewPackageException") {
             "Waves requires Android System WebView (or Google Chrome) to be installed and enabled. Update or enable it, then reopen the app."
         } else {
             "Waves could not start the built-in browser component. Please update Android System WebView (or Google Chrome) and try again."
