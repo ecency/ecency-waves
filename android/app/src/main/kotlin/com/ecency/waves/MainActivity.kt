@@ -1,7 +1,10 @@
 package com.ecency.waves
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.view.View
@@ -10,6 +13,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebViewFactory
 import android.widget.FrameLayout
 import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
@@ -144,39 +148,87 @@ class MainActivity : FlutterActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupView() {
-        val params = FrameLayout.LayoutParams(0, 0)
-        webView = WebView(this)
-        val decorView = this.window.decorView as FrameLayout
-        decorView.addView(webView, params)
-        webView?.visibility = View.GONE
-        webView?.settings?.javaScriptEnabled = true
-        webView?.settings?.domStorageEnabled = true
-        WebView.setWebContentsDebuggingEnabled(true)
+        try {
+            val params = FrameLayout.LayoutParams(0, 0)
+            webView = WebView(this)
+            val decorView = this.window.decorView as FrameLayout
+            decorView.addView(webView, params)
+            webView?.visibility = View.GONE
+            webView?.settings?.javaScriptEnabled = true
+            webView?.settings?.domStorageEnabled = true
+            WebView.setWebContentsDebuggingEnabled(true)
 
-        val assetLoader = WebViewAssetLoader.Builder()
-            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
-            .build()
+            val assetLoader = WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+                .build()
 
-        val client: WebViewClient = object : WebViewClient() {
-            @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-            override fun shouldInterceptRequest(
-                view: WebView,
-                request: WebResourceRequest
-            ): WebResourceResponse? {
-                return assetLoader.shouldInterceptRequest(request.url)
+            val client: WebViewClient = object : WebViewClient() {
+                @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+                override fun shouldInterceptRequest(
+                    view: WebView,
+                    request: WebResourceRequest
+                ): WebResourceResponse? {
+                    return assetLoader.shouldInterceptRequest(request.url)
+                }
+
+                override fun shouldInterceptRequest(
+                    view: WebView,
+                    url: String
+                ): WebResourceResponse? {
+                    return assetLoader.shouldInterceptRequest(Uri.parse(url))
+                }
             }
 
-            override fun shouldInterceptRequest(
-                view: WebView,
-                url: String
-            ): WebResourceResponse? {
-                return assetLoader.shouldInterceptRequest(Uri.parse(url))
-            }
+            webView?.webViewClient = client
+            webView?.addJavascriptInterface(WebAppInterface(this), "Android")
+            webView?.loadUrl("https://appassets.androidplatform.net/assets/index.html")
+        } catch (error: Throwable) {
+            webView = null
+            handleWebViewSetupError(error)
+        }
+    }
+
+    private fun handleWebViewSetupError(error: Throwable) {
+        val message = if (error is WebViewFactory.MissingWebViewPackageException) {
+            "Waves requires Android System WebView (or Google Chrome) to be installed and enabled. Update or enable it, then reopen the app."
+        } else {
+            "Waves could not start the built-in browser component. Please update Android System WebView (or Google Chrome) and try again."
         }
 
-        webView?.webViewClient = client
-        webView?.addJavascriptInterface(WebAppInterface(this), "Android")
-        webView?.loadUrl("https://appassets.androidplatform.net/assets/index.html")
+        AlertDialog.Builder(this)
+            .setTitle("Update WebView")
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("Open Play Store") { _, _ ->
+                openWebViewProviderInStore()
+            }
+            .setNegativeButton(android.R.string.ok, null)
+            .show()
+    }
+
+    private fun openWebViewProviderInStore() {
+        val packages = listOf(
+            "com.google.android.webview",
+            "com.android.chrome"
+        )
+
+        for (pkg in packages) {
+            val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg"))
+            marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            try {
+                startActivity(marketIntent)
+                return
+            } catch (_: ActivityNotFoundException) {
+                val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$pkg"))
+                webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    startActivity(webIntent)
+                    return
+                } catch (_: ActivityNotFoundException) {
+                    // Try next package if available
+                }
+            }
+        }
     }
 }
 
