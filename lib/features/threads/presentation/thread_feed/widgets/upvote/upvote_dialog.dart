@@ -139,7 +139,12 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   }
 
   Future<void> _onTipTap(BuildContext context) async {
-    final UserAuthModel userData = context.read<UserController>().userData!;
+    final userController = context.read<UserController>();
+    final UserAuthModel? userData = userController.userData;
+    if (userData == null) {
+      _showTipFeedback(LocaleText.tipRequiresAuth, success: false);
+      return;
+    }
     if (_tipFeedbackMessage != null) {
       setState(() {
         _tipFeedbackMessage = null;
