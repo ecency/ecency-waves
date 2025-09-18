@@ -264,22 +264,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
           await Act.launchThisUrl(uri.toString());
           break;
         case TipSigningMethod.hiveKeychain:
-          await _openWithKeychain(_buildHiveTransferUri(queryParameters));
+          await _openWithKeychain(queryParameters);
           break;
         case TipSigningMethod.ecency:
-          await _openWithEcency(
-            _buildHiveTransferUri(queryParameters),
-            queryParameters,
-          );
+          await _openWithEcency(queryParameters);
           break;
         case TipSigningMethod.hiveAuth:
-          final uri = Uri(
-            scheme: 'has',
-            host: 'sign',
-            path: '/transfer',
-            queryParameters: queryParameters,
-          );
-          await Act.launchThisUrl(uri.toString());
+          await _openWithHiveAuth(queryParameters);
           break;
       }
     } catch (e) {
@@ -313,16 +304,23 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     };
   }
 
-  Uri _buildHiveTransferUri(Map<String, String> queryParameters) {
+  Uri _buildTransferUri({
+    required String scheme,
+    required Map<String, String> queryParameters,
+  }) {
     return Uri(
-      scheme: 'hive',
+      scheme: scheme,
       host: 'sign',
       path: '/transfer',
       queryParameters: queryParameters,
     );
   }
 
-  Future<void> _openWithKeychain(Uri hiveUri) async {
+  Future<void> _openWithKeychain(Map<String, String> queryParameters) async {
+    final hiveUri = _buildTransferUri(
+      scheme: 'hive',
+      queryParameters: queryParameters,
+    );
     if (Platform.isAndroid) {
       final intent = AndroidIntent(
         action: 'action_view',
@@ -347,15 +345,19 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     final canLaunchHive = await canLaunchUrl(hiveUri);
     if (canLaunchHive) {
       await launchUrl(hiveUri, mode: LaunchMode.externalApplication);
-    } else {
-      _showTipFeedback(LocaleText.tipKeychainNotFound, success: false);
+      return;
     }
+
+    _showTipFeedback(LocaleText.tipKeychainNotFound, success: false);
   }
 
   Future<void> _openWithEcency(
-    Uri hiveUri,
     Map<String, String> queryParameters,
   ) async {
+    final hiveUri = _buildTransferUri(
+      scheme: 'ecency',
+      queryParameters: queryParameters,
+    );
     if (Platform.isAndroid) {
       final intent = AndroidIntent(
         action: 'action_view',
@@ -378,10 +380,8 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     }
 
     if (Platform.isIOS) {
-      final ecencyUri = Uri(
+      final ecencyUri = _buildTransferUri(
         scheme: 'ecency',
-        host: 'sign',
-        path: '/transfer',
         queryParameters: queryParameters,
       );
       final canLaunchEcency = await canLaunchUrl(ecencyUri);
@@ -404,6 +404,28 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     }
 
     _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
+  }
+
+  Future<void> _openWithHiveAuth(
+    Map<String, String> queryParameters,
+  ) async {
+    final hiveAuthUri = _buildTransferUri(
+      scheme: 'has',
+      queryParameters: queryParameters,
+    );
+
+    final canLaunchHiveAuth = await canLaunchUrl(hiveAuthUri);
+    if (canLaunchHiveAuth) {
+      final launched = await launchUrl(
+        hiveAuthUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) {
+        return;
+      }
+    }
+
+    _showTipFeedback(LocaleText.emHiveAuthAppNotFound, success: false);
   }
 
   Future<void> _hiveSignerTipTransaction(
