@@ -1,14 +1,12 @@
 // android/build.gradle (Project)
 
 plugins {
-    id "com.android.application" version "8.6.1" apply false
-    id "com.android.library"    version "8.6.1" apply false
-    id "org.jetbrains.kotlin.android" version "2.1.10" apply false
-    // Pin Google Services here; apply only in :app
-    id "com.google.gms.google-services" version "4.4.2" apply false
+    id "com.android.application" apply false
+    id "com.android.library"    apply false
+    id "org.jetbrains.kotlin.android" apply false
+    id "com.google.gms.google-services" apply false
 }
 
-// Central repos for all projects (fine to keep)
 allprojects {
     repositories {
         google()
@@ -18,12 +16,10 @@ allprojects {
 
 rootProject.buildDir = '../build'
 
-// Optional: keep per-module build dirs, but avoid touching plugins/tasks
 subprojects { subproj ->
     subproj.buildDir = "${rootProject.buildDir}/${subproj.name}"
 }
 
-// Gradle clean task
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
