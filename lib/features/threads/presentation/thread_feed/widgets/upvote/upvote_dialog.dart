@@ -512,7 +512,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
                       size: 20,
                       color: _tipFeedbackSuccess
                           ? colorScheme.onSecondaryContainer
-                          : colorScheme.onErrorContainer,
+                          : Colors.white,
                     ),
                     const Gap(12),
                     Expanded(
@@ -521,7 +521,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: _tipFeedbackSuccess
                               ? colorScheme.onSecondaryContainer
-                              : colorScheme.onErrorContainer,
+                              : Colors.white,
                         ),
                       ),
                     ),
