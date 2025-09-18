@@ -313,17 +313,22 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     required String scheme,
     required Map<String, String> queryParameters,
   }) {
-    if (scheme == 'ecency') {
+    if (scheme == 'ecency' || scheme == 'hive') {
       final operationsJson = queryParameters['operations'];
       if (operationsJson == null) {
-        throw StateError('Missing operations for Ecency transfer');
+        throw StateError('Missing operations for $scheme transfer');
       }
-      final encodedOperations =
-          base64Url.encode(utf8.encode(operationsJson)).replaceAll('=', '');
+      final operations = jsonDecode(operationsJson);
+      if (operations is! List || operations.isEmpty) {
+        throw StateError('Invalid operations for $scheme transfer');
+      }
+      final operationJson = jsonEncode(operations.first);
+      final encodedOperation =
+          base64Url.encode(utf8.encode(operationJson)).replaceAll('=', '');
       return Uri(
         scheme: scheme,
         host: 'sign',
-        path: '/op/$encodedOperations',
+        path: '/op/$encodedOperation',
       );
     }
     return Uri(
@@ -427,15 +432,28 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   Future<void> _openWithHiveAuth(
     Map<String, String> queryParameters,
   ) async {
-    final hiveAuthUri = _buildTransferUri(
-      scheme: 'has',
+    final hiveUri = _buildTransferUri(
+      scheme: 'hive',
       queryParameters: queryParameters,
     );
 
-    final canLaunchHiveAuth = await canLaunchUrl(hiveAuthUri);
+    if (Platform.isAndroid) {
+      final intent = AndroidIntent(
+        action: 'action_view',
+        data: hiveUri.toString(),
+        package: 'io.hiveauth.app',
+      );
+      final canLaunchIntent = await intent.canResolveActivity() ?? false;
+      if (canLaunchIntent) {
+        await intent.launch();
+        return;
+      }
+    }
+
+    final canLaunchHiveAuth = await canLaunchUrl(hiveUri);
     if (canLaunchHiveAuth) {
       final launched = await launchUrl(
-        hiveAuthUri,
+        hiveUri,
         mode: LaunchMode.externalApplication,
       );
       if (launched) {
