@@ -1,15 +1,14 @@
-import groovy.xml.XmlSlurper
+// android/build.gradle (Project)
 
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.google.gms:google-services:4.4.2'
-    }
+plugins {
+    id "com.android.application" version "8.6.1" apply false
+    id "com.android.library"    version "8.6.1" apply false
+    id "org.jetbrains.kotlin.android" version "2.1.10" apply false
+    // Pin Google Services here; apply only in :app
+    id "com.google.gms.google-services" version "4.4.2" apply false
 }
 
+// Central repos for all projects (fine to keep)
 allprojects {
     repositories {
         google()
@@ -19,28 +18,12 @@ allprojects {
 
 rootProject.buildDir = '../build'
 
+// Optional: keep per-module build dirs, but avoid touching plugins/tasks
 subprojects { subproj ->
-    // keep per-module build dirs if you want
     subproj.buildDir = "${rootProject.buildDir}/${subproj.name}"
-
-    // Namespace fallback for legacy Android library modules (no afterEvaluate!)
-    plugins.withId("com.android.library") {
-        def androidExt = subproj.extensions.findByName("android")
-        if (androidExt && !androidExt.hasProperty("namespace")) {
-            def manifestFile = file("${subproj.projectDir}/src/main/AndroidManifest.xml")
-            if (manifestFile.exists()) {
-                def pkg = new XmlSlurper(false, false).parse(manifestFile).'@package'.text()
-                if (pkg) {
-                    androidExt.namespace = pkg
-                    println("Set namespace for ${subproj.path} -> ${pkg}")
-                } else {
-                    throw new GradleException("No package found in ${manifestFile} for ${subproj.path}. Please upgrade the dependency or set a namespace.")
-                }
-            }
-        }
-    }
 }
 
+// Gradle clean task
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
