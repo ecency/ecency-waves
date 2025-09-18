@@ -53,6 +53,7 @@
         <string>https</string>
         <string>hive</string>
         <string>has</string>
+        <string>ecency</string>
         </array>
 	<key>NSCameraUsageDescription</key>
     <string>We need access to the camera for capturing photos.</string>
