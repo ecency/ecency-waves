@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/coloured_button.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
@@ -13,9 +15,6 @@ import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/act.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
-import 'package:waves/core/services/data_service/service.dart'
-    if (dart.library.io) 'package:waves/core/services/data_service/mobile_service.dart'
-    if (dart.library.html) 'package:waves/core/services/data_service/web_service.dart';
 import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/posting_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
@@ -25,11 +24,9 @@ import 'package:waves/features/threads/presentation/comments/add_comment/control
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/tip_dialog.dart';
-import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/tip_active_key_dialog.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/tip_signing_dialog.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/upvote_percentage_buttons.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/upvote/upvote_slider.dart';
-import 'package:waves/features/threads/repository/thread_repository.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class UpvoteDialog extends StatefulWidget {
@@ -56,7 +53,6 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   static const List<String> _tipTokenOptions = ['HIVE', 'HBD'];
 
   final GetStorage _storage = getIt<GetStorage>();
-  final ThreadRepository _threadRepository = getIt<ThreadRepository>();
   String? _userName;
   double weight = _defaultWeight;
   String? _tipFeedbackMessage;
@@ -217,19 +213,6 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     }
 
     switch (method) {
-      case TipSigningMethod.activeKey:
-        final activeKey = await showDialog<String>(
-          context: context,
-          builder: (dialogContext) =>
-              TipActiveKeyDialog(accountName: userData.accountName),
-        );
-
-        if (!mounted || activeKey == null) {
-          return;
-        }
-
-        await _submitTipWithActiveKey(selection, activeKey, userData.accountName);
-        break;
       case TipSigningMethod.hiveSigner:
         await _launchHotSigning(
           method,
@@ -261,6 +244,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   ) async {
     try {
       final uri = _buildHotSigningUri(method, selection, accountName);
+      if (method == TipSigningMethod.hiveKeychain) {
+        final isAvailable = await canLaunchUrl(uri);
+        if (!isAvailable) {
+          _showTipFeedback(LocaleText.tipKeychainNotFound, success: false);
+          return;
+        }
+      }
       await Act.launchThisUrl(uri.toString());
     } catch (e) {
       _showTipFeedback(e.toString(), success: false);
@@ -275,87 +265,45 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     final formattedAmount = selection.amount.toStringAsFixed(3);
     final amountParameter = '$formattedAmount ${selection.tokenSymbol.toUpperCase()}';
     final memo = _tipMemo();
+    final operation = [
+      'transfer',
+      {
+        'from': accountName,
+        'to': widget.author,
+        'amount': amountParameter,
+        'memo': memo,
+      },
+    ];
+    final queryParameters = <String, String>{
+      'from': accountName,
+      'to': widget.author,
+      'amount': amountParameter,
+      'memo': memo,
+      'authority': 'active',
+      'operations': jsonEncode([operation]),
+    };
 
     switch (method) {
       case TipSigningMethod.hiveSigner:
-        return Uri.https('hivesigner.com', '/sign/transfer', {
-          'from': accountName,
-          'to': widget.author,
-          'amount': amountParameter,
-          'memo': memo,
-        });
+        return Uri.https(
+          'hivesigner.com',
+          '/sign/transfer',
+          queryParameters,
+        );
       case TipSigningMethod.hiveKeychain:
         return Uri(
           scheme: 'hive',
           host: 'sign',
           path: '/transfer',
-          queryParameters: {
-            'from': accountName,
-            'to': widget.author,
-            'amount': amountParameter,
-            'memo': memo,
-          },
+          queryParameters: queryParameters,
         );
       case TipSigningMethod.hiveAuth:
         return Uri(
           scheme: 'has',
           host: 'sign',
           path: '/transfer',
-          queryParameters: {
-            'from': accountName,
-            'to': widget.author,
-            'amount': amountParameter,
-            'memo': memo,
-          },
+          queryParameters: queryParameters,
         );
-      case TipSigningMethod.activeKey:
-        throw UnsupportedError('Active key signing does not use hot signing');
-    }
-  }
-
-  Future<void> _submitTipWithActiveKey(
-    TipSelection selection,
-    String activeKey,
-    String accountName,
-  ) async {
-    String preparedKey;
-    try {
-      preparedKey =
-          await _normalizeActiveKey(accountName, activeKey.trim());
-    } catch (error) {
-      _showTipFeedback(_tipErrorMessage(error), success: false);
-      return;
-    }
-    widget.rootContext.showLoader();
-    String? feedbackMessage;
-    var success = false;
-    try {
-      final response = await _threadRepository.transfer(
-        accountName,
-        widget.author,
-        selection.amount,
-        selection.tokenSymbol,
-        _tipMemo(),
-        preparedKey,
-        null,
-        null,
-      );
-
-      if (response.isSuccess) {
-        feedbackMessage = LocaleText.smTipSuccessMessage;
-        success = true;
-      } else {
-        feedbackMessage = response.errorMessage.isNotEmpty
-            ? response.errorMessage
-            : LocaleText.emTipFailureMessage;
-      }
-    } catch (e) {
-      feedbackMessage = e.toString();
-    } finally {
-      widget.rootContext.hideLoader();
-    }
-    if (feedbackMessage != null) {
-      _showTipFeedback(feedbackMessage, success: success);
     }
   }
 
@@ -398,74 +346,6 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     widget.rootContext.showSnackBar(message);
   }
 
-  Future<String> _normalizeActiveKey(String accountName, String key) async {
-    final usernameLiteral = jsonEncode(accountName.toLowerCase());
-    final keyLiteral = jsonEncode(key);
-    final jsCode = '''
-      (async () => {
-        const username = $usernameLiteral;
-        const rawKey = $keyLiteral;
-
-        const privateKey = resolvePrivateKey(username, rawKey, "active");
-        const publicKey = privateKey.createPublic().toString();
-        await ensureKeyMatchesAccount(username, publicKey, "active");
-        return privateKey.toString();
-      })()
-    ''';
-
-    final response = await runThisJS_(jsCode);
-    final rawPayload = response.trim();
-
-    dynamic decoded;
-    try {
-      decoded = jsonDecode(rawPayload);
-    } catch (_) {
-      decoded = rawPayload;
-    }
-
-    String? readKey(dynamic value) {
-      if (value is String) {
-        final trimmed = value.trim();
-        return trimmed.isEmpty ? null : trimmed;
-      }
-
-      if (value is Map<String, dynamic>) {
-        return readKey(value['data']);
-      }
-
-      return null;
-    }
-
-    if (decoded is Map<String, dynamic>) {
-      if (decoded['valid'] == true) {
-        final key = readKey(decoded['data']);
-        if (key != null) {
-          return key;
-        }
-      }
-
-      final error = decoded['error'];
-      if (error is String && error.isNotEmpty) {
-        throw Exception(error);
-      }
-    } else {
-      final key = readKey(decoded);
-      if (key != null) {
-        return key;
-      }
-    }
-
-    throw Exception(LocaleText.emTipFailureMessage);
-  }
-
-  String _tipErrorMessage(Object error) {
-    final rawMessage = error.toString();
-    const exceptionPrefix = 'Exception: ';
-    if (rawMessage.startsWith(exceptionPrefix)) {
-      return rawMessage.substring(exceptionPrefix.length);
-    }
-    return rawMessage;
-  }
 
   String _tipMemo() {
     return 'Tip for @${widget.author}/${widget.permlink} via Ecency Waves';
