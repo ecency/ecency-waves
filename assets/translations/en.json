@@ -28,6 +28,7 @@
     "successfull_login_message": "You have successfully logged in with {}",
     "em_default_message": "Something went wrong, please try again",
     "em_hive_auth_token_message": "Did not find token & expiry details from HiveAuth. Please go back & try again.",
+    "em_hiveauth_app_not_found": "HiveAuth app not found on this device. Please install HiveAuth to continue.",
     "em_auth_nack_message": "Auth was not acknowledged",
     "em_posting_login_message": "Invalid Posting Key",
     "em_comment_decline_message": "Comment was declined. Please try again.",

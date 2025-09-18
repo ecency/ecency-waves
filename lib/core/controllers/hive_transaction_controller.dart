@@ -38,6 +38,9 @@ class HiveTransactionController {
       host: socketProvider.connectedServer,
       authKey: authKey,
       onTimeOut: () => onServerFailure(message: LocaleText.emTimeOutMessage),
+      onHiveAuthAppMissing: ishiveKeyChainMethod
+          ? null
+          : () => showError(LocaleText.emHiveAuthAppNotFound),
     );
   }
 

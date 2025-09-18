@@ -42,6 +42,7 @@ class LocaleText {
   static String get switchAccount => "switch_account".tr();
   static String get emDefaultMessage => "em_default_message".tr();
   static String get emHiveAuthTokenMessage => "em_hive_auth_token_message".tr();
+  static String get emHiveAuthAppNotFound => "em_hiveauth_app_not_found".tr();
   static String get emAuthNackMessage => "em_auth_nack_message".tr();
   static String get emPostingLoginMessage => "em_posting_login_message".tr();
   static String get emCommentDeclineMessage =>

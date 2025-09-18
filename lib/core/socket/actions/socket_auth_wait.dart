@@ -18,6 +18,7 @@ class SocketWaitAction {
     required String host,
     required String authKey,
     required VoidCallback onTimeOut,
+    VoidCallback? onHiveAuthAppMissing,
   }) {
     String uuid = data.value;
     String jsonString =
@@ -34,6 +35,11 @@ class SocketWaitAction {
       Act.launchThisUrl(qr);
     } else {
       listenersProvider.transactionState.value = TransactionState.qr;
+      Act.launchThisUrl(qr).then((launched) {
+        if (!launched) {
+          onHiveAuthAppMissing?.call();
+        }
+      });
     }
     listenersProvider.tickValueListener.value =
         listenersProvider.timeOutValueListener.value;

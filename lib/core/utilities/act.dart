@@ -7,20 +7,28 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:waves/core/utilities/enum.dart';
 
 class Act {
-  static Future<void> launchThisUrl(String url) async {
-    var uri = Uri.tryParse(url);
-    if (uri != null) {
-      var canLaunch = await canLaunchUrl(uri);
-      if (Platform.isIOS) {
-        await launchUrl(uri);
-      } else {
-        if (canLaunch) {
-          await launchUrl(uri);
-        } else {
-          dev.log("URL can't be launched.");
-        }
-      }
+  static Future<bool> launchThisUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      return false;
     }
+
+    try {
+      if (Platform.isIOS) {
+        return await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+
+      final canLaunch = await canLaunchUrl(uri);
+      if (canLaunch) {
+        return await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e, stackTrace) {
+      dev.log('Failed to launch $url', error: e, stackTrace: stackTrace);
+      return false;
+    }
+
+    dev.log("URL can't be launched.");
+    return false;
   }
 
   static String generateQrString(SocketInputType inputType, String jsonString) {
