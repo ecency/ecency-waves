@@ -257,8 +257,9 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     String accountName,
   ) async {
     try {
+      final operation = _buildTransferOperation(selection, accountName);
       final queryParameters =
-          _buildTransferQueryParameters(selection, accountName);
+          _buildTransferQueryParameters(selection, accountName, operation);
       switch (method) {
         case TipSigningMethod.hiveSigner:
           final uri = Uri.https(
@@ -269,13 +270,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
           await Act.launchThisUrl(uri.toString());
           break;
         case TipSigningMethod.hiveKeychain:
-          await _openWithKeychain(queryParameters);
+          await _openWithKeychain(queryParameters, operation);
           break;
         case TipSigningMethod.ecency:
-          await _openWithEcency(queryParameters);
+          await _openWithEcency(queryParameters, operation);
           break;
         case TipSigningMethod.hiveAuth:
-          await _openWithHiveAuth(queryParameters);
+          await _openWithHiveAuth(queryParameters, operation);
           break;
       }
     } catch (e) {
@@ -283,14 +284,14 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     }
   }
 
-  Map<String, String> _buildTransferQueryParameters(
+  List<dynamic> _buildTransferOperation(
     TipSelection selection,
     String accountName,
   ) {
     final formattedAmount = selection.amount.toStringAsFixed(3);
     final amountParameter = '$formattedAmount ${selection.tokenSymbol.toUpperCase()}';
     final memo = _tipMemo();
-    final operation = [
+    return [
       'transfer',
       {
         'from': accountName,
@@ -299,6 +300,16 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         'memo': memo,
       },
     ];
+  }
+
+  Map<String, String> _buildTransferQueryParameters(
+    TipSelection selection,
+    String accountName,
+    List<dynamic> operation,
+  ) {
+    final formattedAmount = selection.amount.toStringAsFixed(3);
+    final amountParameter = '$formattedAmount ${selection.tokenSymbol.toUpperCase()}';
+    final memo = _tipMemo();
     return <String, String>{
       'from': accountName,
       'to': widget.author,
@@ -312,17 +323,10 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   Uri _buildTransferUri({
     required String scheme,
     required Map<String, String> queryParameters,
+    required List<dynamic> operation,
   }) {
     if (scheme == 'ecency' || scheme == 'hive') {
-      final operationsJson = queryParameters['operations'];
-      if (operationsJson == null) {
-        throw StateError('Missing operations for $scheme transfer');
-      }
-      final operations = jsonDecode(operationsJson);
-      if (operations is! List || operations.isEmpty) {
-        throw StateError('Invalid operations for $scheme transfer');
-      }
-      final operationJson = jsonEncode(operations.first);
+      final operationJson = jsonEncode(operation);
       final encodedOperation =
           base64Url.encode(utf8.encode(operationJson)).replaceAll('=', '');
       final sanitizedQuery = Map<String, String>.from(queryParameters)
@@ -342,10 +346,14 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     );
   }
 
-  Future<void> _openWithKeychain(Map<String, String> queryParameters) async {
+  Future<void> _openWithKeychain(
+    Map<String, String> queryParameters,
+    List<dynamic> operation,
+  ) async {
     final hiveUri = _buildTransferUri(
       scheme: 'hive',
       queryParameters: queryParameters,
+      operation: operation,
     );
     if (Platform.isAndroid) {
       final intent = AndroidIntent(
@@ -379,10 +387,12 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
   Future<void> _openWithEcency(
     Map<String, String> queryParameters,
+    List<dynamic> operation,
   ) async {
     final hiveUri = _buildTransferUri(
       scheme: 'ecency',
       queryParameters: queryParameters,
+      operation: operation,
     );
     if (Platform.isAndroid) {
       final intent = AndroidIntent(
@@ -409,6 +419,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       final ecencyUri = _buildTransferUri(
         scheme: 'ecency',
         queryParameters: queryParameters,
+        operation: operation,
       );
       final canLaunchEcency = await canLaunchUrl(ecencyUri);
       if (canLaunchEcency) {
@@ -434,10 +445,12 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
   Future<void> _openWithHiveAuth(
     Map<String, String> queryParameters,
+    List<dynamic> operation,
   ) async {
     final hiveUri = _buildTransferUri(
       scheme: 'hive',
       queryParameters: queryParameters,
+      operation: operation,
     );
 
     if (Platform.isAndroid) {
