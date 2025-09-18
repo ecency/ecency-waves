@@ -377,13 +377,33 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       return;
     }
 
-    final ecencyUri =
-        Uri.https('ecency.com', '/sign/transfer', queryParameters);
-    final launched =
-        await launchUrl(ecencyUri, mode: LaunchMode.externalApplication);
-    if (!launched) {
+    if (Platform.isIOS) {
+      final ecencyUri = Uri(
+        scheme: 'ecency',
+        host: 'sign',
+        path: '/transfer',
+        queryParameters: queryParameters,
+      );
+      final canLaunchEcency = await canLaunchUrl(ecencyUri);
+      if (canLaunchEcency) {
+        final launched = await launchUrl(
+          ecencyUri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (launched) {
+          return;
+        }
+      }
+
       _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
+      await launchUrl(
+        Uri.parse('https://apps.apple.com/app/ecency/id1450268965'),
+        mode: LaunchMode.externalApplication,
+      );
+      return;
     }
+
+    _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
   }
 
   Future<void> _hiveSignerTipTransaction(
