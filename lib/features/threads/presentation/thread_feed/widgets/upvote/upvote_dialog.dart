@@ -313,6 +313,19 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     required String scheme,
     required Map<String, String> queryParameters,
   }) {
+    if (scheme == 'ecency') {
+      final operationsJson = queryParameters['operations'];
+      if (operationsJson == null) {
+        throw StateError('Missing operations for Ecency transfer');
+      }
+      final encodedOperations =
+          base64Url.encode(utf8.encode(operationsJson)).replaceAll('=', '');
+      return Uri(
+        scheme: scheme,
+        host: 'sign',
+        path: '/op/$encodedOperations',
+      );
+    }
     return Uri(
       scheme: scheme,
       host: 'sign',
