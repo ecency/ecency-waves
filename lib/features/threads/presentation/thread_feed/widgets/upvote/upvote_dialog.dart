@@ -325,10 +325,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       final operationJson = jsonEncode(operations.first);
       final encodedOperation =
           base64Url.encode(utf8.encode(operationJson)).replaceAll('=', '');
+      final sanitizedQuery = Map<String, String>.from(queryParameters)
+        ..remove('operations');
       return Uri(
         scheme: scheme,
         host: 'sign',
         path: '/op/$encodedOperation',
+        queryParameters: sanitizedQuery.isEmpty ? null : sanitizedQuery,
       );
     }
     return Uri(
