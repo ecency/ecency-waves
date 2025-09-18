@@ -4,7 +4,7 @@ import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/presentation/widgets/auth_button.dart';
 
-enum TipSigningMethod { hiveSigner, hiveKeychain, hiveAuth }
+enum TipSigningMethod { hiveSigner, hiveKeychain, ecency, hiveAuth }
 
 class TipSigningDialog extends StatelessWidget {
   const TipSigningDialog({super.key});
@@ -39,6 +39,12 @@ class TipSigningDialog extends StatelessWidget {
             authType: AuthType.hiveKeyChain,
             onTap: () => _onSelect(context, TipSigningMethod.hiveKeychain),
             label: 'HiveKeychain',
+          ),
+          const Gap(12),
+          AuthButton(
+            authType: AuthType.ecency,
+            onTap: () => _onSelect(context, TipSigningMethod.ecency),
+            label: 'Ecency',
           ),
           const Gap(12),
           AuthButton(

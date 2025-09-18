@@ -48,6 +48,9 @@ class AuthButton extends StatelessWidget {
     } else if (authType == AuthType.hiveSign) {
       return _buttonChildren(
           theme, colorScheme, 'assets/images/auth/hive-signer-logo.png', label);
+    } else if (authType == AuthType.ecency) {
+      return _buttonChildren(
+          theme, colorScheme, 'assets/images/auth/ecency-logo.png', label);
     } else {
       return _buttonChildren(theme, colorScheme, null, label);
     }

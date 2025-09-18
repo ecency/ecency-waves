@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get_storage/get_storage.dart';
@@ -227,6 +229,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
           userData.accountName,
         );
         break;
+      case TipSigningMethod.ecency:
+        await _launchHotSigning(
+          method,
+          selection,
+          userData.accountName,
+        );
+        break;
       case TipSigningMethod.hiveAuth:
         await _launchHotSigning(
           method,
@@ -243,22 +252,42 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     String accountName,
   ) async {
     try {
-      final uri = _buildHotSigningUri(method, selection, accountName);
-      if (method == TipSigningMethod.hiveKeychain) {
-        final isAvailable = await canLaunchUrl(uri);
-        if (!isAvailable) {
-          _showTipFeedback(LocaleText.tipKeychainNotFound, success: false);
-          return;
-        }
+      final queryParameters =
+          _buildTransferQueryParameters(selection, accountName);
+      switch (method) {
+        case TipSigningMethod.hiveSigner:
+          final uri = Uri.https(
+            'hivesigner.com',
+            '/sign/transfer',
+            queryParameters,
+          );
+          await Act.launchThisUrl(uri.toString());
+          break;
+        case TipSigningMethod.hiveKeychain:
+          await _openWithKeychain(_buildHiveTransferUri(queryParameters));
+          break;
+        case TipSigningMethod.ecency:
+          await _openWithEcency(
+            _buildHiveTransferUri(queryParameters),
+            queryParameters,
+          );
+          break;
+        case TipSigningMethod.hiveAuth:
+          final uri = Uri(
+            scheme: 'has',
+            host: 'sign',
+            path: '/transfer',
+            queryParameters: queryParameters,
+          );
+          await Act.launchThisUrl(uri.toString());
+          break;
       }
-      await Act.launchThisUrl(uri.toString());
     } catch (e) {
       _showTipFeedback(e.toString(), success: false);
     }
   }
 
-  Uri _buildHotSigningUri(
-    TipSigningMethod method,
+  Map<String, String> _buildTransferQueryParameters(
     TipSelection selection,
     String accountName,
   ) {
@@ -274,7 +303,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         'memo': memo,
       },
     ];
-    final queryParameters = <String, String>{
+    return <String, String>{
       'from': accountName,
       'to': widget.author,
       'amount': amountParameter,
@@ -282,28 +311,78 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       'authority': 'active',
       'operations': jsonEncode([operation]),
     };
+  }
 
-    switch (method) {
-      case TipSigningMethod.hiveSigner:
-        return Uri.https(
-          'hivesigner.com',
-          '/sign/transfer',
-          queryParameters,
-        );
-      case TipSigningMethod.hiveKeychain:
-        return Uri(
-          scheme: 'hive',
-          host: 'sign',
-          path: '/transfer',
-          queryParameters: queryParameters,
-        );
-      case TipSigningMethod.hiveAuth:
-        return Uri(
-          scheme: 'has',
-          host: 'sign',
-          path: '/transfer',
-          queryParameters: queryParameters,
-        );
+  Uri _buildHiveTransferUri(Map<String, String> queryParameters) {
+    return Uri(
+      scheme: 'hive',
+      host: 'sign',
+      path: '/transfer',
+      queryParameters: queryParameters,
+    );
+  }
+
+  Future<void> _openWithKeychain(Uri hiveUri) async {
+    if (Platform.isAndroid) {
+      final intent = AndroidIntent(
+        action: 'action_view',
+        data: hiveUri.toString(),
+        package: 'com.mobilekeychain',
+      );
+      final canLaunchIntent = await intent.canResolveActivity() ?? false;
+      if (canLaunchIntent) {
+        await intent.launch();
+        return;
+      }
+      _showTipFeedback(LocaleText.tipKeychainNotFound, success: false);
+      await launchUrl(
+        Uri.parse(
+          'https://play.google.com/store/apps/details?id=com.mobilekeychain',
+        ),
+        mode: LaunchMode.externalApplication,
+      );
+      return;
+    }
+
+    final canLaunchHive = await canLaunchUrl(hiveUri);
+    if (canLaunchHive) {
+      await launchUrl(hiveUri, mode: LaunchMode.externalApplication);
+    } else {
+      _showTipFeedback(LocaleText.tipKeychainNotFound, success: false);
+    }
+  }
+
+  Future<void> _openWithEcency(
+    Uri hiveUri,
+    Map<String, String> queryParameters,
+  ) async {
+    if (Platform.isAndroid) {
+      final intent = AndroidIntent(
+        action: 'action_view',
+        data: hiveUri.toString(),
+        package: 'app.esteem.mobile.android',
+      );
+      final canLaunchIntent = await intent.canResolveActivity() ?? false;
+      if (canLaunchIntent) {
+        await intent.launch();
+        return;
+      }
+      _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
+      await launchUrl(
+        Uri.parse(
+          'https://play.google.com/store/apps/details?id=app.esteem.mobile.android',
+        ),
+        mode: LaunchMode.externalApplication,
+      );
+      return;
+    }
+
+    final ecencyUri =
+        Uri.https('ecency.com', '/sign/transfer', queryParameters);
+    final launched =
+        await launchUrl(ecencyUri, mode: LaunchMode.externalApplication);
+    if (!launched) {
+      _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
     }
   }
 

@@ -54,4 +54,13 @@
          <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
     </queries>
-</manifest>
+    <queries>
+        <package android:name="com.mobilekeychain"/>
+        <package android:name="app.esteem.mobile.android"/>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="hive" />
+        </intent>
+    </queries>
+</manifest>r

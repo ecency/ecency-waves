@@ -14,7 +14,7 @@ enum SocketType {connected,authWait,authAck,authNack,signWait,signAck,signNack,s
 
 enum SocketInputType {auth_req,sign_req}
 
-enum AuthType {hiveKeyChain, hiveAuth, postingKey, hiveSign}
+enum AuthType {hiveKeyChain, hiveAuth, postingKey, hiveSign, ecency}
 
 enum TransactionState {loading,qr,redirection}
 

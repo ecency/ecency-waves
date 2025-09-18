@@ -57,6 +57,7 @@ class LocaleText {
   static String get emTipFailureMessage => "em_tip_failure_message".tr();
   static String get tipRequiresAuth => "tip_requires_auth".tr();
   static String get tipKeychainNotFound => "tip_keychain_not_found".tr();
+  static String get tipEcencyNotFound => "tip_ecency_not_found".tr();
   static String get selectTipAmount => "select_tip_amount".tr();
   static String get selectToken => "select_token".tr();
   static String get somethingWentWrong => "something_went_wrong".tr();
