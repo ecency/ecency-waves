@@ -66,6 +66,9 @@ class LocaleText {
   static String get somethingWentWrong => "something_went_wrong".tr();
   static const String loginWithPostingKey = "login_with_posting_key";
   static const String loginWithEcency = "login_with_ecency";
+  static const String loginWithSigner = "login_with_signer";
+  static const String loginWithKeychain = "login_with_keychain";
+  static const String loginWithAuth = "login_with_auth";
   static const String continueInEcency = "continue_in_ecency";
   static const String pleaseEnterTheUsername = "please_enter_the_username";
   static const String pleaseEnterThePostingKey = "please_enter_the_posting_key";
