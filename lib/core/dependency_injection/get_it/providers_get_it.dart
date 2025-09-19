@@ -5,6 +5,6 @@ import 'package:waves/core/socket/provider/socket_provider.dart';
 class ProvidersGetIt extends GetItFeature {
   @override
   void featureInit() {
-    getIt.registerSingleton(SocketProvider());
+    getIt.registerLazySingleton(SocketProvider.new);
   }
 }

@@ -8,6 +8,7 @@ class Routes {
   static const String hiveKeyChainAuthView = 'hiveKeyChainAuthView';
   static const String hiveAuthTransactionView = 'hiveAuthTransactionView';
   static const String hiveSignView = 'hiveSign';
+  static const String ecencyAuthView = 'ecencyAuthView';
   static const String addCommentView = 'addCommentView';
   static const String hiveSignTransactionView = 'hiveSignTransactionView';
   static const String commentDetailView = 'commentDetailView';

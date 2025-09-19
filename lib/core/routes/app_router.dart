@@ -6,6 +6,7 @@ import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/auth/presentation/view/auth_view.dart';
+import 'package:waves/features/auth/presentation/view/ecency_auth_view.dart';
 import 'package:waves/features/auth/presentation/view/hive_auth_transaction_view.dart';
 import 'package:waves/features/auth/presentation/view/hive_key_chain_auth_view.dart';
 import 'package:waves/features/auth/presentation/view/hive_signer_auth_view.dart';
@@ -89,6 +90,11 @@ class AppRouter {
         path: '/${Routes.authView}',
         name: Routes.authView,
         builder: (context, state) => const AuthView(),
+      ),
+      GoRoute(
+        path: '/${Routes.ecencyAuthView}',
+        name: Routes.ecencyAuthView,
+        builder: (context, state) => const EcencyAuthView(),
       ),
       GoRoute(
           path: '/${Routes.addCommentView}',

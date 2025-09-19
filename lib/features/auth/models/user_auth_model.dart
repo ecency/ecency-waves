@@ -17,7 +17,9 @@ class UserAuthModel<T> {
     required this.imageUploadToken,
   });
 
-  bool get isPostingKeyLogin => authType == AuthType.postingKey;
+  bool get isPostingKeyLogin =>
+      authType == AuthType.postingKey || authType == AuthType.ecency;
+  bool get isEcencyLogin => authType == AuthType.ecency;
   bool get isHiveSignerLogin => authType == AuthType.hiveSign;
   bool get isHiveAuthLogin => authType == AuthType.hiveAuth;
   bool get isHiveKeychainLogin => authType == AuthType.hiveKeyChain;
@@ -77,6 +79,8 @@ class UserAuthModel<T> {
   static T _fromJsonAuth<T>(Map<String, dynamic> json, AuthType authType) {
     switch (authType) {
       case AuthType.postingKey:
+        return PostingAuthModel.fromJson(json) as T;
+      case AuthType.ecency:
         return PostingAuthModel.fromJson(json) as T;
       case AuthType.hiveKeyChain:
         return HiveAuthModel.fromJson(json) as T;

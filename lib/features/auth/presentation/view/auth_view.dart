@@ -49,6 +49,12 @@ class AuthView extends StatelessWidget {
                     extra: AuthType.hiveAuth),
                 label: "HiveAuth"
               ),
+              const Gap(15),
+              AuthButton(
+                authType: AuthType.ecency,
+                onTap: () => context.pushNamed(Routes.ecencyAuthView),
+                label: LocaleText.loginWithEcency.tr(),
+              ),
               const Spacer(),
               Column(
                 mainAxisSize: MainAxisSize.min,

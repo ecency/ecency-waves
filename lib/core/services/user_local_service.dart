@@ -35,7 +35,7 @@ class UserLocalService {
       AuthType type = UserAuthModel.authTypeFromJsonString(jsonString);
       if (type == AuthType.hiveAuth || type == AuthType.hiveKeyChain) {
         return UserAuthModel<HiveAuthModel>.fromJsonString(jsonString);
-      } else if (type == AuthType.postingKey) {
+      } else if (type == AuthType.postingKey || type == AuthType.ecency) {
         return UserAuthModel<PostingAuthModel>.fromJsonString(jsonString);
       } else {
         return UserAuthModel<HiveSignerAuthModel>.fromJsonString(jsonString);
@@ -59,7 +59,7 @@ class UserLocalService {
         AuthType type = UserAuthModel.authTypeFromMap(element);
         if (type == AuthType.hiveAuth || type == AuthType.hiveKeyChain) {
           return UserAuthModel<HiveAuthModel>.fromJson(element);
-        } else if (type == AuthType.postingKey) {
+        } else if (type == AuthType.postingKey || type == AuthType.ecency) {
           return UserAuthModel<PostingAuthModel>.fromJson(element);
         } else {
           return UserAuthModel<HiveSignerAuthModel>.fromJson(element);

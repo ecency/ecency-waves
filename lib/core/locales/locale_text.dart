@@ -59,10 +59,14 @@ class LocaleText {
   static String get tipRequiresAuth => "tip_requires_auth".tr();
   static String get tipKeychainNotFound => "tip_keychain_not_found".tr();
   static String get tipEcencyNotFound => "tip_ecency_not_found".tr();
+  static String get ecencyAppNotFound => "ecency_app_not_found".tr();
+  static String get ecencyLoginFailed => "ecency_login_failed".tr();
   static String get selectTipAmount => "select_tip_amount".tr();
   static String get selectToken => "select_token".tr();
   static String get somethingWentWrong => "something_went_wrong".tr();
   static const String loginWithPostingKey = "login_with_posting_key";
+  static const String loginWithEcency = "login_with_ecency";
+  static const String continueInEcency = "continue_in_ecency";
   static const String pleaseEnterTheUsername = "please_enter_the_username";
   static const String pleaseEnterThePostingKey = "please_enter_the_posting_key";
   static const String username = "username";
