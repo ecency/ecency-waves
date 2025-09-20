@@ -13,7 +13,7 @@ jobs:
     if: >
       github.event.pull_request.merged == true &&
       startsWith(github.event.pull_request.head.ref, 'build-number-bump')
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
