@@ -35,6 +35,15 @@ jobs:
       - name: Run clean
         run: flutter clean
 
+      - name: Install dependencies (post-clean)
+        run: flutter pub get
+
+      - name: Add build_runner (for code generation)
+        run: dart pub add build_runner --dev
+
+      - name: Run build_runner build
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Upload-keystore generator
         run: |
           echo "${{ secrets.UPLOAD_KEYSTORE }}" | base64 -d > android/app/key.jks
