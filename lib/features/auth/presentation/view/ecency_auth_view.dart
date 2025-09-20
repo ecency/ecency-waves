@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/locales/locale_text.dart';
@@ -38,6 +38,8 @@ class _EcencyAuthViewState extends State<EcencyAuthView> {
   final EcencyAuthController _controller = EcencyAuthController();
   final Set<String> _handledCallbacks = <String>{};
 
+  final AppLinks _appLinks = AppLinks();
+
   StreamSubscription<Uri?>? _linkSubscription;
   String? _pendingRequestId;
   String? _pendingUsername;
@@ -45,7 +47,7 @@ class _EcencyAuthViewState extends State<EcencyAuthView> {
   @override
   void initState() {
     super.initState();
-    _initUniLinks();
+    _initAppLinks();
   }
 
   @override
@@ -55,10 +57,10 @@ class _EcencyAuthViewState extends State<EcencyAuthView> {
     super.dispose();
   }
 
-  Future<void> _initUniLinks() async {
+  Future<void> _initAppLinks() async {
     await _handleInitialUri();
 
-    _linkSubscription = uriLinkStream.listen(
+    _linkSubscription = _appLinks.uriLinkStream.listen(
       (Uri? uri) async {
         if (uri != null) {
           await _handleUri(uri);
@@ -71,12 +73,12 @@ class _EcencyAuthViewState extends State<EcencyAuthView> {
 
   Future<void> _handleInitialUri() async {
     try {
-      final Uri? initialUri = await getInitialUri();
+      final Uri? initialUri = await _appLinks.getInitialLink();
       if (initialUri != null) {
         await _handleUri(initialUri);
       }
     } on PlatformException {
-      // Ignore – uni_links throws when no initial URI is available.
+      // Ignore – app_links throws when no initial URI is available.
     } on FormatException catch (error) {
       debugPrint('Invalid initial URI from Ecency login: $error');
     }
