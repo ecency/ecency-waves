@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_storage/get_storage.dart';
@@ -11,12 +12,16 @@ import 'package:waves/core/services/user_local_service.dart';
 import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'core/dependency_injection/dependency_injection.dart' as get_it;
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await get_it.init();
   await GetStorage.init();
   await EasyLocalization.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
   if (packageInfo.version == "1.0.0" && packageInfo.buildNumber == "9") {

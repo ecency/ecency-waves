@@ -8,7 +8,7 @@ Follow the steps below to set up Flutter and run the application on your mobile 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed on your system:
-- Flutter SDK
+- Flutter SDK (version 3.32.0 or later)
 - Visual Studio Code or Android Studio
 - Git
 
