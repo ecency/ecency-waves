@@ -1,6 +1,18 @@
 // android/build.gradle (Project)
 import groovy.xml.XmlSlurper
 
+buildscript {
+    ext.kotlin_version = '2.1.10' // Match settings.gradle
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.6.1' // Match settings.gradle
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 allprojects {
     repositories {
         google()
