@@ -2,13 +2,13 @@
 import groovy.xml.XmlSlurper
 
 buildscript {
-    ext.kotlin_version = '2.1.10' // Match settings.gradle
+    ext.kotlin_version = '1.9.22' // Updated to stable version
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.6.1' // Match settings.gradle
+        classpath 'com.android.tools.build:gradle:8.1.4' // Updated to stable version
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
