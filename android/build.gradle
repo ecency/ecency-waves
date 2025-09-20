@@ -1,17 +1,4 @@
 // android/build.gradle (Project)
-import groovy.xml.XmlSlurper
-
-buildscript {
-    ext.kotlin_version = '1.9.22' // Updated to stable version
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.4' // Updated to stable version
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
 
 allprojects {
     repositories {
@@ -22,23 +9,11 @@ allprojects {
 
 rootProject.buildDir = '../build'
 
-subprojects { subproj ->
-    subproj.buildDir = "${rootProject.buildDir}/${subproj.name}"
-    plugins.withId("com.android.library") {
-        def androidExt = subproj.extensions.findByName("android")
-        if (androidExt && !androidExt.hasProperty("namespace")) {
-            def manifestFile = file("${subproj.projectDir}/src/main/AndroidManifest.xml")
-            if (manifestFile.exists()) {
-                def pkg = new XmlSlurper(false, false).parse(manifestFile).'@package'.text()
-                if (pkg) {
-                    androidExt.namespace = pkg
-                    println("Set namespace for ${subproj.path} -> ${pkg}")
-                } else {
-                    throw new GradleException("No package found in ${manifestFile} for ${subproj.path}. Please upgrade the dependency or set a namespace.")
-                }
-            }
-        }
-    }
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
 }
 
 tasks.register("clean", Delete) {
