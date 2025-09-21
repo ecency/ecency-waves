@@ -50,7 +50,8 @@ class AuthButton extends StatelessWidget {
       asset = 'assets/images/auth/ecency-logo.png';
     }
 
-    return Center(
+    return Align(
+      alignment: Alignment.centerLeft,
       child: _buttonChildren(theme, colorScheme, asset, label),
     );
   }
@@ -58,8 +59,8 @@ class AuthButton extends StatelessWidget {
   Row _buttonChildren(
       ThemeData theme, ColorScheme colorScheme, String? input, String text) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (input != null)
@@ -82,12 +83,12 @@ class AuthButton extends StatelessWidget {
             size: 24,
           ),
         const Gap(10),
-        Flexible(
+        Expanded(
           child: Text(
             text,
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: colorScheme.onSurface),
-            textAlign: TextAlign.center,
+            textAlign: TextAlign.left,
           ),
         )
       ],
