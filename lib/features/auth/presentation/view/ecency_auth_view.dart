@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
@@ -149,7 +148,7 @@ class _EcencyAuthViewState extends State<EcencyAuthView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(LocaleText.loginWithEcency.tr()),
+        title: Text(LocaleText.loginWithEcency),
       ),
       body: SafeArea(
         child: Padding(
@@ -158,14 +157,14 @@ class _EcencyAuthViewState extends State<EcencyAuthView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AuthTextField(
-                hintText: LocaleText.username.tr(),
+                hintText: LocaleText.username,
                 textEditingController: _usernameController,
               ),
               const Gap(15),
               AuthButton(
                 authType: AuthType.ecency,
                 onTap: _onLoginTap,
-                label: LocaleText.continueInEcency.tr(),
+                label: LocaleText.continueInEcency,
               ),
             ],
           ),
@@ -178,13 +177,13 @@ class _EcencyAuthViewState extends State<EcencyAuthView> {
     final String normalized = _normalizeUsername(_usernameController.text);
 
     if (normalized.isEmpty) {
-      _showSnackBar(LocaleText.pleaseEnterTheUsername.tr());
+      _showSnackBar(LocaleText.pleaseEnterTheUsername);
       return;
     }
 
     if (!mounted) return;
     if (context.read<UserController>().isAccountDeleted(normalized)) {
-      _showSnackBar(LocaleText.theAccountDoesntExist.tr());
+      _showSnackBar(LocaleText.theAccountDoesntExist);
       return;
     }
 

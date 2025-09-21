@@ -1,5 +1,4 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +50,7 @@ class _HiveKeyChainAuthViewState extends State<HiveKeyChainAuthView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AuthTextField(
-                    hintText: LocaleText.username.tr(),
+                    hintText: LocaleText.username,
                     textEditingController: accountNameController),
                 const Gap(20),
                 if (widget.authType == AuthType.hiveKeyChain)
@@ -75,9 +74,9 @@ class _HiveKeyChainAuthViewState extends State<HiveKeyChainAuthView> {
   void onHiveAuthLoginTap(AuthType type) {
     String accountName = accountNameController.text.trim().toLowerCase();
     if (accountName.isEmpty) {
-      context.showSnackBar(LocaleText.pleaseEnterTheUsername.tr());
+      context.showSnackBar(LocaleText.pleaseEnterTheUsername);
     } else if (context.read<UserController>().isAccountDeleted(accountName)) {
-      context.showSnackBar(LocaleText.theAccountDoesntExist.tr());
+      context.showSnackBar(LocaleText.theAccountDoesntExist);
     } else {
       if (type == AuthType.hiveKeyChain) {
         context.platformPushNamed(Routes.hiveAuthTransactionView,

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -23,7 +22,7 @@ class HiveSignerController {
       if (!_userLocalRepository.isAccountDeleted(username)) {
         _saveToLocal(username, data.token).then((_) => onSuccess(username));
       } else {
-        onFailure(LocaleText.theAccountDoesntExist.tr());
+        onFailure(LocaleText.theAccountDoesntExist);
       }
     }
   }

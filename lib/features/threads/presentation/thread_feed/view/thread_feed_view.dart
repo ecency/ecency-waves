@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
@@ -50,7 +49,7 @@ class ThreadFeedView extends StatelessWidget {
               } else if (value == ViewState.empty) {
                 return Emptystate(
                     icon: Icons.hourglass_empty,
-                    text: LocaleText.noThreadsFound.tr());
+                    text: LocaleText.noThreadsFound);
               } else if (value == ViewState.error) {
                 return ErrorState(
                   showRetryButton: true,

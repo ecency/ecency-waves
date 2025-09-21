@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +43,7 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AuthTextField(
-                    hintText: LocaleText.username.tr(),
+                    hintText: LocaleText.username,
                     textEditingController: accountNameController),
                 const Gap(15),
                 AuthTextField(
@@ -71,11 +70,11 @@ class _PostingKeyAuthViewState extends State<PostingKeyAuthView> {
   void onPostingLoginTap() async {
     String accountName = accountNameController.text.trim().toLowerCase();
     if (accountName.isEmpty) {
-      context.showSnackBar(LocaleText.pleaseEnterTheUsername.tr());
+      context.showSnackBar(LocaleText.pleaseEnterTheUsername);
     } else if (context.read<UserController>().isAccountDeleted(accountName)) {
-      context.showSnackBar(LocaleText.theAccountDoesntExist.tr());
+      context.showSnackBar(LocaleText.theAccountDoesntExist);
     } else if (postingKeyController.text.trim().isEmpty) {
-      context.showSnackBar(LocaleText.pleaseEnterThePostingKey.tr());
+      context.showSnackBar(LocaleText.pleaseEnterThePostingKey);
     } else {
       await postingAuthController.validatePostingKey(
         postingKey: postingKeyController.text.trim(),

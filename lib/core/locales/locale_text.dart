@@ -64,17 +64,22 @@ class LocaleText {
   static String get selectTipAmount => "select_tip_amount".tr();
   static String get selectToken => "select_token".tr();
   static String get somethingWentWrong => "something_went_wrong".tr();
-  static const String loginWithPostingKey = "login_with_posting_key";
-  static const String loginWithEcency = "login_with_ecency";
-  static const String loginWithSigner = "login_with_signer";
-  static const String loginWithKeychain = "login_with_keychain";
-  static const String loginWithAuth = "login_with_auth";
-  static const String continueInEcency = "continue_in_ecency";
-  static const String pleaseEnterTheUsername = "please_enter_the_username";
-  static const String pleaseEnterThePostingKey = "please_enter_the_posting_key";
-  static const String username = "username";
-  static const String postingKey = "posting_key";
-  static const String noThreadsFound = "no_threads_found";
+  static String get loginWithPostingKey => "login_with_posting_key".tr();
+  static String get loginWithEcency => "login_with_ecency".tr();
+  static String get loginWithSigner => "login_with_signer".tr();
+  static String get loginWithKeychain => "login_with_keychain".tr();
+  static String get loginWithAuth => "login_with_auth".tr();
+  static String get signWithSigner => "sign_with_signer".tr();
+  static String get signWithKeychain => "sign_with_keychain".tr();
+  static String get signWithEcency => "sign_with_ecency".tr();
+  static String get signWithAuth => "sign_with_auth".tr();
+  static String get continueInEcency => "continue_in_ecency".tr();
+  static String get pleaseEnterTheUsername => "please_enter_the_username".tr();
+  static String get pleaseEnterThePostingKey =>
+      "please_enter_the_posting_key".tr();
+  static String get username => "username".tr();
+  static String get postingKey => "posting_key".tr();
+  static String get noThreadsFound => "no_threads_found".tr();
 
   //polls related texts
   static String ageLimit(int days) => "age_limit".tr(args: [days.toString()]);
@@ -84,7 +89,7 @@ class LocaleText {
   static String get pollVote => "poll_vote".tr();
   static String get pollVoted => "poll_voted".tr();
   static String get pollRevote => "poll_revote".tr();
-  static String get theAccountDoesntExist => "the_account_doesnt_exist";
+  static String get theAccountDoesntExist => "the_account_doesnt_exist".tr();
 
 
 }

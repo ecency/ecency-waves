@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +17,7 @@ class AuthView extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(LocaleText.login.tr()),
+        title: Text(LocaleText.login),
       ),
       body: SafeArea(
         child: Padding(
@@ -29,33 +28,33 @@ class AuthView extends StatelessWidget {
               AuthButton(
                   authType: AuthType.postingKey,
                   onTap: () => context.pushNamed(Routes.postingKeyAuthView),
-                  label: LocaleText.loginWithPostingKey.tr(),
+                  label: LocaleText.loginWithPostingKey,
               ),
               const Gap(15),
               AuthButton(
                   authType: AuthType.hiveSign,
                   onTap: () => onHiveSignLoginTap(context),
-                  label: LocaleText.loginWithSigner.tr(),
+                  label: LocaleText.loginWithSigner,
               ),
               const Gap(15),
               AuthButton(
                 authType: AuthType.hiveKeyChain,
                 onTap: () => context.pushNamed(Routes.hiveKeyChainAuthView,
                     extra: AuthType.hiveKeyChain),
-                label: LocaleText.loginWithKeychain.tr(),
+                label: LocaleText.loginWithKeychain,
               ),
               const Gap(15),
               AuthButton(
                 authType: AuthType.hiveAuth,
                 onTap: () => context.pushNamed(Routes.hiveKeyChainAuthView,
                     extra: AuthType.hiveAuth),
-                label: LocaleText.loginWithAuth.tr(),
+                label: LocaleText.loginWithAuth,
               ),
               const Gap(15),
               AuthButton(
                 authType: AuthType.ecency,
                 onTap: () => context.pushNamed(Routes.ecencyAuthView),
-                label: LocaleText.loginWithEcency.tr(),
+                label: LocaleText.loginWithEcency,
               ),
               const Spacer(),
               Column(
