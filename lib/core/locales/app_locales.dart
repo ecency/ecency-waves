@@ -9,6 +9,7 @@ class AppLocales {
     Locale('de'),
     Locale('hi'),
     Locale('pt'),
+    Locale('zh'),
   ];
 
   static const Map<String, String> _languageNames = {
@@ -18,6 +19,7 @@ class AppLocales {
     'de': 'Deutsch',
     'hi': 'हिन्दी',
     'pt': 'Português',
+    'zh': '简体中文',
   };
 
   static String getLanguageName(Locale locale) {
