@@ -39,43 +39,56 @@ class AuthButton extends StatelessWidget {
   }
 
   Widget child(ThemeData theme, ColorScheme colorScheme, String label) {
+    String? asset;
     if (authType == AuthType.hiveKeyChain) {
-      return _buttonChildren(
-          theme, colorScheme, 'assets/images/auth/hive-keychain-logo.png', label);
+      asset = 'assets/images/auth/hive-keychain-logo.png';
     } else if (authType == AuthType.hiveAuth) {
-      return _buttonChildren(
-          theme, colorScheme, 'assets/images/auth/hiveauth_icon.png', label);
+      asset = 'assets/images/auth/hiveauth_icon.png';
     } else if (authType == AuthType.hiveSign) {
-      return _buttonChildren(
-          theme, colorScheme, 'assets/images/auth/hive-signer-logo.png', label);
+      asset = 'assets/images/auth/hive-signer-logo.png';
     } else if (authType == AuthType.ecency) {
-      return _buttonChildren(
-          theme, colorScheme, 'assets/images/auth/ecency-logo.png', label);
-    } else {
-      return _buttonChildren(theme, colorScheme, null, label);
+      asset = 'assets/images/auth/ecency-logo.png';
     }
+
+    return Center(
+      child: _buttonChildren(theme, colorScheme, asset, label),
+    );
   }
 
   Row _buttonChildren(
       ThemeData theme, ColorScheme colorScheme, String? input, String text) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        input != null
-            ? SizedBox(
-                height: 30,
-                width: 30,
-                child: Image.asset(
-                  input,
-                  height: 30,
-                ),
-              )
-            : Icon(Icons.key, color: colorScheme.onSurface),
+        if (input != null)
+          SizedBox(
+            height: 30,
+            width: 30,
+            child: Center(
+              child: Image.asset(
+                input,
+                height: 24,
+                fit: BoxFit.contain,
+                alignment: Alignment.center,
+              ),
+            ),
+          )
+        else
+          Icon(
+            Icons.key,
+            color: colorScheme.onSurface,
+            size: 24,
+          ),
         const Gap(10),
-        Text(
-          text,
-          style: theme.textTheme.bodyMedium
-              ?.copyWith(color: colorScheme.onSurface),
+        Flexible(
+          child: Text(
+            text,
+            style: theme.textTheme.bodyMedium
+                ?.copyWith(color: colorScheme.onSurface),
+            textAlign: TextAlign.center,
+          ),
         )
       ],
     );
