@@ -14,6 +14,9 @@ class LocaleText {
   static String get bookmarks => "bookmarks".tr();
   static String get darkMode => "dark_mode".tr();
   static String get lightMode => "light_mode".tr();
+  static String get settings => "settings".tr();
+  static String get language => "language".tr();
+  static String get defaultFeed => "default_feed".tr();
   static String get deleteAccount => "delete_account".tr();
   static String get logOut => "log_out".tr();
   static String get scanTapQRCode => "scan_tap_qr_code".tr();

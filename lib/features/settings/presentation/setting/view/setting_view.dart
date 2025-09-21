@@ -8,6 +8,7 @@ import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'package:waves/features/settings/presentation/setting/controller/settings_controller.dart';
 import 'package:waves/features/settings/presentation/setting/widgets/default_thread_dropdown.dart';
 import 'package:waves/features/settings/presentation/setting/widgets/delete_account_dialog.dart';
+import 'package:waves/features/settings/presentation/setting/widgets/language_dropdown.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class SettingView extends StatelessWidget {
@@ -22,7 +23,7 @@ class SettingView extends StatelessWidget {
       builder: (context, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text("Settings"),
+            title: Text(LocaleText.settings),
           ),
           body: SafeArea(
               child: SingleChildScrollView(
@@ -38,10 +39,15 @@ class SettingView extends StatelessWidget {
                     icon: themeController.isLightTheme()
                         ? Icons.dark_mode
                         : Icons.light_mode),
-                const DrawerTile(
-                  text: "Default Feed",
+                DrawerTile(
+                  text: LocaleText.defaultFeed,
                   icon: Icons.help_outline,
-                  trailing: DefaultThreadDropdown(),
+                  trailing: const DefaultThreadDropdown(),
+                ),
+                DrawerTile(
+                  text: LocaleText.language,
+                  icon: Icons.language,
+                  trailing: const LanguageDropdown(),
                 ),
                 if (context.read<UserController>().isUserLoggedIn)
                   DrawerTile(
