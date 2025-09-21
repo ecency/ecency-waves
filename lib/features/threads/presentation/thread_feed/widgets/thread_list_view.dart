@@ -7,6 +7,7 @@ import 'package:waves/core/common/widgets/back_to_top_button.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/routes/routes.dart';
@@ -151,7 +152,7 @@ class _ThreadListViewState extends State<ThreadListView> {
                   ),
                   color: theme.primaryColor,
                   child: Text(
-                    'Load new content',
+                    LocaleText.loadNewContent,
                     style: theme.textTheme.bodyLarge!.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.bold,
@@ -217,7 +218,7 @@ class _ThreadListViewState extends State<ThreadListView> {
                   children: [
                     Expanded(
                       child: Text(
-                        "What's happening?",
+                        LocaleText.whatsHappening,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onTertiaryContainer,
                         ),

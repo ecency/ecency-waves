@@ -4,6 +4,7 @@ import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/classes/thread.dart';
@@ -50,11 +51,11 @@ class _AddCommentViewState extends State<AddCommentView> {
             (node) {
               return GestureDetector(
                 onTap: () => node.unfocus(),
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "Done",
-                    style: TextStyle(color: Colors.white),
+                    LocaleText.done,
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               );
@@ -171,7 +172,7 @@ class _AddCommentViewState extends State<AddCommentView> {
                   ),
                   onPressed: () =>
                       _bottomActionBarKey.currentState?.publish(),
-                  child: const Text('Post'),
+                  child: Text(LocaleText.post),
                 ),
               ),
             ],
@@ -184,7 +185,7 @@ class _AddCommentViewState extends State<AddCommentView> {
                 url: widget.author,
               ),
               title: AutoSizeText(
-                "Reply to ${widget.author!}",
+                LocaleText.replyToUser(widget.author!),
                 minFontSize: 14,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -199,6 +200,8 @@ class _AddCommentViewState extends State<AddCommentView> {
   }
 
   String get hintText {
-    return isRoot ? "What's happening?" : "Reply, engage, exchange ideas";
+    return isRoot
+        ? LocaleText.whatsHappening
+        : LocaleText.replyEngageExchangeIdeas;
   }
 }

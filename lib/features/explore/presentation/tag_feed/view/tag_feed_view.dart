@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
 import 'package:waves/features/explore/presentation/widgets/waves_list_view.dart';
@@ -39,9 +40,9 @@ class TagFeedView extends StatelessWidget {
                 } else if (state == ViewState.data) {
                   return const WavesListView();
                 } else if (state == ViewState.empty) {
-                  return const Center(child: Text('No Data found'));
+                  return Center(child: Text(LocaleText.noDataFound));
                 } else {
-                  return const Center(child: Text('Error'));
+                  return Center(child: Text(LocaleText.error));
                 }
               },
             ),

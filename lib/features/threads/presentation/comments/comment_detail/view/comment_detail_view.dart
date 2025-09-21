@@ -43,7 +43,7 @@ class CommentDetailView extends StatelessWidget {
             return SafeArea(
               child: Scaffold(
                 appBar: AppBar(
-                  title: const Text("Post"),
+                  title: Text(LocaleText.post),
                 ),
                 bottomNavigationBar: _bottomBar(theme, item),
                 body: SafeArea(
@@ -91,9 +91,9 @@ class CommentDetailView extends StatelessWidget {
             },
           );
         } else if (state == ViewState.empty) {
-          return const Emptystate(
+          return Emptystate(
             hideIcon: true,
-            text: "No Replies found",
+            text: LocaleText.noRepliesFound,
             isSliver: true,
           );
         } else if (state == ViewState.error) {

@@ -63,14 +63,14 @@ class DrawerMenu extends StatelessWidget {
                                   },
                                 );
                               },
-                              text: 'My Waves',
+                              text: LocaleText.myWaves,
                               icon: Icons.person),
                         DrawerTile(
                             onTap: () {
                               Navigator.pop(context);
                               context.platformPushNamed(Routes.exploreView);
                             },
-                            text: 'Explore',
+                            text: LocaleText.explore,
                             icon: Icons.explore),
                         DrawerTile(
                             onTap: () {
@@ -84,7 +84,7 @@ class DrawerMenu extends StatelessWidget {
                               context
                                   .popAndPlatformPushNamed(Routes.settingsView);
                             },
-                            text: "Settings",
+                            text: LocaleText.settings,
                             icon: Icons.settings),
                         if (isLoggedIn)
                           DrawerTile(
@@ -118,7 +118,7 @@ class DrawerMenu extends StatelessWidget {
                     final buildNumber = packageInfo.buildNumber;
                     final theme = Theme.of(context);
                     return Text(
-                      'Version $version ($buildNumber)',
+                      LocaleText.versionInfo(version, buildNumber),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.hintColor,
                       ),

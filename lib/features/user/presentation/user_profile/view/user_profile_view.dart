@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/server_error.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
 import 'package:waves/features/user/models/user_model.dart';
@@ -52,8 +53,8 @@ class UserProfileView extends StatelessWidget {
                   if (value == ViewState.data) {
                     return _dataState(theme);
                   } else if (value == ViewState.empty) {
-                    return const Emptystate(
-                        icon: Icons.hourglass_empty, text: 'No Data found');
+                    return Emptystate(
+                        icon: Icons.hourglass_empty, text: LocaleText.noDataFound);
                   } else if (value == ViewState.error) {
                     return ErrorState(
                         showRetryButton: true,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -24,10 +25,10 @@ class SearchView extends StatelessWidget {
               appBar: AppBar(
                 titleSpacing: 0,
                 title: _SearchInput(controller: controller),
-                bottom: const TabBar(
+                bottom: TabBar(
                   tabs: [
-                    Tab(text: 'Users'),
-                    Tab(text: 'Hashtags'),
+                    Tab(text: LocaleText.users),
+                    Tab(text: LocaleText.hashtags),
                   ],
                 ),
               ),
@@ -63,7 +64,7 @@ class _SearchInput extends StatelessWidget {
         autofocus: true,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          hintText: 'Search users or hashtags',
+          hintText: LocaleText.searchUsersOrHashtags,
           prefixIcon: const Icon(Icons.search),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           filled: true,
@@ -86,8 +87,8 @@ class _UsersTab extends StatelessWidget {
     return Consumer<SearchViewController>(
       builder: (context, controller, _) {
         if (!controller.hasQuery) {
-          return const _EmptyPlaceholder(
-            message: 'Type to search for users',
+          return _EmptyPlaceholder(
+            message: LocaleText.typeToSearchForUsers,
           );
         }
 
@@ -95,12 +96,12 @@ class _UsersTab extends StatelessWidget {
           case ViewState.loading:
             return const Center(child: CircularProgressIndicator());
           case ViewState.error:
-            return const _EmptyPlaceholder(
-              message: 'Unable to load users. Please try again.',
+            return _EmptyPlaceholder(
+              message: LocaleText.unableToLoadUsers,
             );
           case ViewState.empty:
-            return const _EmptyPlaceholder(
-              message: 'No users found',
+            return _EmptyPlaceholder(
+              message: LocaleText.noUsersFound,
             );
           case ViewState.data:
             return _UsersList(users: controller.users, threadType: controller.threadType);
@@ -151,8 +152,8 @@ class _TagsTab extends StatelessWidget {
     return Consumer<SearchViewController>(
       builder: (context, controller, _) {
         if (!controller.hasQuery) {
-          return const _EmptyPlaceholder(
-            message: 'Type to search for hashtags',
+          return _EmptyPlaceholder(
+            message: LocaleText.typeToSearchForHashtags,
           );
         }
 
@@ -160,12 +161,12 @@ class _TagsTab extends StatelessWidget {
           case ViewState.loading:
             return const Center(child: CircularProgressIndicator());
           case ViewState.error:
-            return const _EmptyPlaceholder(
-              message: 'Unable to load hashtags. Please try again.',
+            return _EmptyPlaceholder(
+              message: LocaleText.unableToLoadHashtags,
             );
           case ViewState.empty:
-            return const _EmptyPlaceholder(
-              message: 'No hashtags found',
+            return _EmptyPlaceholder(
+              message: LocaleText.noHashtagsFound,
             );
           case ViewState.data:
             return _TagsList(tags: controller.tags, threadType: controller.threadType);

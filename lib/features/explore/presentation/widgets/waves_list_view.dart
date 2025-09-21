@@ -6,6 +6,7 @@ import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
 import 'package:waves/core/common/extensions/ui.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
@@ -72,7 +73,7 @@ class _WavesListViewState extends State<WavesListView> {
           return const LoadingState();
         }
         if (state == ViewState.empty) {
-          return const Emptystate(text: 'No content found');
+          return Emptystate(text: LocaleText.noContentFound);
         }
         final items =
             context.select<WavesFeedController, List<ThreadFeedModel>>(

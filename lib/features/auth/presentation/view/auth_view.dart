@@ -61,7 +61,7 @@ class AuthView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Center(child: Text("Don't have an account?")),
+                  Center(child: Text(LocaleText.dontHaveAnAccount)),
                   const Gap(10),
                   signUpButton(theme),
                 ],
@@ -87,7 +87,7 @@ class AuthView extends StatelessWidget {
             surfaceTintColor: theme.primaryColorLight,
             backgroundColor: theme.primaryColor),
         child: Text(
-          "Sign up",
+          LocaleText.signUp,
           style: theme.textTheme.bodyMedium,
         ),
       ),

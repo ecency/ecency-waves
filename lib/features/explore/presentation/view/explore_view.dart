@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -27,10 +28,10 @@ class ExploreView extends StatelessWidget {
                   value: controller.threadType,
                   onChanged: controller.onChangeThreadType,
                 ),
-                bottom: const TabBar(
+                bottom: TabBar(
                   tabs: [
-                    Tab(text: 'Tags'),
-                    Tab(text: 'Users'),
+                    Tab(text: LocaleText.tags),
+                    Tab(text: LocaleText.users),
                   ],
                 ),
               ),
@@ -84,7 +85,7 @@ class _TagsTab extends StatelessWidget {
               },
             );
           } else {
-            return const Center(child: Text('Error'));
+            return Center(child: Text(LocaleText.error));
           }
         },
       ),
@@ -129,7 +130,7 @@ class _UsersTab extends StatelessWidget {
               },
             );
           } else {
-            return const Center(child: Text('Error'));
+            return Center(child: Text(LocaleText.error));
           }
         },
       ),

@@ -1,3 +1,4 @@
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/threads/models/thread_feeds/reported/thread_info_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
@@ -82,15 +83,15 @@ class Thread {
   static String gethreadName({required ThreadFeedType type}) {
     switch (type) {
       case ThreadFeedType.ecency:
-        return "Waves";
+        return LocaleText.threadTypeEcency;
       case ThreadFeedType.peakd:
-        return "Snaps";
+        return LocaleText.threadTypePeakd;
       case ThreadFeedType.liketu:
-        return "Moments";
+        return LocaleText.threadTypeLiketu;
       case ThreadFeedType.leo:
-        return "Threads";
+        return LocaleText.threadTypeLeo;
       case ThreadFeedType.all:
-        return "All";
+        return LocaleText.threadTypeAll;
     }
   }
 

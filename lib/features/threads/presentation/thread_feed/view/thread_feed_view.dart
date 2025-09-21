@@ -33,7 +33,7 @@ class ThreadFeedView extends StatelessWidget {
           actions: [
             IconButton(
               icon: const Icon(Icons.search),
-              tooltip: 'Search',
+              tooltip: LocaleText.search,
               onPressed: () {
                 context.platformPushNamed(Routes.searchView);
               },

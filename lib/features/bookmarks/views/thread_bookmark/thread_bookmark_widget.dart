@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/providers/bookmark_provider.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -36,7 +37,7 @@ class ThreadBookmarkWidget extends StatelessWidget {
                   );
                 });
           } else {
-            return const Emptystate(text: "No bookmarks found");
+            return Emptystate(text: LocaleText.noBookmarksFound);
           }
         } else {
           return const LoadingState();

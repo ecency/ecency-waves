@@ -12,6 +12,8 @@ class LocaleText {
   static String get cancel => "cancel".tr();
   static String get login => "login".tr();
   static String get bookmarks => "bookmarks".tr();
+  static String get myWaves => "my_waves".tr();
+  static String get explore => "explore".tr();
   static String get darkMode => "dark_mode".tr();
   static String get lightMode => "light_mode".tr();
   static String get settings => "settings".tr();
@@ -94,5 +96,42 @@ class LocaleText {
   static String get pollRevote => "poll_revote".tr();
   static String get theAccountDoesntExist => "the_account_doesnt_exist".tr();
 
-
+  static String get tags => "tags".tr();
+  static String get users => "users".tr();
+  static String get hashtags => "hashtags".tr();
+  static String get error => "error".tr();
+  static String get noDataFound => "no_data_found".tr();
+  static String get signUp => "sign_up".tr();
+  static String get dontHaveAnAccount => "dont_have_an_account".tr();
+  static String get privateKeyLogin => "privatekey_login".tr();
+  static String get postingPrivateKey => "posting_private_key".tr();
+  static String get post => "post".tr();
+  static String replyToUser(String user) => "reply_to_user".tr(args: [user]);
+  static String get whatsHappening => "whats_happening".tr();
+  static String get replyEngageExchangeIdeas =>
+      "reply_engage_exchange_ideas".tr();
+  static String get threadTypeEcency => "thread_type_ecency".tr();
+  static String get threadTypePeakd => "thread_type_peakd".tr();
+  static String get threadTypeLiketu => "thread_type_liketu".tr();
+  static String get threadTypeLeo => "thread_type_leo".tr();
+  static String get threadTypeAll => "thread_type_all".tr();
+  static String get search => "search".tr();
+  static String get searchUsersOrHashtags =>
+      "search_users_or_hashtags".tr();
+  static String get typeToSearchForUsers =>
+      "type_to_search_for_users".tr();
+  static String get unableToLoadUsers =>
+      "unable_to_load_users".tr();
+  static String get noUsersFound => "no_users_found".tr();
+  static String get typeToSearchForHashtags =>
+      "type_to_search_for_hashtags".tr();
+  static String get unableToLoadHashtags =>
+      "unable_to_load_hashtags".tr();
+  static String get noHashtagsFound => "no_hashtags_found".tr();
+  static String get loadNewContent => "load_new_content".tr();
+  static String get noRepliesFound => "no_replies_found".tr();
+  static String get noContentFound => "no_content_found".tr();
+  static String get noBookmarksFound => "no_bookmarks_found".tr();
+  static String versionInfo(String version, String buildNumber) =>
+      "version_info".tr(args: [version, buildNumber]);
 }
