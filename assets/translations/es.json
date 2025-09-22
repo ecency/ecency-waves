@@ -6,6 +6,7 @@
     "cancel": "Cancelar",
     "login": "Ingresar",
     "bookmarks": "Marcadores",
+    "notifications": "Notifications",
     "my_waves": "Mis Olas",
     "explore": "Explorar",
     "dark_mode": "Modo Oscuro",
@@ -110,5 +111,13 @@
     "no_replies_found": "No se encontraron respuestas",
     "no_content_found": "Ningún contenido encontrado",
     "no_bookmarks_found": "No se encontraron marcadores",
+    "no_notifications_found": "No notifications found",
+    "notifications_followed_you": "{} followed you",
+    "notifications_mentioned_you": "{} mentioned you",
+    "notifications_replied_to_you": "{} replied to you",
+    "notifications_delegated_to_you": "{} delegated {} to you",
+    "notifications_from_user": "{} from {}",
+    "notifications_voted_on": "{} voted on {}",
+    "notifications_transfer_received": "{} sent you {}",
     "version_info": "Versión {} ({})"
 }
