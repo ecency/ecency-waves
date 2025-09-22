@@ -115,21 +115,43 @@ class _AddCommentViewState extends State<AddCommentView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
-                  keyboardType: TextInputType.multiline,
-                  controller: commentTextEditingController,
-                  maxLines: 5,
-                  minLines: 1,
-                  focusNode: _nodeText,
-                  textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
-                      hintText: hintText,
-                      border: InputBorder.none,
-                      hintStyle: theme.inputDecorationTheme.hintStyle ??
-                          TextStyle(
-                            color:
-                                theme.colorScheme.onSurface.withOpacity(0.6),
-                          )),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () =>
+                        FocusScope.of(context).requestFocus(_nodeText),
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 160),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.all(Radius.circular(12)),
+                        border: Border.all(
+                          color: theme.dividerColor.withOpacity(0.4),
+                        ),
+                      ),
+                      child: TextField(
+                        keyboardType: TextInputType.multiline,
+                        controller: commentTextEditingController,
+                        focusNode: _nodeText,
+                        textInputAction: TextInputAction.newline,
+                        expands: true,
+                        minLines: null,
+                        maxLines: null,
+                        textAlignVertical: TextAlignVertical.top,
+                        decoration: InputDecoration(
+                          hintText: hintText,
+                          border: InputBorder.none,
+                          hintStyle:
+                              theme.inputDecorationTheme.hintStyle ??
+                                  TextStyle(
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.6),
+                                  ),
+                          isCollapsed: true,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

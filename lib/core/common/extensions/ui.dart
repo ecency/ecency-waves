@@ -76,7 +76,7 @@ extension UI on BuildContext {
   }
 
   void hideLoader() {
-    Navigator.of(this).pop();
+    Navigator.of(this, rootNavigator: true).pop();
   }
 
   void authenticatedAction({required VoidCallback action}) {

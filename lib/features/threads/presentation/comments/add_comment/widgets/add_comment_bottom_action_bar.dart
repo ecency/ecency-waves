@@ -55,11 +55,25 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
   List<String> uploadedImageLinks = [];
 
   late ThemeData theme;
+  bool _isPublishing = false;
 
   @override
   void didChangeDependencies() {
     theme = Theme.of(context);
     super.didChangeDependencies();
+  }
+
+  void _setPublishing(bool value) {
+    if (!mounted) {
+      _isPublishing = value;
+      return;
+    }
+    if (_isPublishing == value) {
+      return;
+    }
+    setState(() {
+      _isPublishing = value;
+    });
   }
 
   @override
@@ -79,15 +93,19 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
                   children: [
                     FloatingActionButton(
                       heroTag: "gallery",
-                      onPressed: () =>
-                          pickImageAndUpload(ImageSource.gallery, context),
+                      onPressed: _isPublishing
+                          ? null
+                          : () => pickImageAndUpload(
+                              ImageSource.gallery, context),
                       child: const Icon(Icons.image),
                     ),
                     const Gap(10),
                     FloatingActionButton(
                       heroTag: "camera",
-                      onPressed: () =>
-                          pickImageAndUpload(ImageSource.camera, context),
+                      onPressed: _isPublishing
+                          ? null
+                          : () => pickImageAndUpload(
+                              ImageSource.camera, context),
                       child: const Icon(Icons.camera),
                     ),
                   ],
@@ -103,14 +121,24 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
   }
 
   void publish() {
+    if (_isPublishing) {
+      return;
+    }
+    FocusScope.of(context).unfocus();
     final userData = context.read<UserController>().userData!;
     _onPublish(userData);
   }
 
   FloatingActionButton _publishButton() {
     return FloatingActionButton(
-      onPressed: publish,
-      child: const Icon(Icons.reply),
+      onPressed: _isPublishing ? null : publish,
+      child: _isPublishing
+          ? const SizedBox(
+              height: 18,
+              width: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.reply),
     );
   }
 
@@ -123,32 +151,28 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         context.read<ThreadFeedController>().rootThreadInfo == null) {
       // Unable to determine which container to post to
       context.pop();
+    } else if (userData.isPostingKeyLogin) {
+      _setPublishing(true);
+      _postingKeyCommentTransaction(comment, userData, context);
+    } else if (userData.isHiveSignerLogin) {
+      _setPublishing(true);
+      _hiveSignerCommentTransaction(comment, userData, context);
+    } else if (userData.isHiveKeychainLogin) {
+      _onTransactionDecision(
+        comment,
+        AuthType.hiveKeyChain,
+        context,
+        userData,
+      );
+    } else if (userData.isHiveAuthLogin) {
+      _onTransactionDecision(
+        comment,
+        AuthType.hiveAuth,
+        context,
+        userData,
+      );
     } else {
-      switch (userData.authType) {
-        case AuthType.postingKey:
-        case AuthType.ecency:
-          _postingKeyCommentTransaction(comment, userData, context);
-          break;
-        case AuthType.hiveSign:
-          _hiveSignerCommentTransaction(comment, userData, context);
-          break;
-        case AuthType.hiveKeyChain:
-          _onTransactionDecision(
-            comment,
-            AuthType.hiveKeyChain,
-            context,
-            userData,
-          );
-          break;
-        case AuthType.hiveAuth:
-          _onTransactionDecision(
-            comment,
-            AuthType.hiveAuth,
-            context,
-            userData,
-          );
-          break;
-      }
+      _dialogForHiveTransaction(context, comment, userData);
     }
   }
 
@@ -300,11 +324,21 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         parentPermlink: permlink(context),
         authData: userData as UserAuthModel<PostingAuthModel>,
         onSuccess: (generatedPermlink) {
+          if (!mounted) {
+            return;
+          }
           context.hideLoader();
+          _setPublishing(false);
           context.pop(
               generateCommentModel(generatedPermlink, userData.accountName));
         },
-        onFailure: () => context.hideLoader(),
+        onFailure: () {
+          if (!mounted) {
+            return;
+          }
+          context.hideLoader();
+          _setPublishing(false);
+        },
         showToast: (message) => context.showSnackBar(message));
   }
 
@@ -317,11 +351,21 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         parentPermlink: permlink(context),
         authData: userData as UserAuthModel<HiveSignerAuthModel>,
         onSuccess: (generatedPermlink) {
+          if (!mounted) {
+            return;
+          }
           context.hideLoader();
+          _setPublishing(false);
           context.pop(
               generateCommentModel(generatedPermlink, userData.accountName));
         },
-        onFailure: () => context.hideLoader(),
+        onFailure: () {
+          if (!mounted) {
+            return;
+          }
+          context.hideLoader();
+          _setPublishing(false);
+        },
         showToast: (message) => context.showSnackBar(message));
   }
 
@@ -340,6 +384,7 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
 
   void _onTransactionDecision(String comment, AuthType authType,
       BuildContext context, UserAuthModel userData) async {
+    _setPublishing(true);
     SignTransactionNavigationModel navigationData =
         SignTransactionNavigationModel(
             transactionType: SignTransactionType.comment,
@@ -351,6 +396,10 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
     context
         .pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
         .then((generatedPermlink) {
+      if (!mounted) {
+        return;
+      }
+      _setPublishing(false);
       context.pop(
         generateCommentModel(generatedPermlink, userData.accountName),
       );
