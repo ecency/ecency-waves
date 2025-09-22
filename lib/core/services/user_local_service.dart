@@ -74,9 +74,14 @@ class UserLocalService {
   }
 
   void _sortCurrentUserToTop(List<UserAuthModel> data, String currentUserName) {
-    UserAuthModel currentUser =
-        data.firstWhere((element) => element.accountName == currentUserName);
-    data.removeWhere((element) => element.accountName == currentUserName);
+    final int index =
+        data.indexWhere((element) => element.accountName == currentUserName);
+    if (index <= 0) {
+      // Either the account is already first or it does not exist in the list.
+      return;
+    }
+
+    final UserAuthModel currentUser = data.removeAt(index);
     data.insert(0, currentUser);
   }
 
