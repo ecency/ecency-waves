@@ -179,56 +179,11 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       return;
     }
 
-    if (userData.isPostingKeyLogin) {
-      await _handlePostingKeyTip(
-        context,
-        selection,
-        userData as UserAuthModel<PostingAuthModel>,
-      );
-      return;
-    }
-
-    if (userData.isHiveSignerLogin) {
-      await _hiveSignerTipTransaction(
-        selection,
-        userData as UserAuthModel<HiveSignerAuthModel>,
-      );
-      return;
-    }
-
-    if (userData.isHiveKeychainLogin || userData.isHiveAuthLogin) {
-      final authType = userData.isHiveKeychainLogin
-          ? AuthType.hiveKeyChain
-          : AuthType.hiveAuth;
-      _startTipTransaction(selection, authType);
-      return;
-    }
-
-    _showTipFeedback(LocaleText.tipRequiresAuth, success: false);
-  }
-
-  void _startTipTransaction(TipSelection selection, AuthType authType) {
-    final memo = _tipMemo();
-    final navigationData = SignTransactionNavigationModel(
-      transactionType: SignTransactionType.transfer,
-      author: widget.author,
-      permlink: widget.permlink,
-      amount: selection.amount,
-      assetSymbol: selection.tokenSymbol,
-      memo: memo,
-      ishiveKeyChainMethod: authType == AuthType.hiveKeyChain,
-    );
-    context.pushNamed(Routes.hiveSignTransactionView, extra: navigationData);
-  }
-
-  Future<void> _handlePostingKeyTip(
-    BuildContext context,
-    TipSelection selection,
-    UserAuthModel<PostingAuthModel> userData,
-  ) async {
-    final availableMethods = selection.tokenSymbol == 'POINTS'
+    final isPointsTransfer = selection.tokenSymbol.toUpperCase() == 'POINTS';
+    final availableMethods = isPointsTransfer
         ? const [TipSigningMethod.ecency]
         : TipSigningMethod.values;
+
     final method = await showDialog<TipSigningMethod>(
       context: context,
       builder: (dialogContext) => TipSigningDialog(
@@ -240,36 +195,11 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       return;
     }
 
-    switch (method) {
-      case TipSigningMethod.hiveSigner:
-        await _launchHotSigning(
-          method,
-          selection,
-          userData.accountName,
-        );
-        break;
-      case TipSigningMethod.hiveKeychain:
-        await _launchHotSigning(
-          method,
-          selection,
-          userData.accountName,
-        );
-        break;
-      case TipSigningMethod.ecency:
-        await _launchHotSigning(
-          method,
-          selection,
-          userData.accountName,
-        );
-        break;
-      case TipSigningMethod.hiveAuth:
-        await _launchHotSigning(
-          method,
-          selection,
-          userData.accountName,
-        );
-        break;
-    }
+    await _launchHotSigning(
+      method,
+      selection,
+      userData.accountName,
+    );
   }
 
   Future<void> _launchHotSigning(
@@ -544,36 +474,6 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     }
 
     _showTipFeedback(LocaleText.emHiveAuthAppNotFound, success: false);
-  }
-
-  Future<void> _hiveSignerTipTransaction(
-    TipSelection selection,
-    UserAuthModel<HiveSignerAuthModel> userData,
-  ) async {
-    widget.rootContext.showLoader();
-    String? feedbackMessage;
-    var success = false;
-    try {
-      await SignTransactionHiveSignerController().initTransferProcess(
-        recipient: widget.author,
-        amount: selection.amount,
-        assetSymbol: selection.tokenSymbol,
-        memo: _tipMemo(),
-        authdata: userData,
-        onSuccess: () {},
-        showToast: (message) {
-          feedbackMessage = message;
-          success = message == LocaleText.smTipSuccessMessage;
-        },
-      );
-    } catch (e) {
-      feedbackMessage = e.toString();
-    } finally {
-      widget.rootContext.hideLoader();
-    }
-    if (feedbackMessage != null) {
-      _showTipFeedback(feedbackMessage!, success: success);
-    }
   }
 
   void _showTipFeedback(String message, {required bool success}) {
