@@ -70,7 +70,7 @@
     "active_private_key": "Clé privée active",
     "sm_tip_success_message": "Astuce envoyée avec succès",
     "em_tip_failure_message": "Impossible d'envoyer le conseil. Veuillez réessayer.",
-    "tip_requires_auth": "Tipping requires an Active private key! Sign transaction with one of options below.",
+    "tip_requires_auth": "Le pourboire nécessite une clé privée active! Signez la transaction avec l'une des options ci-dessous.",
     "tip_keychain_not_found": "L'application Hive Keychain n'a pas été trouvée. Essayez plutôt l'option HiveSigner.",
     "tip_ecency_not_found": "L'application Ecency n'a pas été trouvée. Essayez plutôt l'option HiveSigner.",
     "ecency_app_not_found": "L'application Ecency n'a pas été trouvée. Veuillez installer Ecency pour continuer.",
