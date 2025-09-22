@@ -6,6 +6,7 @@
     "cancel": "Abbrechen",
     "login": "Anmelden",
     "bookmarks": "Lesezeichen",
+    "notifications": "Notifications",
     "my_waves": "Meine Wellen",
     "explore": "Erkunden",
     "dark_mode": "Nachtmodus",
@@ -110,5 +111,13 @@
     "no_replies_found": "Keine Antworten gefunden",
     "no_content_found": "Kein Inhalt gefunden",
     "no_bookmarks_found": "Keine Lesezeichen gefunden",
+    "no_notifications_found": "No notifications found",
+    "notifications_followed_you": "{} followed you",
+    "notifications_mentioned_you": "{} mentioned you",
+    "notifications_replied_to_you": "{} replied to you",
+    "notifications_delegated_to_you": "{} delegated {} to you",
+    "notifications_from_user": "{} from {}",
+    "notifications_voted_on": "{} voted on {}",
+    "notifications_transfer_received": "{} sent you {}",
     "version_info": "Version {} ({})"
 }
