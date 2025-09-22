@@ -636,8 +636,12 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
                     _postingKeyVoteTransaction(userData, context);
                   } else if (userData.isHiveSignerLogin) {
                     _hiveSignerTransaction(userData, context);
-                  } else {
+                  } else if (userData.isHiveKeychainLogin) {
                     _onTransactionDecision(AuthType.hiveKeyChain, context);
+                  } else if (userData.isHiveAuthLogin) {
+                    _onTransactionDecision(AuthType.hiveAuth, context);
+                  } else {
+                    _dialogForHiveTransaction(context);
                   }
                 },
               ),

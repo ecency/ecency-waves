@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:waves/core/common/extensions/ui.dart';
+import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/services/poll_service/poll_api.dart';
@@ -91,21 +92,24 @@ class PollController with ChangeNotifier {
            notifyListeners();
         },
         showToast: (message) =>  context.showSnackBar(message));
+    } else if (userData!.isHiveKeychainLogin || userData!.isHiveAuthLogin) {
+      final bool isKeychain = userData!.isHiveKeychainLogin;
+      SignTransactionNavigationModel navigationData =
+          SignTransactionNavigationModel(
+              transactionType: SignTransactionType.pollvote,
+              author: userData!.accountName,
+              pollId: poll.pollTrxId,
+              choices: selection,
+              ishiveKeyChainMethod: isKeychain);
+      context.pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
+          .then((value) {
+        if (value != null) {
+          poll.injectPollVoteCache(userData!.accountName, selection);
+          notifyListeners();
+        }
+      });
     } else {
-          SignTransactionNavigationModel navigationData =
-        SignTransactionNavigationModel(
-            transactionType: SignTransactionType.pollvote,
-            author: userData!.accountName,
-            pollId: poll.pollTrxId,
-            choices: selection,
-            ishiveKeyChainMethod: true);
-    context.pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
-        .then((value) {
-      if (value != null) {
-        poll.injectPollVoteCache(userData!.accountName, selection);
-           notifyListeners();
-      }
-    });
+      context.showSnackBar(LocaleText.emDefaultMessage);
     }
 
     return true;

@@ -11,6 +11,7 @@ import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_hive_signer_controller.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/controller/sign_transaction_posting_key_controller.dart';
+import 'package:waves/features/threads/presentation/comments/add_comment/widgets/transaction_decision_dialog.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
@@ -56,8 +57,12 @@ class _UserProfileFollowMuteButtonsState
             _postingKeyMuteTransaction(userData, context);
           } else if (userData.isHiveSignerLogin) {
             _hiveSignerMuteTransaction(userData, context);
-          } else {
+          } else if (userData.isHiveKeychainLogin) {
             _onTransactionDecision(AuthType.hiveKeyChain, context, userData);
+          } else if (userData.isHiveAuthLogin) {
+            _onTransactionDecision(AuthType.hiveAuth, context, userData);
+          } else {
+            _showTransactionSelection(context, userData);
           }
         });
       },
@@ -106,6 +111,17 @@ class _UserProfileFollowMuteButtonsState
         refreshFeeds();
       }
     });
+  }
+
+  Future<void> _showTransactionSelection(
+      BuildContext context, UserAuthModel userData) async {
+    await showDialog(
+      context: context,
+      builder: (_) => TransactionDecisionDialog(
+        onContinue: (authType) =>
+            _onTransactionDecision(authType, context, userData),
+      ),
+    );
   }
 
   void refreshFeeds() {

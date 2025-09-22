@@ -127,9 +127,22 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
       _postingKeyCommentTransaction(comment, userData, context);
     } else if (userData.isHiveSignerLogin) {
       _hiveSignerCommentTransaction(comment, userData, context);
-    } else {
+    } else if (userData.isHiveKeychainLogin) {
       _onTransactionDecision(
-          comment, AuthType.hiveKeyChain, context, userData);
+        comment,
+        AuthType.hiveKeyChain,
+        context,
+        userData,
+      );
+    } else if (userData.isHiveAuthLogin) {
+      _onTransactionDecision(
+        comment,
+        AuthType.hiveAuth,
+        context,
+        userData,
+      );
+    } else {
+      _dialogForHiveTransaction(context, comment, userData);
     }
   }
 
