@@ -9,6 +9,7 @@ class AppLocales {
     Locale('de'),
     Locale('hi'),
     Locale('pt'),
+    Locale('ru'),
     Locale('zh'),
   ];
 
@@ -19,6 +20,7 @@ class AppLocales {
     'de': 'Deutsch',
     'hi': 'हिन्दी',
     'pt': 'Português',
+    'ru': 'Русский',
     'zh': '简体中文',
   };
 
