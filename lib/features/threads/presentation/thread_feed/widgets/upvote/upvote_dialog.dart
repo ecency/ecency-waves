@@ -563,7 +563,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
 
   String _tipMemo() {
-    return 'Tip for @${widget.author}/${widget.permlink} via Ecency Waves';
+    return 'Tip for @${widget.author}/${widget.permlink} via Waves app';
   }
 
   Widget _upVoteSlider(ThemeData theme, BuildContext context) {
