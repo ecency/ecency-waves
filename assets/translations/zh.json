@@ -6,6 +6,7 @@
     "cancel": "取消",
     "login": "登录",
     "bookmarks": "书签",
+    "notifications": "Notifications",
     "my_waves": "我的波浪数",
     "explore": "浏览",
     "dark_mode": "暗色模式",
@@ -110,5 +111,13 @@
     "no_replies_found": "未找到回复",
     "no_content_found": "未找到内容",
     "no_bookmarks_found": "未找到书签",
+    "no_notifications_found": "No notifications found",
+    "notifications_followed_you": "{} followed you",
+    "notifications_mentioned_you": "{} mentioned you",
+    "notifications_replied_to_you": "{} replied to you",
+    "notifications_delegated_to_you": "{} delegated {} to you",
+    "notifications_from_user": "{} from {}",
+    "notifications_voted_on": "{} voted on {}",
+    "notifications_transfer_received": "{} sent you {}",
     "version_info": "版本 {} ({})"
 }
