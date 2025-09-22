@@ -296,7 +296,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       'from': accountName,
       'to': widget.author,
       'amount': formattedAmount,
-      'assets': 'points',
+      'asset': 'points',
       'memo': _tipMemo(),
     };
   }
