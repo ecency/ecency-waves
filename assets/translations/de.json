@@ -70,7 +70,7 @@
     "active_private_key": "Aktiver privater Schlüssel",
     "sm_tip_success_message": "Tipp erfolgreich gesendet",
     "em_tip_failure_message": "Tipp konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
-    "tip_requires_auth": "Tippen erfordert einen aktiven privaten Schlüssel! Verwenden Sie HiveSigner, Keychain, Ecency, oder HiveAuth.",
+    "tip_requires_auth": "Tippen erfordert einen aktiven privaten Schlüssel! Signiere eine Transaktion mit einer der folgenden Optionen.",
     "tip_keychain_not_found": "Hive-Keychain-App wurde nicht gefunden. Versuchen Sie stattdessen die HiveSigner-Option.",
     "tip_ecency_not_found": "Ecency App wurde nicht gefunden. Versuchen Sie stattdessen die HiveSigner Option.",
     "ecency_app_not_found": "Ecency App wurde nicht gefunden. Bitte installieren Sie Ecency um fortzufahren.",

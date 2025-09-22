@@ -70,7 +70,7 @@
     "active_private_key": "Активный закрытый ключ",
     "sm_tip_success_message": "Совет успешно отправлен",
     "em_tip_failure_message": "Не удалось отправить подсказку. Пожалуйста, попробуйте еще раз.",
-    "tip_requires_auth": "Для подсказки требуется активный приватный ключ! Используйте HiveSigner, Keychain, Ecency, или HiveAuth.",
+    "tip_requires_auth": "Подсказка требует активного приватного ключа! Подпишите транзакцию одним из вариантов ниже.",
     "tip_keychain_not_found": "Приложение Hive Keychain не найдено. Попробуйте вместо этого опцию HiveSigner.",
     "tip_ecency_not_found": "Приложение Ecency не найдено. Попробуйте вместо этого опцию HiveSigner.",
     "ecency_app_not_found": "Приложение Ecency не найдено. Пожалуйста, установите Ecency для продолжения.",
