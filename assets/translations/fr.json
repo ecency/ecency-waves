@@ -6,6 +6,7 @@
     "cancel": "Annuler",
     "login": "Se connecter",
     "bookmarks": "Signets",
+    "notifications": "Notifications",
     "my_waves": "Mes Vagues",
     "explore": "Explorez",
     "dark_mode": "Mode Sombre",
@@ -110,5 +111,13 @@
     "no_replies_found": "Aucune réponse trouvée",
     "no_content_found": "Aucun contenu trouvé",
     "no_bookmarks_found": "Aucun favori trouvé",
+    "no_notifications_found": "No notifications found",
+    "notifications_followed_you": "{} followed you",
+    "notifications_mentioned_you": "{} mentioned you",
+    "notifications_replied_to_you": "{} replied to you",
+    "notifications_delegated_to_you": "{} delegated {} to you",
+    "notifications_from_user": "{} from {}",
+    "notifications_voted_on": "{} voted on {}",
+    "notifications_transfer_received": "{} sent you {}",
     "version_info": "Version {} ({})"
 }
