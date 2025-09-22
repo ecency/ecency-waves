@@ -70,7 +70,7 @@
     "active_private_key": "活跃的私钥",
     "sm_tip_success_message": "提示发送成功",
     "em_tip_failure_message": "无法发送提示。请重试。",
-    "tip_requires_auth": "Tipping requires an Active private key! Sign transaction with one of options below.",
+    "tip_requires_auth": "提取需要一个活跃的私钥！用下面的选项之一签署交易。",
     "tip_keychain_not_found": "找不到 Hive Keychain 应用。请尝试HiveSigner 选项。",
     "tip_ecency_not_found": "未找到生态应用程序。请尝试HiveSigner选项。",
     "ecency_app_not_found": "没有找到 Ecency 应用程序。请安装 Ecency 以继续。",
