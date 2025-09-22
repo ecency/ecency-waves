@@ -147,6 +147,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
             size: 28,
           ),
           onPressed: () {
+            _clearTipFeedback();
             Navigator.of(context).pop();
           },
         ),
@@ -485,6 +486,11 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     widget.rootContext.showSnackBar(message);
   }
 
+  void _clearTipFeedback() {
+    _tipFeedbackMessage = null;
+    _tipFeedbackSuccess = false;
+  }
+
   Future<void> _initTransferCallbacks() async {
     await _handleInitialTransferUri();
 
@@ -673,6 +679,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
                     const BorderRadius.only(bottomRight: Radius.circular(20)),
                 text: LocaleText.upvote,
                 onPressed: () {
+                  _clearTipFeedback();
                   Navigator.pop(context);
                   if (userData.isPostingKeyLogin) {
                     _postingKeyVoteTransaction(userData, context);
