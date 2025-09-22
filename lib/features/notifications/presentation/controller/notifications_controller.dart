@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/features/auth/models/hive_auth_model.dart';
 import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
 import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/features/notifications/models/notification_model.dart';
@@ -198,25 +197,17 @@ class NotificationsController extends ChangeNotifier {
       return null;
     }
 
-    switch (user.authType) {
-      case AuthType.postingKey:
-      case AuthType.ecency:
-        return user.imageUploadToken.isNotEmpty
-            ? user.imageUploadToken
-            : null;
-      case AuthType.hiveAuth:
-      case AuthType.hiveKeyChain:
-        final auth = user.auth;
-        if (auth is HiveAuthModel && auth.token.isNotEmpty) {
-          return auth.token;
-        }
-        return null;
-      case AuthType.hiveSign:
-        final auth = user.auth;
-        if (auth is HiveSignerAuthModel && auth.token.isNotEmpty) {
-          return auth.token;
-        }
-        return null;
+    if (user.imageUploadToken.isNotEmpty) {
+      return user.imageUploadToken;
     }
+
+    if (user.authType == AuthType.hiveSign) {
+      final auth = user.auth;
+      if (auth is HiveSignerAuthModel && auth.token.isNotEmpty) {
+        return auth.token;
+      }
+    }
+
+    return null;
   }
 }
