@@ -9,6 +9,7 @@ import 'package:waves/features/user/repository/user_local_repository.dart';
 import 'package:waves/features/user/repository/user_repository.dart';
 import 'package:waves/features/explore/repository/explore_repository.dart';
 import 'package:waves/features/search/repository/search_repository.dart';
+import 'package:waves/features/notifications/repository/notifications_repository.dart';
 
 class RepositoriesGetIt extends GetItFeature {
   @override
@@ -29,5 +30,7 @@ class RepositoriesGetIt extends GetItFeature {
         () => ExploreRepository(apiService: getIt<ApiService>()));
     getIt.registerLazySingleton<SearchRepository>(
         () => SearchRepository(apiService: getIt<ApiService>()));
+    getIt.registerLazySingleton<NotificationsRepository>(
+        () => NotificationsRepository(apiService: getIt<ApiService>()));
   }
 }

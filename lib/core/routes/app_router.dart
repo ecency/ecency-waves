@@ -17,6 +17,7 @@ import 'package:waves/features/explore/presentation/view/explore_view.dart';
 import 'package:waves/features/search/presentation/view/search_view.dart';
 import 'package:waves/features/settings/presentation/setting/view/setting_view.dart';
 import 'package:waves/features/settings/repository/settings_repository.dart';
+import 'package:waves/features/notifications/presentation/view/notifications_view.dart';
 import 'package:waves/features/threads/models/comment/comment_navigation_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/view/add_comment_view.dart';
@@ -85,6 +86,11 @@ class AppRouter {
         path: '/${Routes.bookmarksView}',
         name: Routes.bookmarksView,
         builder: (context, state) => const BookmarksView(),
+      ),
+      GoRoute(
+        path: '/${Routes.notificationsView}',
+        name: Routes.notificationsView,
+        builder: (context, state) => const NotificationsView(),
       ),
       GoRoute(
         path: '/${Routes.authView}',

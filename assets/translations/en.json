@@ -6,6 +6,7 @@
     "cancel": "Cancel",
     "login": "Login",
     "bookmarks": "Bookmarks",
+    "notifications": "Notifications",
     "my_waves": "My Waves",
     "explore": "Explore",
     "dark_mode": "Dark Mode",
@@ -110,5 +111,13 @@
     "no_replies_found": "No replies found",
     "no_content_found": "No content found",
     "no_bookmarks_found": "No bookmarks found",
+    "no_notifications_found": "No notifications found",
+    "notifications_followed_you": "{} followed you",
+    "notifications_mentioned_you": "{} mentioned you",
+    "notifications_replied_to_you": "{} replied to you",
+    "notifications_delegated_to_you": "{} delegated {} to you",
+    "notifications_from_user": "{} from {}",
+    "notifications_voted_on": "{} voted on {}",
+    "notifications_transfer_received": "{} sent you {}",
     "version_info": "Version {} ({})"
 }

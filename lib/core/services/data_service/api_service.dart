@@ -19,6 +19,7 @@ import 'package:waves/features/threads/models/comment/image_upload_response.dart
 import 'package:waves/features/threads/models/post_detail/comment_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/reported/report_reponse.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/notifications/models/notification_model.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 import 'package:waves/features/explore/models/trending_tag_model.dart';
@@ -949,6 +950,203 @@ class ApiService {
       }
     } catch (e) {
       return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  // -------------------------- Notifications --------------------------
+
+  Future<ActionSingleDataResponse<int>> getUnreadNotificationCount({
+    required String userName,
+    String? code,
+  }) async {
+    final url = Uri.parse(
+        'https://ecency.com/private-api/pub-notifications/$userName');
+    final headers = {
+      ..._jsonHeaders,
+      if (code != null && code.isNotEmpty) 'code': code,
+    };
+
+    try {
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final decoded = _tryDecode(response.body);
+        if (decoded is Map && decoded['count'] is num) {
+          return ActionSingleDataResponse<int>(
+            data: (decoded['count'] as num).toInt(),
+            status: ResponseStatus.success,
+            isSuccess: true,
+            valid: true,
+            errorMessage: '',
+          );
+        }
+
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'Unexpected response',
+        );
+      }
+
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: response.body.isNotEmpty
+            ? response.body
+            : 'Server Error (${response.statusCode})',
+      );
+    } on TimeoutException {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Request timed out',
+      );
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionListDataResponse<NotificationModel>> getNotifications({
+    required String userName,
+    String? filter,
+    String? since,
+    int? limit,
+    String? code,
+  }) async {
+    final url = Uri.parse('https://ecency.com/private-api/notifications');
+    final body = <String, dynamic>{'user': userName};
+
+    if (filter != null && filter.isNotEmpty) {
+      body['filter'] = filter;
+    }
+    if (since != null && since.isNotEmpty) {
+      body['since'] = since;
+    }
+    if (limit != null) {
+      body['limit'] = limit;
+    }
+
+    final headers = {
+      ..._jsonHeaders,
+      if (code != null && code.isNotEmpty) 'code': code,
+    };
+
+    try {
+      final response = await http
+          .post(url, headers: headers, body: json.encode(body))
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final decoded = _tryDecode(response.body);
+
+        if (decoded is List) {
+          final notifications = decoded
+              .map((item) {
+                if (item is Map<String, dynamic>) {
+                  return NotificationModel.fromJson(item);
+                }
+                if (item is Map) {
+                  return NotificationModel.fromJson(
+                      Map<String, dynamic>.from(item as Map));
+                }
+                return null;
+              })
+              .whereType<NotificationModel>()
+              .toList();
+
+          return ActionListDataResponse<NotificationModel>(
+            data: notifications,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            valid: true,
+            errorMessage: '',
+          );
+        }
+
+        if (decoded is Map && decoded['count'] is num) {
+          return ActionListDataResponse<NotificationModel>(
+            data: const <NotificationModel>[],
+            status: ResponseStatus.success,
+            isSuccess: true,
+            valid: true,
+            errorMessage: '',
+          );
+        }
+
+        return ActionListDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'Unexpected response',
+        );
+      }
+
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: response.body.isNotEmpty
+            ? response.body
+            : 'Server Error (${response.statusCode})',
+      );
+    } on TimeoutException {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Request timed out',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<void>> markNotification({
+    required String userName,
+    String? id,
+    String? code,
+  }) async {
+    final url = Uri.parse('https://ecency.com/private-api/notifications/mark');
+    final headers = {
+      ..._jsonHeaders,
+      if (code != null && code.isNotEmpty) 'code': code,
+    };
+
+    final body = <String, dynamic>{'user': userName};
+    if (id != null && id.isNotEmpty) {
+      body['id'] = id;
+    }
+
+    try {
+      final response = await http
+          .put(url, headers: headers, body: json.encode(body))
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return ActionSingleDataResponse<void>(
+          data: null,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          valid: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionSingleDataResponse<void>(
+        status: ResponseStatus.failed,
+        errorMessage: response.body.isNotEmpty
+            ? response.body
+            : 'Server Error (${response.statusCode})',
+      );
+    } on TimeoutException {
+      return ActionSingleDataResponse<void>(
+        status: ResponseStatus.failed,
+        errorMessage: 'Request timed out',
+      );
+    } catch (e) {
+      return ActionSingleDataResponse<void>(
         status: ResponseStatus.failed,
         errorMessage: e.toString(),
       );

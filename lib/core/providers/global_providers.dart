@@ -1,6 +1,9 @@
 import 'package:provider/single_child_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/utilities/theme/theme_mode.dart';
+import 'package:waves/features/notifications/presentation/controller/notifications_controller.dart';
+import 'package:waves/features/notifications/repository/notifications_repository.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/poll_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/user/presentation/user_profile/controller/user_profile_controller.dart';
@@ -47,6 +50,28 @@ class GlobalProviders {
           return prevPollController;
         }
       },
-    )
+    ),
+    ChangeNotifierProxyProvider<UserController, NotificationsController>(
+      create: (context) => NotificationsController(
+        repository: getIt<NotificationsRepository>(),
+        userName: null,
+        authToken: null,
+      ),
+      update: (context, userController, previousController) {
+        if (previousController == null) {
+          return NotificationsController(
+            repository: getIt<NotificationsRepository>(),
+            userName: userController.userName,
+            authToken: userController.userData?.imageUploadToken,
+          );
+        } else {
+          previousController.updateUser(
+            userController.userName,
+            userController.userData?.imageUploadToken,
+          );
+          return previousController;
+        }
+      },
+    ),
   ];
 }

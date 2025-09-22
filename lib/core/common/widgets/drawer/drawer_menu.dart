@@ -13,6 +13,7 @@ import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/settings/repository/settings_repository.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
+import 'package:waves/features/notifications/presentation/controller/notifications_controller.dart';
 
 class DrawerMenu extends StatelessWidget {
   const DrawerMenu({super.key});
@@ -46,7 +47,7 @@ class DrawerMenu extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        if (isLoggedIn)
+                        if (isLoggedIn) ...[
                           DrawerTile(
                               onTap: () {
                                 Navigator.pop(context);
@@ -65,6 +66,40 @@ class DrawerMenu extends StatelessWidget {
                               },
                               text: LocaleText.myWaves,
                               icon: Icons.person),
+                          Consumer<NotificationsController>(
+                            builder: (context, notificationsController, child) {
+                              Widget? trailing;
+                              if (notificationsController.unreadCount > 0) {
+                                trailing = Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: theme.primaryColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    notificationsController.unreadCount
+                                        .toString(),
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: theme.colorScheme.onPrimary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return DrawerTile(
+                                onTap: () {
+                                  context.popAndPlatformPushNamed(
+                                      Routes.notificationsView);
+                                },
+                                text: LocaleText.notifications,
+                                icon: Icons.notifications,
+                                trailing: trailing,
+                              );
+                            },
+                          ),
+                        ],
                         DrawerTile(
                             onTap: () {
                               Navigator.pop(context);

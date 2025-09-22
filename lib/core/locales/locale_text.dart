@@ -12,6 +12,7 @@ class LocaleText {
   static String get cancel => "cancel".tr();
   static String get login => "login".tr();
   static String get bookmarks => "bookmarks".tr();
+  static String get notifications => "notifications".tr();
   static String get myWaves => "my_waves".tr();
   static String get explore => "explore".tr();
   static String get darkMode => "dark_mode".tr();
@@ -132,6 +133,21 @@ class LocaleText {
   static String get noRepliesFound => "no_replies_found".tr();
   static String get noContentFound => "no_content_found".tr();
   static String get noBookmarksFound => "no_bookmarks_found".tr();
+  static String get noNotificationsFound => "no_notifications_found".tr();
+  static String notificationsFollowedYou(String user) =>
+      "notifications_followed_you".tr(args: [user]);
+  static String notificationsMentionedYou(String user) =>
+      "notifications_mentioned_you".tr(args: [user]);
+  static String notificationsRepliedToYou(String user) =>
+      "notifications_replied_to_you".tr(args: [user]);
+  static String notificationsDelegatedToYou(String user, String amount) =>
+      "notifications_delegated_to_you".tr(args: [user, amount]);
+  static String notificationsFromUser(String type, String user) =>
+      "notifications_from_user".tr(args: [type, user]);
+  static String notificationsVotedOn(String user, String content) =>
+      "notifications_voted_on".tr(args: [user, content]);
+  static String notificationsTransferReceived(String user, String amount) =>
+      "notifications_transfer_received".tr(args: [user, amount]);
   static String versionInfo(String version, String buildNumber) =>
       "version_info".tr(args: [version, buildNumber]);
 }
