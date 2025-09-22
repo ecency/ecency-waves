@@ -7,7 +7,12 @@ import 'package:waves/features/auth/presentation/widgets/auth_button.dart';
 enum TipSigningMethod { hiveSigner, hiveKeychain, ecency, hiveAuth }
 
 class TipSigningDialog extends StatelessWidget {
-  const TipSigningDialog({super.key});
+  const TipSigningDialog({
+    super.key,
+    this.availableMethods = TipSigningMethod.values,
+  });
+
+  final List<TipSigningMethod> availableMethods;
 
   @override
   Widget build(BuildContext context) {
@@ -29,29 +34,7 @@ class TipSigningDialog extends StatelessWidget {
                 theme.textTheme.bodyMedium?.copyWith(color: onSurface),
           ),
           const Gap(16),
-          AuthButton(
-            authType: AuthType.hiveSign,
-            onTap: () => _onSelect(context, TipSigningMethod.hiveSigner),
-            label: LocaleText.signWithSigner,
-          ),
-          const Gap(12),
-          AuthButton(
-            authType: AuthType.hiveKeyChain,
-            onTap: () => _onSelect(context, TipSigningMethod.hiveKeychain),
-            label: LocaleText.signWithKeychain,
-          ),
-          const Gap(12),
-          AuthButton(
-            authType: AuthType.ecency,
-            onTap: () => _onSelect(context, TipSigningMethod.ecency),
-            label: LocaleText.signWithEcency,
-          ),
-          const Gap(12),
-          AuthButton(
-            authType: AuthType.hiveAuth,
-            onTap: () => _onSelect(context, TipSigningMethod.hiveAuth),
-            label: LocaleText.signWithAuth,
-          ),
+          ..._buildMethodButtons(context),
         ],
       ),
       actions: [
@@ -68,5 +51,47 @@ class TipSigningDialog extends StatelessWidget {
 
   void _onSelect(BuildContext context, TipSigningMethod method) {
     Navigator.of(context).pop(method);
+  }
+
+  List<Widget> _buildMethodButtons(BuildContext context) {
+    final buttons = <Widget>[];
+    for (var index = 0; index < availableMethods.length; index++) {
+      final method = availableMethods[index];
+      late final AuthType authType;
+      late final String label;
+      switch (method) {
+        case TipSigningMethod.hiveSigner:
+          authType = AuthType.hiveSign;
+          label = LocaleText.signWithSigner;
+          break;
+        case TipSigningMethod.hiveKeychain:
+          authType = AuthType.hiveKeyChain;
+          label = LocaleText.signWithKeychain;
+          break;
+        case TipSigningMethod.ecency:
+          authType = AuthType.ecency;
+          label = LocaleText.signWithEcency;
+          break;
+        case TipSigningMethod.hiveAuth:
+          authType = AuthType.hiveAuth;
+          label = LocaleText.signWithAuth;
+          break;
+      }
+
+      buttons.add(
+        AuthButton(
+          authType: authType,
+          onTap: () => _onSelect(context, method),
+          label: label,
+        ),
+      );
+
+      final isLast = index == availableMethods.length - 1;
+      if (!isLast) {
+        buttons.add(const Gap(12));
+      }
+    }
+
+    return buttons;
   }
 }

@@ -1,9 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -51,14 +54,20 @@ class UpvoteDialog extends StatefulWidget {
 class _UpvoteDialogState extends State<UpvoteDialog> {
   static const double _defaultWeight = 0.01;
   static const String _voteWeightKeyPrefix = 'last_vote_weight_';
-  static const List<double> _tipAmountOptions = [0.1, 0.5, 1, 2, 3, 5, 10];
-  static const List<String> _tipTokenOptions = ['HIVE', 'HBD'];
+  static const List<double> _tipAmountOptions = [0.1, 0.5, 1, 2, 3, 5, 10, 50];
+  static const List<String> _tipTokenOptions = ['HIVE', 'HBD', 'POINTS'];
+  static const String _transferCallbackScheme = 'waves';
+  static const String _transferCallbackHost = 'transfer';
 
   final GetStorage _storage = getIt<GetStorage>();
+  final AppLinks _appLinks = AppLinks();
+  final Set<String> _handledTransferCallbacks = <String>{};
   String? _userName;
   double weight = _defaultWeight;
   String? _tipFeedbackMessage;
   bool _tipFeedbackSuccess = false;
+  StreamSubscription<Uri?>? _transferSubscription;
+  String? _pendingTransferRequestId;
 
   @override
   void initState() {
@@ -68,6 +77,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     if (storedWeight != null) {
       weight = storedWeight;
     }
+    _initTransferCallbacks();
+  }
+
+  @override
+  void dispose() {
+    _transferSubscription?.cancel();
+    super.dispose();
   }
   @override
   Widget build(BuildContext context) {
@@ -210,9 +226,14 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     TipSelection selection,
     UserAuthModel<PostingAuthModel> userData,
   ) async {
+    final availableMethods = selection.tokenSymbol == 'POINTS'
+        ? const [TipSigningMethod.ecency]
+        : TipSigningMethod.values;
     final method = await showDialog<TipSigningMethod>(
       context: context,
-      builder: (dialogContext) => const TipSigningDialog(),
+      builder: (dialogContext) => TipSigningDialog(
+        availableMethods: availableMethods,
+      ),
     );
 
     if (!mounted || method == null) {
@@ -257,9 +278,25 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     String accountName,
   ) async {
     try {
-      final operation = _buildTransferOperation(selection, accountName);
-      final queryParameters =
-          _buildTransferQueryParameters(selection, accountName, operation);
+      List<dynamic>? operation;
+      late final Map<String, String> queryParameters;
+      final isPointsTransfer =
+          method == TipSigningMethod.ecency &&
+              selection.tokenSymbol.toUpperCase() == 'POINTS';
+
+      if (isPointsTransfer) {
+        queryParameters =
+            _buildEcencyPointsQueryParameters(selection, accountName);
+      } else {
+        final transferOperation =
+            _buildTransferOperation(selection, accountName);
+        operation = transferOperation;
+        queryParameters = _buildTransferQueryParameters(
+          selection,
+          accountName,
+          transferOperation,
+        );
+      }
       switch (method) {
         case TipSigningMethod.hiveSigner:
           final uri = Uri.https(
@@ -270,13 +307,13 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
           await Act.launchThisUrl(uri.toString());
           break;
         case TipSigningMethod.hiveKeychain:
-          await _openWithKeychain(queryParameters, operation);
+          await _openWithKeychain(queryParameters, operation!);
           break;
         case TipSigningMethod.ecency:
-          await _openWithEcency(queryParameters, operation);
+          await _openWithEcency(selection, queryParameters, operation);
           break;
         case TipSigningMethod.hiveAuth:
-          await _openWithHiveAuth(queryParameters, operation);
+          await _openWithHiveAuth(queryParameters, operation!);
           break;
       }
     } catch (e) {
@@ -317,6 +354,20 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       'memo': memo,
       'authority': 'active',
       'operations': jsonEncode([operation]),
+    };
+  }
+
+  Map<String, String> _buildEcencyPointsQueryParameters(
+    TipSelection selection,
+    String accountName,
+  ) {
+    final formattedAmount = selection.amount.toStringAsFixed(3);
+    return <String, String>{
+      'from': accountName,
+      'to': widget.author,
+      'amount': formattedAmount,
+      'assets': 'points',
+      'memo': _tipMemo(),
     };
   }
 
@@ -386,61 +437,76 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   }
 
   Future<void> _openWithEcency(
+    TipSelection selection,
     Map<String, String> queryParameters,
-    List<dynamic> operation,
+    List<dynamic>? operation,
   ) async {
-    final hiveUri = _buildTransferUri(
-      scheme: 'ecency',
-      queryParameters: queryParameters,
-      operation: operation,
-    );
+    final String requestId = DateTime.now().millisecondsSinceEpoch.toString();
+    final Uri callbackUri = _buildTransferCallbackUri(requestId);
+    final Map<String, String> ecencyParameters =
+        Map<String, String>.from(queryParameters)
+          ..['callback'] = callbackUri.toString()
+          ..['request_id'] = requestId;
+
+    final Uri ecencyUri = selection.tokenSymbol.toUpperCase() == 'POINTS'
+        ? Uri(
+            scheme: 'ecency',
+            host: 'transfer',
+            queryParameters: ecencyParameters,
+          )
+        : _buildTransferUri(
+            scheme: 'ecency',
+            queryParameters: ecencyParameters,
+            operation: operation!,
+          );
+
+    bool launched = false;
+
     if (Platform.isAndroid) {
       final intent = AndroidIntent(
         action: 'action_view',
-        data: hiveUri.toString(),
+        data: ecencyUri.toString(),
         package: 'app.esteem.mobile.android',
       );
-      final canLaunchIntent = await intent.canResolveActivity() ?? false;
+      final bool canLaunchIntent = await intent.canResolveActivity() ?? false;
       if (canLaunchIntent) {
         await intent.launch();
-        return;
+        launched = true;
+      } else {
+        _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
+        await launchUrl(
+          Uri.parse(
+            'https://play.google.com/store/apps/details?id=app.esteem.mobile.android',
+          ),
+          mode: LaunchMode.externalApplication,
+        );
       }
-      _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
-      await launchUrl(
-        Uri.parse(
-          'https://play.google.com/store/apps/details?id=app.esteem.mobile.android',
-        ),
-        mode: LaunchMode.externalApplication,
-      );
-      return;
-    }
-
-    if (Platform.isIOS) {
-      final ecencyUri = _buildTransferUri(
-        scheme: 'ecency',
-        queryParameters: queryParameters,
-        operation: operation,
-      );
-      final canLaunchEcency = await canLaunchUrl(ecencyUri);
+    } else if (Platform.isIOS) {
+      final bool canLaunchEcency = await canLaunchUrl(ecencyUri);
       if (canLaunchEcency) {
-        final launched = await launchUrl(
+        final bool launchResult = await launchUrl(
           ecencyUri,
           mode: LaunchMode.externalApplication,
         );
-        if (launched) {
-          return;
-        }
+        launched = launchResult;
       }
 
+      if (!launched) {
+        _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
+        await launchUrl(
+          Uri.parse('https://apps.apple.com/app/ecency/id1450268965'),
+          mode: LaunchMode.externalApplication,
+        );
+      }
+    } else {
       _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
-      await launchUrl(
-        Uri.parse('https://apps.apple.com/app/ecency/id1450268965'),
-        mode: LaunchMode.externalApplication,
-      );
-      return;
     }
 
-    _showTipFeedback(LocaleText.tipEcencyNotFound, success: false);
+    if (launched) {
+      _pendingTransferRequestId = requestId;
+    } else {
+      _pendingTransferRequestId = null;
+    }
   }
 
   Future<void> _openWithHiveAuth(
@@ -517,6 +583,82 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       _tipFeedbackSuccess = success;
     });
     widget.rootContext.showSnackBar(message);
+  }
+
+  Future<void> _initTransferCallbacks() async {
+    await _handleInitialTransferUri();
+
+    _transferSubscription = _appLinks.uriLinkStream.listen(
+      (Uri? uri) {
+        if (uri != null) {
+          _handleTransferUri(uri);
+        }
+      },
+      onError: (_) {},
+      cancelOnError: false,
+    );
+  }
+
+  Future<void> _handleInitialTransferUri() async {
+    try {
+      final Uri? initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        await _handleTransferUri(initialUri);
+      }
+    } on PlatformException {
+      // Ignore – app_links throws when no initial URI is available.
+    } on FormatException catch (error) {
+      debugPrint('Invalid transfer callback URI: $error');
+    }
+  }
+
+  Future<void> _handleTransferUri(Uri uri) async {
+    if (uri.scheme.toLowerCase() != _transferCallbackScheme ||
+        uri.host.toLowerCase() != _transferCallbackHost) {
+      return;
+    }
+
+    final String callbackIdentifier =
+        uri.queryParameters['request_id'] ?? uri.toString();
+    if (_handledTransferCallbacks.contains(callbackIdentifier)) {
+      return;
+    }
+
+    if (_pendingTransferRequestId != null &&
+        callbackIdentifier != _pendingTransferRequestId) {
+      return;
+    }
+
+    _handledTransferCallbacks.add(callbackIdentifier);
+    _pendingTransferRequestId = null;
+
+    final String status = uri.queryParameters['status']?.toLowerCase() ?? '';
+    final String? message =
+        uri.queryParameters['message'] ?? uri.queryParameters['error'];
+
+    if (status == 'success') {
+      _showTipFeedback(
+        message?.isNotEmpty == true
+            ? message!
+            : LocaleText.smTipSuccessMessage,
+        success: true,
+      );
+      return;
+    }
+
+    if (message != null && message.isNotEmpty) {
+      _showTipFeedback(message, success: false);
+    } else {
+      _showTipFeedback(LocaleText.emTipFailureMessage, success: false);
+    }
+  }
+
+  Uri _buildTransferCallbackUri(String requestId) {
+    return Uri(
+      scheme: _transferCallbackScheme,
+      host: _transferCallbackHost,
+      queryParameters: <String, String>{'request_id': requestId},
+    );
   }
 
 
