@@ -1,16 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:waves/core/utilities/enum.dart';
+import 'package:waves/features/auth/models/hive_auth_model.dart';
+import 'package:waves/features/auth/models/hive_signer_auth_model.dart';
+import 'package:waves/features/auth/models/user_auth_model.dart';
 import 'package:waves/features/notifications/models/notification_model.dart';
 import 'package:waves/features/notifications/repository/notifications_repository.dart';
 
 class NotificationsController extends ChangeNotifier {
   NotificationsController({
     required NotificationsRepository repository,
-    String? userName,
-    String? authToken,
+    UserAuthModel? user,
   })  : _repository = repository,
-        _userName = userName,
-        _authToken = authToken {
+        _userName = user?.accountName,
+        _authToken = _resolveAuthToken(user) {
     if (_userName != null) {
       _loadUnreadCount();
     }
@@ -34,10 +36,14 @@ class NotificationsController extends ChangeNotifier {
 
   bool get hasLoaded => _hasLoaded;
 
-  void updateUser(String? userName, String? authToken) {
-    final hasChanged = _userName != userName || _authToken != authToken;
-    _userName = userName;
-    _authToken = authToken;
+  void updateUser(UserAuthModel? user) {
+    final newUserName = user?.accountName;
+    final newAuthToken = _resolveAuthToken(user);
+    final hasChanged =
+        _userName != newUserName || _authToken != newAuthToken;
+
+    _userName = newUserName;
+    _authToken = newAuthToken;
 
     if (!isLoggedIn) {
       _isFetching = false;
@@ -184,6 +190,33 @@ class NotificationsController extends ChangeNotifier {
       }
     } finally {
       _loadingUnread = false;
+    }
+  }
+
+  static String? _resolveAuthToken(UserAuthModel? user) {
+    if (user == null) {
+      return null;
+    }
+
+    switch (user.authType) {
+      case AuthType.postingKey:
+      case AuthType.ecency:
+        return user.imageUploadToken.isNotEmpty
+            ? user.imageUploadToken
+            : null;
+      case AuthType.hiveAuth:
+      case AuthType.hiveKeyChain:
+        final auth = user.auth;
+        if (auth is HiveAuthModel && auth.token.isNotEmpty) {
+          return auth.token;
+        }
+        return null;
+      case AuthType.hiveSign:
+        final auth = user.auth;
+        if (auth is HiveSignerAuthModel && auth.token.isNotEmpty) {
+          return auth.token;
+        }
+        return null;
     }
   }
 }

@@ -123,26 +123,32 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         context.read<ThreadFeedController>().rootThreadInfo == null) {
       // Unable to determine which container to post to
       context.pop();
-    } else if (userData.isPostingKeyLogin) {
-      _postingKeyCommentTransaction(comment, userData, context);
-    } else if (userData.isHiveSignerLogin) {
-      _hiveSignerCommentTransaction(comment, userData, context);
-    } else if (userData.isHiveKeychainLogin) {
-      _onTransactionDecision(
-        comment,
-        AuthType.hiveKeyChain,
-        context,
-        userData,
-      );
-    } else if (userData.isHiveAuthLogin) {
-      _onTransactionDecision(
-        comment,
-        AuthType.hiveAuth,
-        context,
-        userData,
-      );
     } else {
-      _dialogForHiveTransaction(context, comment, userData);
+      switch (userData.authType) {
+        case AuthType.postingKey:
+        case AuthType.ecency:
+          _postingKeyCommentTransaction(comment, userData, context);
+          break;
+        case AuthType.hiveSign:
+          _hiveSignerCommentTransaction(comment, userData, context);
+          break;
+        case AuthType.hiveKeyChain:
+          _onTransactionDecision(
+            comment,
+            AuthType.hiveKeyChain,
+            context,
+            userData,
+          );
+          break;
+        case AuthType.hiveAuth:
+          _onTransactionDecision(
+            comment,
+            AuthType.hiveAuth,
+            context,
+            userData,
+          );
+          break;
+      }
     }
   }
 

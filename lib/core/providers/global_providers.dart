@@ -54,21 +54,16 @@ class GlobalProviders {
     ChangeNotifierProxyProvider<UserController, NotificationsController>(
       create: (context) => NotificationsController(
         repository: getIt<NotificationsRepository>(),
-        userName: null,
-        authToken: null,
+        user: null,
       ),
       update: (context, userController, previousController) {
         if (previousController == null) {
           return NotificationsController(
             repository: getIt<NotificationsRepository>(),
-            userName: userController.userName,
-            authToken: userController.userData?.imageUploadToken,
+            user: userController.userData,
           );
         } else {
-          previousController.updateUser(
-            userController.userName,
-            userController.userData?.imageUploadToken,
-          );
+          previousController.updateUser(userController.userData);
           return previousController;
         }
       },
