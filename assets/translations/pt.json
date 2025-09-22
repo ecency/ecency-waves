@@ -70,7 +70,7 @@
     "active_private_key": "Chave privada ativa",
     "sm_tip_success_message": "Gorjeta enviada com sucesso",
     "em_tip_failure_message": "Não foi possível enviar a dica. Por favor, tente novamente.",
-    "tip_requires_auth": "Tipping requires an Active private key! Sign transaction with one of options below.",
+    "tip_requires_auth": "A gorjeta requer uma chave privada ativa! Assine uma transação com uma das opções abaixo.",
     "tip_keychain_not_found": "O app Hive Keychain não foi encontrado. Tente a opção HiveSigner em vez disso.",
     "tip_ecency_not_found": "O aplicativo de Ecency não foi encontrado. Tente a opção HiveSigner.",
     "ecency_app_not_found": "O aplicativo de Ecency não foi encontrado. Por favor, instale a Ecency para continuar.",
