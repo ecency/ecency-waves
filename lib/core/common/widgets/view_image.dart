@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:waves/core/common/extensions/image_thumbs.dart';
+
 class ViewImage extends StatefulWidget {
   const ViewImage({
     super.key,
@@ -88,9 +90,14 @@ class _ViewImageState extends State<ViewImage>
                         }
                       },
                       itemBuilder: (context, index) {
+                        final imageUrl = widget.images[index];
+                        final resolvedImageUrl =
+                            imageUrl.contains('images.ecency.com')
+                                ? imageUrl
+                                : context.proxyImage(imageUrl);
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 2),
-                          child: Image.network(widget.images[index]),
+                          child: Image.network(resolvedImageUrl),
                         );
                       },
                     ),
