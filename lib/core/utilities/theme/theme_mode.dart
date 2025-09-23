@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 
 class ThemeController extends ChangeNotifier {
+  static const String _themeModeStorageKey = 'theme_mode';
+
+  final GetStorage _storage;
   final Color _primaryThemeColor = const Color(0xFF357CE5);
   final Color _primaryColor = Colors.black;
   final Color _primaryColorTwo = const Color.fromARGB(255, 8, 8, 8);
@@ -16,14 +20,37 @@ class ThemeController extends ChangeNotifier {
 
   ThemeMode _themeMode = ThemeMode.dark;
 
+  ThemeController({GetStorage? storage}) : _storage = storage ?? GetStorage() {
+    _loadThemeMode();
+  }
+
   ThemeMode get themeMode => _themeMode;
 
   void toggleTheme() {
     _themeMode = isLightTheme() ? ThemeMode.dark : ThemeMode.light;
+    _storage.write(_themeModeStorageKey, _themeMode.name);
     notifyListeners();
   }
 
   bool isLightTheme() => _themeMode == ThemeMode.light;
+
+  void _loadThemeMode() {
+    final dynamic storedValue = _storage.read(_themeModeStorageKey);
+    if (storedValue is! String) {
+      return;
+    }
+
+    switch (storedValue) {
+      case 'light':
+        _themeMode = ThemeMode.light;
+        break;
+      case 'dark':
+        _themeMode = ThemeMode.dark;
+        break;
+      default:
+        break;
+    }
+  }
 
   ThemeData getLightTheme() {
     return ThemeData(
