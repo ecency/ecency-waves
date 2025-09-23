@@ -46,6 +46,10 @@ class LocaleText {
   static String get done => "done".tr();
   static String get addAccount => "add_account".tr();
   static String get switchAccount => "switch_account".tr();
+  static String get removeAccount => "remove_account".tr();
+  static String get remove => "remove".tr();
+  static String removeAccountConfirmation(String account) =>
+      "remove_account_confirmation".tr(args: [account]);
   static String get emDefaultMessage => "em_default_message".tr();
   static String get emHiveAuthTokenMessage => "em_hive_auth_token_message".tr();
   static String get emHiveAuthAppNotFound => "em_hiveauth_app_not_found".tr();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/custom_list_tile.dart';
+import 'package:waves/core/common/widgets/dialog/dialog_template.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -30,6 +31,7 @@ class MultiAccountDialogItem extends StatelessWidget {
       trailing: _TrailingIcons(
         authType: item.authType,
         showRemoveButton: showRemoveButton,
+        accountName: userName,
         onRemove: () => controller.removeAccount(userName),
       ),
     );
@@ -49,11 +51,13 @@ class _TrailingIcons extends StatelessWidget {
   const _TrailingIcons({
     required this.authType,
     required this.showRemoveButton,
+    required this.accountName,
     required this.onRemove,
   });
 
   final AuthType authType;
   final bool showRemoveButton;
+  final String accountName;
   final VoidCallback onRemove;
 
   @override
@@ -72,7 +76,7 @@ class _TrailingIcons extends StatelessWidget {
     children.add(
       showRemoveButton
           ? IconButton(
-              onPressed: onRemove,
+              onPressed: () => _confirmRemove(context),
               icon: const Icon(
                 Icons.close,
                 size: 20,
@@ -84,6 +88,25 @@ class _TrailingIcons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: children,
+    );
+  }
+
+  Future<void> _confirmRemove(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        return DialogTemplate(
+          title: LocaleText.removeAccount,
+          content: Text(
+            LocaleText.removeAccountConfirmation(accountName),
+            style: theme.textTheme.bodyMedium,
+          ),
+          declineButtonText: LocaleText.cancel,
+          proceedButtonText: LocaleText.remove,
+          onProceedTap: onRemove,
+        );
+      },
     );
   }
 
