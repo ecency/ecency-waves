@@ -1,6 +1,36 @@
 import 'dart:convert';
 import 'package:waves/core/utilities/enum.dart';
 
+String _parseErrorMessage(dynamic error) {
+  if (error == null) {
+    return '';
+  }
+  if (error is String) {
+    return error;
+  }
+  if (error is Map<String, dynamic>) {
+    final dynamic message = error['message'];
+    if (message is String) {
+      return message;
+    }
+    return jsonEncode(error);
+  }
+  return error.toString();
+}
+
+bool _hasError(dynamic error) {
+  if (error == null) {
+    return false;
+  }
+  if (error is String) {
+    return error.isNotEmpty;
+  }
+  if (error is Map) {
+    return error.isNotEmpty;
+  }
+  return true;
+}
+
 class ActionListDataResponse<T> {
   final List<T>? data;
   final bool valid;
@@ -27,12 +57,13 @@ class ActionListDataResponse<T> {
               ?.map((dynamic item) => fromJson(item))
               .toList() ??
           [],
-      status: json['valid'] && json['error'].isEmpty
+      status: json['valid'] && !_hasError(json['error'])
           ? ResponseStatus.success
           : ResponseStatus.failed,
-      isSuccess: json['valid'] && json['error'].isEmpty && json['data'] != null,
+      isSuccess:
+          json['valid'] && !_hasError(json['error']) && json['data'] != null,
       valid: json['valid'] as bool,
-      errorMessage: json['error'] as String,
+      errorMessage: _parseErrorMessage(json['error']),
     );
   }
 }
@@ -63,13 +94,13 @@ class ActionSingleDataResponse<T> {
     return ActionSingleDataResponse(
       data: _parseData(json, fromJson, parseFromList, ignoreFromJson),
       valid: json['valid'] as bool,
-      status: json['valid'] && json['error'].isEmpty
+      status: json['valid'] && !_hasError(json['error'])
           ? ResponseStatus.success
           : ResponseStatus.failed,
       isSuccess: json['valid'] &&
-          json['error'].isEmpty &&
+          !_hasError(json['error']) &&
           (fromJson != null ? json['data'] != null : true),
-      errorMessage: json['error'] as String,
+      errorMessage: _parseErrorMessage(json['error']),
     );
   }
 
