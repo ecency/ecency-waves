@@ -13,6 +13,6 @@ class SearchRepository {
       _apiService.searchUsers(query, limit: limit);
 
   Future<ActionListDataResponse<SearchTagModel>> searchTags(String query,
-          {int limit = 20}) =>
+          {int limit = 250}) =>
       _apiService.searchTags(query, limit: limit);
 }

@@ -1401,9 +1401,21 @@ class ApiService {
   }
 
   Future<ActionListDataResponse<SearchTagModel>> searchTags(String query,
-      {int limit = 20}) async {
+      {int limit = 250}) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) {
+      return ActionListDataResponse<SearchTagModel>(
+        data: const <SearchTagModel>[],
+        status: ResponseStatus.success,
+        isSuccess: true,
+        valid: true,
+        errorMessage: '',
+      );
+    }
+
+    final sanitizedQuery =
+        trimmed.startsWith('#') ? trimmed.substring(1) : trimmed;
+    if (sanitizedQuery.isEmpty) {
       return ActionListDataResponse<SearchTagModel>(
         data: const <SearchTagModel>[],
         status: ResponseStatus.success,
@@ -1417,7 +1429,7 @@ class ApiService {
       final response = await _postWithFallback({
         'jsonrpc': '2.0',
         'method': 'condenser_api.get_trending_tags',
-        'params': [trimmed, limit],
+        'params': [sanitizedQuery, limit],
         'id': 1,
       });
 
@@ -1431,10 +1443,14 @@ class ApiService {
 
       final decoded = _tryDecode(response.body);
       if (decoded is Map && decoded['result'] is List) {
+        final lowerQuery = sanitizedQuery.toLowerCase();
         final tagResults = (decoded['result'] as List)
             .whereType<Map<String, dynamic>>()
             .map(SearchTagModel.fromJson)
             .where((tag) => tag.name.isNotEmpty)
+            .where(
+              (tag) => tag.name.toLowerCase().contains(lowerQuery),
+            )
             .toList();
         return ActionListDataResponse<SearchTagModel>(
           data: tagResults,
