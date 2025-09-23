@@ -16,7 +16,7 @@ class MyDrawerHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final userController = context.read<UserController>();
+    final userController = context.watch<UserController>();
     final bool isLoggedIn = userController.isUserLoggedIn;
     return InkWellWrapper(
       isStackWrapper: !isLoggedIn,
