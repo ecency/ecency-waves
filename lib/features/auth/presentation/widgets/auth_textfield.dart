@@ -34,9 +34,11 @@ class _AuthTextFieldState extends State<AuthTextField> {
     super.initState();
   }
 
+  static const Duration _avatarDebounceDuration = Duration(seconds: 1);
+
   void _onTextChanged() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
+    _debounce = Timer(_avatarDebounceDuration, () {
       if (!mounted) return;
       setState(() {
         _avatarUser = widget.textEditingController.text.trim();
