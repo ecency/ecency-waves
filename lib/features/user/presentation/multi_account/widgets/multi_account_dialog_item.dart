@@ -65,18 +65,21 @@ class _TrailingIcons extends StatelessWidget {
       children.add(loginIcon);
     }
 
-    if (showRemoveButton) {
-      if (children.isNotEmpty) {
-        children.add(const SizedBox(width: 8));
-      }
-      children.add(IconButton(
-        onPressed: onRemove,
-        icon: const Icon(
-          Icons.close,
-          size: 20,
-        ),
-      ));
+    if (children.isNotEmpty) {
+      children.add(const SizedBox(width: 8));
     }
+
+    children.add(
+      showRemoveButton
+          ? IconButton(
+              onPressed: onRemove,
+              icon: const Icon(
+                Icons.close,
+                size: 20,
+              ),
+            )
+          : _buildCheckIcon(context),
+    );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -100,6 +103,20 @@ class _TrailingIcons extends StatelessWidget {
     return const Icon(
       Icons.key,
       size: 20,
+    );
+  }
+
+  Widget _buildCheckIcon(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      width: 48,
+      child: Center(
+        child: Icon(
+          Icons.check,
+          size: 20,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
     );
   }
 
