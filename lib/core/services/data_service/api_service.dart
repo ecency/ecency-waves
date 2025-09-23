@@ -1022,6 +1022,10 @@ class ApiService {
     final url = Uri.parse('https://ecency.com/private-api/notifications');
     final body = <String, dynamic>{'user': userName};
 
+    if (code != null && code.isNotEmpty) {
+      body['code'] = code;
+    }
+
     if (filter != null && filter.isNotEmpty) {
       body['filter'] = filter;
     }
@@ -1034,7 +1038,6 @@ class ApiService {
 
     final headers = {
       ..._jsonHeaders,
-      if (code != null && code.isNotEmpty) 'code': code,
     };
 
     try {
@@ -1112,10 +1115,12 @@ class ApiService {
     final url = Uri.parse('https://ecency.com/private-api/notifications/mark');
     final headers = {
       ..._jsonHeaders,
-      if (code != null && code.isNotEmpty) 'code': code,
     };
 
     final body = <String, dynamic>{'user': userName};
+    if (code != null && code.isNotEmpty) {
+      body['code'] = code;
+    }
     if (id != null && id.isNotEmpty) {
       body['id'] = id;
     }
