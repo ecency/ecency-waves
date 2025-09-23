@@ -26,16 +26,45 @@ extension UI on BuildContext {
 
   void showSnackBar(String message) {
     final theme = Theme.of(this);
-    ScaffoldMessenger.of(this).hideCurrentSnackBar();
-    ScaffoldMessenger.of(this).showSnackBar(SnackBar(
-      backgroundColor: theme.colorScheme.tertiaryContainer,
-      content: Text(
-        message,
-        textAlign: TextAlign.center,
-        style: theme.textTheme.bodyMedium,
+    final messenger = ScaffoldMessenger.of(this);
+    final colorScheme = theme.colorScheme;
+    final bool isDark = theme.brightness == Brightness.dark;
+    final Color backgroundColor =
+        isDark ? colorScheme.surface : colorScheme.primary;
+    final Color foregroundColor =
+        isDark ? colorScheme.onSurface : colorScheme.onPrimary;
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        dismissDirection: DismissDirection.horizontal,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 5),
+        content: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: foregroundColor,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                textAlign: TextAlign.start,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: foregroundColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      duration: const Duration(seconds: 3),
-    ));
+    );
   }
 
   PopScope _loader(BuildContext context, bool canPop) {
