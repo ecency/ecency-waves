@@ -40,44 +40,19 @@ class CommentDetailView extends StatelessWidget {
         return Selector<CommentDetailController, ThreadFeedModel>(
           selector: (_, myType) => myType.mainThread,
           builder: (context, item, child) {
-            return SafeArea(
-              child: Scaffold(
-                appBar: AppBar(
-                  title: Text(LocaleText.post),
-                ),
-                bottomNavigationBar: _bottomBar(theme, item),
-                body: SafeArea(
-                  child: Padding(
-                    padding: kScreenVerticalPadding,
-                    child: Stack(
-                      children: [
-                        CustomScrollView(
-                          slivers: [
-                            _mainThread(
-                                item, userController, context, theme),
-                            _comments()
-                          ],
-                        ),
-                        Selector<CommentDetailController, bool>(
-                          selector: (_, controller) =>
-                              controller.viewState == ViewState.loading,
-                          builder: (context, isLoading, child) {
-                            if (!isLoading) {
-                              return const SizedBox.shrink();
-                            }
-                            final overlayColor = Theme.of(context)
-                                .scaffoldBackgroundColor
-                                .withOpacity(0.6);
-                            return Positioned.fill(
-                              child: ColoredBox(
-                                color: overlayColor,
-                                child: const LoadingState(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(LocaleText.post),
+              ),
+              bottomNavigationBar: _bottomBar(theme, item),
+              body: SafeArea(
+                child: Padding(
+                  padding: kScreenVerticalPadding,
+                  child: CustomScrollView(
+                    slivers: [
+                      _mainThread(item, userController, context, theme),
+                      _comments()
+                    ],
                   ),
                 ),
               ),
