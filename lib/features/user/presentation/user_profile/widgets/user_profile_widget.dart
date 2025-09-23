@@ -42,28 +42,21 @@ class _UserProfileViewWidgetState extends State<UserProfileViewWidget> {
   @override
   Widget build(BuildContext context) {
     final coverImage = widget.data.postingJsonMetadata?.profile?.coverImage;
-    return Stack(
-      children: [
-        CustomScrollView(
-          slivers: [
-            SliverCrossAxisGroup(
-              slivers: [
-                SliverMainAxisGroup(
-                  slivers: [
-                    if (coverImage != null && coverImage.isNotEmpty)
-                      _coverImage(),
-                    UserProfileUserInfo(data: widget.data),
-                    SliverFillRemaining(
-                      hasScrollBody: true,
-                      child: const WavesListView(),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
+    return NestedScrollView(
+      floatHeaderSlivers: true,
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          if (coverImage != null && coverImage.isNotEmpty) _coverImage(),
+          UserProfileUserInfo(data: widget.data),
+        ];
+      },
+      body: Builder(
+        builder: (context) {
+          return WavesListView(
+            scrollController: PrimaryScrollController.of(context),
+          );
+        },
+      ),
     );
   }
 

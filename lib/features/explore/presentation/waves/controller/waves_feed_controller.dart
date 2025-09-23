@@ -98,6 +98,7 @@ class WavesFeedController extends ChangeNotifier
     errorMessage = null;
     isPageEnded = false;
     viewState = ViewState.loading;
+    notifyListeners();
     init();
   }
 

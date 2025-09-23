@@ -15,20 +15,29 @@ import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_f
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_tile.dart';
 
 class WavesListView extends StatefulWidget {
-  const WavesListView({super.key});
+  const WavesListView({super.key, this.scrollController});
+
+  final ScrollController? scrollController;
 
   @override
   State<WavesListView> createState() => _WavesListViewState();
 }
 
 class _WavesListViewState extends State<WavesListView> {
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
+  late bool _ownsController;
   bool _showBackToTopButton = false;
   String? _lastErrorMessage;
 
   @override
   void initState() {
     super.initState();
+    _configureScrollController(widget.scrollController);
+  }
+
+  void _configureScrollController(ScrollController? controller) {
+    _ownsController = controller == null;
+    _scrollController = controller ?? ScrollController();
     _scrollController.addListener(_scrollListener);
   }
 
@@ -46,9 +55,23 @@ class _WavesListViewState extends State<WavesListView> {
   }
 
   @override
+  void didUpdateWidget(covariant WavesListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scrollController != widget.scrollController) {
+      _scrollController.removeListener(_scrollListener);
+      if (_ownsController) {
+        _scrollController.dispose();
+      }
+      _configureScrollController(widget.scrollController);
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.removeListener(_scrollListener);
-    _scrollController.dispose();
+    if (_ownsController) {
+      _scrollController.dispose();
+    }
     super.dispose();
   }
 
