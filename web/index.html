@@ -705,21 +705,54 @@
     function validatePostingKey(id, accountName, postingKey, accountJson) {
       try {
         const account = JSON.parse(accountJson);
-        const pubPosting = account.posting && account.posting.key_auths && account.posting.key_auths[0] && account.posting.key_auths[0][0];
-        const pubActive = account.active && account.active.key_auths && account.active.key_auths[0] && account.active.key_auths[0][0];
-        const pubOwner = account.owner && account.owner.key_auths && account.owner.key_auths[0] && account.owner.key_auths[0][0];
+        const postingKeyAuths =
+          account &&
+          account.posting &&
+          Array.isArray(account.posting.key_auths)
+            ? account.posting.key_auths
+            : [];
+        const activeKeyAuths =
+          account &&
+          account.active &&
+          Array.isArray(account.active.key_auths)
+            ? account.active.key_auths
+            : [];
+        const ownerKeyAuths =
+          account &&
+          account.owner &&
+          Array.isArray(account.owner.key_auths)
+            ? account.owner.key_auths
+            : [];
+
+        const postingPublicKeys = postingKeyAuths
+          .map((auth) => (Array.isArray(auth) ? auth[0] : null))
+          .filter(Boolean);
+        const allPublicKeys = [
+          ...postingPublicKeys,
+          ...activeKeyAuths
+            .map((auth) => (Array.isArray(auth) ? auth[0] : null))
+            .filter(Boolean),
+          ...ownerKeyAuths
+            .map((auth) => (Array.isArray(auth) ? auth[0] : null))
+            .filter(Boolean),
+        ];
+
         try {
           const pKey = dhive.PrivateKey.fromString(postingKey)
             .createPublic()
             .toString();
-          if (pKey === pubPosting || pKey === pubActive || pKey === pubOwner) {
+          if (allPublicKeys.includes(pKey)) {
             return ok(id, "true");
           }
           return fail(id, "Invalid Key supplied");
         } catch (wifError) {
-          const keyFromPassword = dhive.PrivateKey.fromLogin(accountName, postingKey, "posting");
+          const keyFromPassword = dhive.PrivateKey.fromLogin(
+            accountName,
+            postingKey,
+            "posting",
+          );
           const derivedPublic = keyFromPassword.createPublic().toString();
-          if (derivedPublic === pubPosting) {
+          if (postingPublicKeys.includes(derivedPublic)) {
             return ok(id, keyFromPassword.toString());
           }
           return fail(id, "Invalid Key supplied");
