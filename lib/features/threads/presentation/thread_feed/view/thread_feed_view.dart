@@ -28,7 +28,6 @@ class ThreadFeedView extends StatelessWidget {
     return Scaffold(
         drawer: const DrawerMenu(),
         appBar: AppBar(
-          backgroundColor: theme.cardColor,
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
           title: DropDownFilter(onChanged: (type) {

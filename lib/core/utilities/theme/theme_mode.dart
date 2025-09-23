@@ -64,6 +64,19 @@ class ThemeController extends ChangeNotifier {
       hintColor: Colors.black38,
       cardColor: _lightGrey,
       dividerTheme: DividerThemeData(color: _primaryColor.withOpacity(0.1)),
+      appBarTheme: AppBarTheme(
+        backgroundColor: _secondaryColor,
+        foregroundColor: _primaryColor,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        titleTextStyle: TextStyle(
+          fontFamily: _fontFamily,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: _primaryColor,
+        ),
+        iconTheme: IconThemeData(color: _primaryColor),
+      ),
       colorScheme: ColorScheme.light(
           onPrimary: _staticColor,
           onSecondary: _lightGrey,
@@ -140,6 +153,19 @@ class ThemeController extends ChangeNotifier {
       focusColor: _primaryThemeColor,
       hintColor: Colors.white38,
       dividerTheme: DividerThemeData(color: _secondaryColor.withOpacity(0.1)),
+      appBarTheme: AppBarTheme(
+        backgroundColor: _primaryColor,
+        foregroundColor: _secondaryColor,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        titleTextStyle: TextStyle(
+          fontFamily: _fontFamily,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: _secondaryColor,
+        ),
+        iconTheme: IconThemeData(color: _secondaryColor),
+      ),
       colorScheme: ColorScheme.dark(
           onPrimary: _staticColor,
           onTertiary: _successColor, // color used for success

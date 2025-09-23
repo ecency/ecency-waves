@@ -10,13 +10,26 @@ class ThreadTypeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButton<ThreadFeedType>(
-      value: value,
-      onChanged: (v) {
-        if (v != null) {
-          onChanged(v);
-        }
-      },
+    final theme = Theme.of(context);
+    final appBarTheme = theme.appBarTheme;
+    final Color foregroundColor =
+        appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+    final TextStyle? titleStyle = appBarTheme.titleTextStyle ??
+        theme.textTheme.titleMedium?.copyWith(color: foregroundColor);
+
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<ThreadFeedType>(
+        value: value,
+        iconEnabledColor: foregroundColor,
+        iconDisabledColor: foregroundColor,
+        dropdownColor:
+            appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+        style: titleStyle,
+        onChanged: (v) {
+          if (v != null) {
+            onChanged(v);
+          }
+        },
       items: ThreadFeedType.values
           .where((e) => e != ThreadFeedType.all)
           .map((e) => DropdownMenuItem(
@@ -24,6 +37,7 @@ class ThreadTypeDropdown extends StatelessWidget {
                 child: Text(Thread.gethreadName(type: e)),
               ))
           .toList(),
+      ),
     );
   }
 }

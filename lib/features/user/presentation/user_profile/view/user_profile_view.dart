@@ -45,7 +45,7 @@ class UserProfileView extends StatelessWidget {
                 },
               ),
             ),
-            backgroundColor: theme.colorScheme.tertiaryContainer,
+            backgroundColor: theme.scaffoldBackgroundColor,
             body: SafeArea(
               child: Selector<UserProfileController, ViewState>(
                 selector: (_, provider) => provider.viewState,

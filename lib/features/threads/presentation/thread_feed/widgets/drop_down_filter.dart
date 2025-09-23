@@ -29,6 +29,16 @@ class _DropDownFilterState extends State<DropDownFilter> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final appBarTheme = theme.appBarTheme;
+    final Color dropdownBackground =
+        appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor;
+    final Color foregroundColor =
+        appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+    final TextStyle titleStyle =
+        (appBarTheme.titleTextStyle ?? theme.textTheme.titleMedium)?.copyWith(
+              color: foregroundColor,
+            ) ??
+            TextStyle(color: foregroundColor);
     final controller = context.read<ThreadFeedController>();
     final List<ThreadFeedType> types = ThreadFeedType.values.sublist(1);
     final String defaultTypeString =
@@ -54,7 +64,7 @@ class _DropDownFilterState extends State<DropDownFilter> {
               selectedTextStyle: TextStyle(color: theme.primaryColorDark),
             ),
             dropdownOptions: DropdownOptions(
-              color: theme.colorScheme.tertiary,
+              color: dropdownBackground,
             ),
             dropdownTriangleOptions:
             const DropdownTriangleOptions(height: 5, width: 0),
@@ -79,11 +89,11 @@ class _DropDownFilterState extends State<DropDownFilter> {
               render: ResultRender.all,
               openBoxDecoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(6)),
-                color: Colors.transparent,
+                color: dropdownBackground,
                 border: Border.all(color: Colors.transparent),
               ),
               boxDecoration: BoxDecoration(
-                color: Colors.transparent,
+                color: dropdownBackground,
                 borderRadius: const BorderRadius.all(Radius.circular(6)),
                 border: Border.all(color: Colors.transparent),
               ),
@@ -96,18 +106,22 @@ class _DropDownFilterState extends State<DropDownFilter> {
             right: 0,
             child: IgnorePointer(
               child: Container(
-                color: theme.cardColor,
+                color: dropdownBackground,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       Thread.gethreadName(type: controller.threadType),
                       textAlign: TextAlign.center,
+                      style: titleStyle,
                     ),
                     const Gap(2),
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 4.0),
-                      child: Icon(Icons.arrow_drop_down),
+                      child: Icon(
+                        Icons.arrow_drop_down,
+                        color: foregroundColor,
+                      ),
                     ),
                   ],
                 ),

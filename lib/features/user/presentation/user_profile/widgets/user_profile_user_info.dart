@@ -19,7 +19,6 @@ class UserProfileUserInfo extends StatelessWidget {
           leading: const SizedBox.shrink(),
           leadingWidth: 0,
           floating: true,
-          backgroundColor: theme.colorScheme.tertiaryContainer,
           title: UserImageName(
             name: data.name,
             textStyle: theme.textTheme.bodyMedium,
