@@ -30,8 +30,11 @@ class _PostPollState extends State<PostPoll> {
     super.initState();
 
     if (widget.item.jsonMetadata!.contentType == ContentType.poll) {
-      String author = widget.item.author, permlink = widget.item.permlink;
-      context.read<PollController>().fetchPollData(author, permlink);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        String author = widget.item.author, permlink = widget.item.permlink;
+        context.read<PollController>().fetchPollData(author, permlink);
+      });
     }
   }
 
