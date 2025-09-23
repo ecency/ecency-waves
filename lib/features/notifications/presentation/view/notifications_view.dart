@@ -45,6 +45,9 @@ class _NotificationsViewState extends State<NotificationsView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(LocaleText.notifications),
+        actions: const [
+          _NotificationsFilterButton(),
+        ],
       ),
       body: SafeArea(
         child: Consumer<NotificationsController>(
@@ -70,14 +73,76 @@ class _NotificationsViewState extends State<NotificationsView> {
                   text: LocaleText.noNotificationsFound,
                 );
               case ViewState.data:
+                final notifications = controller.filteredNotifications;
+                if (notifications.isEmpty) {
+                  return RefreshIndicator(
+                    onRefresh: controller.refresh,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: kScreenPadding,
+                      children: [
+                        Emptystate(
+                          icon: Icons.notifications_none,
+                          text: LocaleText.noNotificationsFound,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final hasFilter = controller.activeFilter != null;
+                final filterLabel = hasFilter
+                    ? _formatFilterLabel(controller.activeFilter!)
+                    : null;
+
                 return RefreshIndicator(
                   onRefresh: controller.refresh,
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: kScreenPadding,
-                    itemCount: controller.notifications.length,
+                    itemCount:
+                        notifications.length + (hasFilter ? 1 : 0),
                     itemBuilder: (context, index) {
-                      final notification = controller.notifications[index];
+                      if (hasFilter) {
+                        if (index == 0) {
+                          final theme = Theme.of(context);
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    theme.colorScheme.primary.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.filter_list,
+                                    size: 18,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(filterLabel ?? ''),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        final notification = notifications[index - 1];
+                        return NotificationTile(
+                          notification: notification,
+                          onAvatarTap: () =>
+                              _onNotificationAvatarTap(notification),
+                          onTap: () => _onNotificationTap(notification),
+                        );
+                      }
+
+                      final notification = notifications[index];
                       return NotificationTile(
                         notification: notification,
                         onAvatarTap: () =>
@@ -212,4 +277,62 @@ class _NotificationsViewState extends State<NotificationsView> {
       SnackBar(content: Text(text)),
     );
   }
+}
+
+class _NotificationsFilterButton extends StatelessWidget {
+  const _NotificationsFilterButton();
+
+  static const String _allFilterValue = '__all_notifications__';
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<NotificationsController>(
+      builder: (context, controller, child) {
+        if (!controller.isLoggedIn) {
+          return const SizedBox.shrink();
+        }
+
+        final iconColor = controller.activeFilter == null
+            ? null
+            : Theme.of(context).colorScheme.primary;
+
+        return PopupMenuButton<String>(
+          icon: Icon(
+            Icons.filter_list,
+            color: iconColor,
+          ),
+          onSelected: (value) {
+            if (value == _allFilterValue) {
+              controller.setFilter(null);
+            } else {
+              controller.setFilter(value);
+            }
+          },
+          itemBuilder: (context) {
+            final filters = controller.availableFilters;
+            return <PopupMenuEntry<String>>[
+              CheckedPopupMenuItem<String>(
+                value: _allFilterValue,
+                checked: controller.activeFilter == null,
+                child: Text(LocaleText.threadTypeAll),
+              ),
+              ...filters.map(
+                (filter) => CheckedPopupMenuItem<String>(
+                  value: filter,
+                  checked: controller.activeFilter == filter,
+                  child: Text(_formatFilterLabel(filter)),
+                ),
+              ),
+            ];
+          },
+        );
+      },
+    );
+  }
+}
+
+String _formatFilterLabel(String value) {
+  if (value.isEmpty) return value;
+  final cleaned = value.replaceAll('_', ' ');
+  return cleaned[0].toUpperCase() + cleaned.substring(1);
 }

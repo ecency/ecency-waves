@@ -19,6 +19,7 @@ class NotificationsController extends ChangeNotifier {
 
   final NotificationsRepository _repository;
   final List<NotificationModel> _notifications = [];
+  String? _activeFilter;
 
   String? _userName;
   String? _authToken;
@@ -31,9 +32,43 @@ class NotificationsController extends ChangeNotifier {
 
   List<NotificationModel> get notifications => List.unmodifiable(_notifications);
 
+  List<NotificationModel> get filteredNotifications {
+    final filter = _activeFilter;
+    if (filter == null || filter.isEmpty) {
+      return notifications;
+    }
+    return _notifications
+        .where((item) => item.type.toLowerCase() == filter)
+        .toList(growable: false);
+  }
+
+  List<String> get availableFilters {
+    final types = <String>{};
+    for (final notification in _notifications) {
+      final type = notification.type.trim().toLowerCase();
+      if (type.isNotEmpty) {
+        types.add(type);
+      }
+    }
+    final list = types.toList(growable: false);
+    list.sort();
+    return list;
+  }
+
+  String? get activeFilter => _activeFilter;
+
   bool get isLoggedIn => _userName != null && _userName!.isNotEmpty;
 
   bool get hasLoaded => _hasLoaded;
+
+  void setFilter(String? type) {
+    final normalized = type?.trim().toLowerCase();
+    if (_activeFilter == normalized) {
+      return;
+    }
+    _activeFilter = normalized?.isEmpty ?? true ? null : normalized;
+    notifyListeners();
+  }
 
   void updateUser(UserAuthModel? user) {
     final newUserName = user?.accountName;
@@ -48,6 +83,7 @@ class NotificationsController extends ChangeNotifier {
       _isFetching = false;
       _loadingUnread = false;
       _notifications.clear();
+      _activeFilter = null;
       unreadCount = 0;
       errorMessage = null;
       _hasLoaded = false;
@@ -88,6 +124,12 @@ class NotificationsController extends ChangeNotifier {
         _notifications
           ..clear()
           ..addAll(response.data!);
+        if (_activeFilter != null &&
+            !_notifications.any(
+              (item) => item.type.toLowerCase() == _activeFilter,
+            )) {
+          _activeFilter = null;
+        }
         viewState = _notifications.isEmpty ? ViewState.empty : ViewState.data;
         errorMessage = null;
       } else {
@@ -166,6 +208,7 @@ class NotificationsController extends ChangeNotifier {
 
   void _resetState({bool preserveViewState = true}) {
     _notifications.clear();
+    _activeFilter = null;
     unreadCount = 0;
     errorMessage = null;
     _hasLoaded = false;
