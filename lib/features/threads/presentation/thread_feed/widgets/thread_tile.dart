@@ -17,12 +17,14 @@ class ThreadTile extends StatelessWidget {
   const ThreadTile(
       {this.hideCommentInfo = false,
       this.threadType = ThreadFeedType.ecency,
+      this.showVoteAndComment = true,
       super.key,
       required this.item});
 
   final ThreadFeedModel item;
   final bool hideCommentInfo;
   final ThreadFeedType threadType;
+  final bool showVoteAndComment;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +71,7 @@ class ThreadTile extends StatelessWidget {
                 InteractionTile(
                   item: item,
                   hideCommentInfo: hideCommentInfo,
+                  showVoteAndComment: showVoteAndComment,
                 )
               ],
             ),

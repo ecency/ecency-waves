@@ -96,6 +96,7 @@ class _WavesListViewState extends State<WavesListView> {
                         ThreadTile(
                           item: items[index],
                           threadType: controller.threadType,
+                          showVoteAndComment: false,
                         ),
                         if (index == items.length - 1)
                           PaginationLoader(

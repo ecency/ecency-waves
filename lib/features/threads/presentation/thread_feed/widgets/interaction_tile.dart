@@ -14,12 +14,14 @@ import 'package:waves/features/threads/presentation/thread_feed/widgets/vote_ico
 class InteractionTile extends StatelessWidget {
   const InteractionTile(
       {this.hideCommentInfo = false,
+      this.showVoteAndComment = true,
       super.key,
       required this.item,
       this.removeCommentGesture = false});
 
   final ThreadFeedModel item;
   final bool hideCommentInfo;
+  final bool showVoteAndComment;
   final bool removeCommentGesture;
 
   @override
@@ -34,43 +36,45 @@ class InteractionTile extends StatelessWidget {
     final iconColor = theme.primaryColorDark.withOpacity(0.8);
     const iconGap = 5.0;
     const borderRadius = BorderRadius.all(Radius.circular(40));
-    final rowChildren = <Widget>[
-      VoteIconButton(
-        item: item,
-        iconColor: iconColor,
-        iconGap: iconGap,
-        textStyle: style(theme),
-      ),
-    ];
+    final rowChildren = <Widget>[];
+
+    void addSpacer() {
+      if (rowChildren.isNotEmpty) {
+        rowChildren.add(gap());
+      }
+    }
+
+    if (showVoteAndComment) {
+      rowChildren.add(
+        VoteIconButton(
+          item: item,
+          iconColor: iconColor,
+          iconGap: iconGap,
+          textStyle: style(theme),
+        ),
+      );
+    }
 
     if (item.pendingPayoutValue != null) {
-      rowChildren
-        ..add(gap())
-        ..add(ThreadEarnings(
+      addSpacer();
+      rowChildren.add(
+        ThreadEarnings(
           pendingPayoutvalue: item.pendingPayoutValue,
           iconColor: iconColor,
           iconGap: iconGap,
           textStyle: style(theme),
-        ));
+        ),
+      );
     }
 
-    rowChildren
-      ..add(gap())
-      ..add(
+    if (showVoteAndComment && !hideCommentInfo) {
+      addSpacer();
+      rowChildren.add(
         IconWithText(
           onTap: () {
             if (!removeCommentGesture) {
               context.pushNamed(Routes.commentDetailView, extra: item);
             }
-            // if (context.read<UserController>().isUserLoggedIn) {
-            //   context.pushNamed(
-            //     Routes.addCommentView,
-            //     queryParameters: {
-            //       RouteKeys.accountName: item.author,
-            //       RouteKeys.permlink: item.permlink
-            //     },
-            //   );
-            // }
           },
           icon: Icons.comment,
           iconColor: iconColor,
@@ -79,34 +83,36 @@ class InteractionTile extends StatelessWidget {
           iconGap: iconGap,
           textStyle: style(theme),
         ),
-      )
-      ..add(gap())
-      ..add(
-        IconWithText(
-          onTap: () {
-            Share.share(
-                'https://ecency.com/${item.category}/@${item.author}/${item.permlink}');
-          },
-          borderRadius: borderRadius,
-          icon: Icons.share,
-          iconColor: iconColor,
-        ),
-      )
-      ..add(gap())
-      ..add(
-        BookmarkButton(
-            borderRadius: borderRadius,
-            iconColor: iconColor,
-            isBookmarked:
-                bookmarkProvider.isBookmarkPresent(item.idString),
-            onAdd: () {
-              bookmarkProvider.addBookmark(item.idString, item);
-            },
-            onRemove: () {
-              bookmarkProvider.removeBookmark(item.idString);
-            },
-            toastType: '${item.author}/${item.permlink}'),
       );
+    }
+
+    addSpacer();
+    rowChildren.add(
+      IconWithText(
+        onTap: () {
+          Share.share(
+              'https://ecency.com/${item.category}/@${item.author}/${item.permlink}');
+        },
+        borderRadius: borderRadius,
+        icon: Icons.share,
+        iconColor: iconColor,
+      ),
+    );
+
+    addSpacer();
+    rowChildren.add(
+      BookmarkButton(
+          borderRadius: borderRadius,
+          iconColor: iconColor,
+          isBookmarked: bookmarkProvider.isBookmarkPresent(item.idString),
+          onAdd: () {
+            bookmarkProvider.addBookmark(item.idString, item);
+          },
+          onRemove: () {
+            bookmarkProvider.removeBookmark(item.idString);
+          },
+          toastType: '${item.author}/${item.permlink}'),
+    );
 
     return Padding(
       padding: const EdgeInsets.only(right: 4),
