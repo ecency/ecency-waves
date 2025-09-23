@@ -1,5 +1,26 @@
 # Release Notes
 
+## 1.1.2
+
+### Added
+- Notifications center with filtering and read state management accessible from the drawer menu.
+- Universal search view for discovering accounts and tags powered by Hive API endpoints.
+- Ecency login and signing flows, including deep links and dedicated authentication screens.
+- Ecency Points tipping support with refreshed tipping dialogs and flows.
+- Language picker with localized strings for Russian, Chinese (Simplified), German, Spanish, French, Portuguese, and Hindi.
+- Sentry crash monitoring to capture runtime issues.
+
+### Improved
+- Authentication reliability with clearer method indicators, consistent transaction signing, and more robust status/token handling across providers.
+- Composer and reply experiences with better keyboard focus, attachment placement, layout spacing, and publishing feedback.
+- Voting and poll flows with remembered weights, integer enforcement, minimum-age gating, and deferred initialization for stability.
+- Platform integrations with updated app links, side-menu version details, custom device notices, and modernized Android/iOS build tooling.
+
+### Fixed
+- Notification titles, read-state syncing, and tipping feedback inconsistencies.
+- Occasional hangs from main-thread parsing, stored list desynchronization, and reply publishing state resets.
+- Comment signing regressions and parameter issues affecting transaction requests.
+
 ## 1.1.1
 
 ### Added
