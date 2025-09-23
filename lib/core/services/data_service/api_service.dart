@@ -388,7 +388,8 @@ class ApiService {
         return true;
       }).toList();
 
-      final list = ThreadFeedModel.parseThreads(_normalize(entries));
+      final normalizedEntries = _normalize(entries);
+      final list = await ThreadFeedModel.parseThreadsAsync(normalizedEntries);
       return ActionListDataResponse<ThreadFeedModel>(
         data: list,
         status: ResponseStatus.success,

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:equatable/equatable.dart';
 import 'package:waves/core/utilities/save_convert.dart';
 import 'package:waves/features/threads/models/post_detail/upvote_model.dart';
@@ -309,6 +311,21 @@ class ThreadFeedModel extends Equatable {
     }
   }
 
+  static Future<List<ThreadFeedModel>> parseThreadsAsync(List? data) async {
+    if (data == null) return [];
+    if (data.isEmpty || kIsWeb) {
+      return parseThreads(data);
+    }
+
+    try {
+      return await compute(_parseThreadModels, data);
+    } on UnsupportedError {
+      return parseThreads(data);
+    } catch (_) {
+      return parseThreads(data);
+    }
+  }
+
   String get idString => postId.toString();
 
   @override
@@ -324,4 +341,12 @@ class ThreadFeedModel extends Equatable {
         body,
         title
       ];
+  }
+
+List<ThreadFeedModel> _parseThreadModels(List<dynamic> data) {
+  return data
+      .map((entry) => ThreadFeedModel.fromJson(
+            Map<String, dynamic>.from(entry as Map),
+          ))
+      .toList();
 }
