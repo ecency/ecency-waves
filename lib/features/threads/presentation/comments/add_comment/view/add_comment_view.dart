@@ -147,6 +147,10 @@ class _AddCommentViewState extends State<AddCommentView> {
                                     color: theme.colorScheme.onSurface
                                         .withOpacity(0.6),
                                   ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 8,
+                          ),
                           isCollapsed: true,
                         ),
                       ),
