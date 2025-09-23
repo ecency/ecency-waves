@@ -17,7 +17,7 @@ class TagFeedView extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => WavesFeedController.tag(tag: tag, threadType: threadType),
       child: Builder(builder: (context) {
-        final controller = context.read<WavesFeedController>();
+        final controller = context.watch<WavesFeedController>();
         return Scaffold(
           appBar: AppBar(
             title: Row(
