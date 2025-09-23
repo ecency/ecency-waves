@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
+import 'package:waves/core/common/widgets/post_count_badge.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
@@ -28,7 +29,7 @@ class SearchView extends StatelessWidget {
                 bottom: TabBar(
                   tabs: [
                     Tab(text: LocaleText.users),
-                    Tab(text: LocaleText.hashtags),
+                    Tab(text: LocaleText.tags),
                   ],
                 ),
               ),
@@ -184,21 +185,13 @@ class _TagsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemBuilder: (context, index) {
         final tag = tags[index];
         return ListTile(
           title: Text('#${tag.name}'),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text('${tag.totalPosts}'),
-          ),
+          trailing: tag.totalPosts > 0 ? PostCountBadge(count: tag.totalPosts) : null,
           onTap: () {
             context.platformPushNamed(
               Routes.tagFeedView,

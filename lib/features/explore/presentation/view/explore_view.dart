@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
+import 'package:waves/core/common/widgets/post_count_badge.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
@@ -36,6 +37,8 @@ class ExploreView extends StatelessWidget {
                 ),
               ),
               body: SafeArea(
+                top: false,
+                bottom: false,
                 child: TabBarView(
                   children: [
                     _TagsTab(),
@@ -56,7 +59,7 @@ class _TagsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.read<ExploreController>();
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Selector<ExploreController, ViewState>(
         selector: (_, c) => c.tagsState,
         builder: (context, state, _) {
@@ -70,7 +73,7 @@ class _TagsTab extends StatelessWidget {
                 final tag = tags[index];
                 return ListTile(
                   title: Text('#${tag.tag}'),
-                  trailing: _PostsBadge(count: tag.posts),
+                  trailing: PostCountBadge(count: tag.posts),
                   onTap: () {
                     context.platformPushNamed(
                       Routes.tagFeedView,
@@ -98,7 +101,7 @@ class _UsersTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.read<ExploreController>();
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Selector<ExploreController, ViewState>(
         selector: (_, c) => c.authorsState,
         builder: (context, state, _) {
@@ -115,7 +118,7 @@ class _UsersTab extends StatelessWidget {
                     url: a.author,
                   ),
                   title: Text(a.author),
-                  trailing: _PostsBadge(count: a.posts),
+                  trailing: PostCountBadge(count: a.posts),
                   onTap: () {
                     context.platformPushNamed(
                       Routes.userProfileView,
@@ -138,24 +141,3 @@ class _UsersTab extends StatelessWidget {
   }
 }
 
-class _PostsBadge extends StatelessWidget {
-  const _PostsBadge({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        '$count',
-        style: theme.textTheme.bodySmall,
-      ),
-    );
-  }
-}
