@@ -231,17 +231,14 @@ class _AddCommentViewState extends State<AddCommentView> {
         padding: EdgeInsets.only(
           bottom: keyboardViewInsets + keyboardActionsPadding,
         ),
-        child: SafeArea(
-          top: false,
-          child: AddCommentBottomActionBar(
-              key: _bottomActionBarKey,
-              commentTextEditingController: commentTextEditingController,
-              isRoot: isRoot,
-              authorParam: widget.author,
-              permlinkParam: widget.permlink,
-              depthParam: widget.depth,
-              rootThreadInfo: _rootThreadInfo),
-        ),
+        child: AddCommentBottomActionBar(
+            key: _bottomActionBarKey,
+            commentTextEditingController: commentTextEditingController,
+            isRoot: isRoot,
+            authorParam: widget.author,
+            permlinkParam: widget.permlink,
+            depthParam: widget.depth,
+            rootThreadInfo: _rootThreadInfo),
       ),
     );
   }

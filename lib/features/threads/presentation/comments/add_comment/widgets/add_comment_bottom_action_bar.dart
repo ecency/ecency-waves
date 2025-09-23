@@ -78,43 +78,46 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return ColoredBox(
       color: theme.colorScheme.tertiaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: kScreenHorizontalPaddingDigit, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (images.isNotEmpty) imagePreviewWidget(),
-            Row(
-              children: [
-                Row(
-                  children: [
-                    FloatingActionButton(
-                      heroTag: "gallery",
-                      onPressed: _isPublishing
-                          ? null
-                          : () => pickImageAndUpload(
-                              ImageSource.gallery, context),
-                      child: const Icon(Icons.image),
-                    ),
-                    const Gap(10),
-                    FloatingActionButton(
-                      heroTag: "camera",
-                      onPressed: _isPublishing
-                          ? null
-                          : () => pickImageAndUpload(
-                              ImageSource.camera, context),
-                      child: const Icon(Icons.camera),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                if (!widget.isRoot) _publishButton(),
-              ],
-            ),
-          ],
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: kScreenHorizontalPaddingDigit, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (images.isNotEmpty) imagePreviewWidget(),
+              Row(
+                children: [
+                  Row(
+                    children: [
+                      FloatingActionButton(
+                        heroTag: "gallery",
+                        onPressed: _isPublishing
+                            ? null
+                            : () => pickImageAndUpload(
+                                ImageSource.gallery, context),
+                        child: const Icon(Icons.image),
+                      ),
+                      const Gap(10),
+                      FloatingActionButton(
+                        heroTag: "camera",
+                        onPressed: _isPublishing
+                            ? null
+                            : () => pickImageAndUpload(
+                                ImageSource.camera, context),
+                        child: const Icon(Icons.camera),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  if (!widget.isRoot) _publishButton(),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
