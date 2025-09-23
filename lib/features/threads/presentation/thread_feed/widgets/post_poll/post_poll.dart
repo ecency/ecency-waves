@@ -55,7 +55,7 @@ class _PostPollState extends State<PostPoll> {
         (userProfileController) => userProfileController.accountAgeDays);
     int minAgeDays = meta?.filters?.accountAge ?? 0;
     bool hasEnded = poll?.endTime.isBefore(DateTime.now()) ?? false;
-    bool votingProhibited = hasEnded || minAgeDays >= accountAgeDays;
+    bool votingProhibited = hasEnded || accountAgeDays < minAgeDays;
 
     //check if user already voted
     List<int> userVotedIds = poll?.userVotedIds(username) ?? [];
