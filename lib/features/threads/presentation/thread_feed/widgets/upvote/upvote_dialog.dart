@@ -705,8 +705,9 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       UserAuthModel userData, BuildContext context) async {
     widget.rootContext.showLoader();
     try {
+      final voteWeight = _voteWeightInHiveUnits();
       await SignTransactionPostingKeyController().initVoteProcess(
-        weight * 10000,
+        voteWeight,
         author: widget.author,
         permlink: widget.permlink,
         authdata: userData as UserAuthModel<PostingAuthModel>,
@@ -725,8 +726,9 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       UserAuthModel userData, BuildContext context) async {
     widget.rootContext.showLoader();
     try {
+      final voteWeight = _voteWeightInHiveUnits();
       await SignTransactionHiveSignerController().initVoteProcess(
-        weight * 10000,
+        voteWeight,
         author: widget.author,
         permlink: widget.permlink,
         authdata: userData as UserAuthModel<HiveSignerAuthModel>,
@@ -759,7 +761,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
             transactionType: SignTransactionType.vote,
             author: widget.author,
             permlink: widget.permlink,
-            weight: weight * 10000,
+            weight: _voteWeightInHiveUnits(),
             ishiveKeyChainMethod: authType == AuthType.hiveKeyChain);
     context
         .pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
@@ -772,7 +774,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
   ActiveVoteModel generateVoteModel(BuildContext context) {
     return ActiveVoteModel(
-        weight: (weight * 10000).toInt(),
+        weight: _voteWeightInHiveUnits(),
         voter: context.read<UserController>().userName!);
   }
 
@@ -821,11 +823,18 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   }
 
   double _normalizeWeight(double value) {
-    if (value.isNaN) {
+    if (value.isNaN || value.isInfinite) {
       return _defaultWeight;
     }
     final num normalized = value.clamp(_defaultWeight, 1.0);
     return normalized.toDouble();
+  }
+
+  int _voteWeightInHiveUnits() {
+    final double normalized = _normalizeWeight(weight);
+    final int scaled = (normalized * 10000).round();
+    final num clamped = scaled.clamp(0, 10000);
+    return clamped.toInt();
   }
 
   String _storageKey(String userName) {

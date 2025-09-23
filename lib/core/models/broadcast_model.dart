@@ -30,7 +30,7 @@ class VoteBroadCastModel {
   final String voter;
   final String author;
   final String permlink;
-  final double weight;
+  final int weight;
 
   const VoteBroadCastModel(
       {required this.voter,

@@ -58,13 +58,14 @@ class SignTransactionHiveSignerController {
   }
 
   Future<void> initVoteProcess(
-    double weight, {
+    int weight, {
     required String author,
     required String permlink,
     required UserAuthModel<HiveSignerAuthModel> authdata,
     required VoidCallback onSuccess,
     required Function(String) showToast,
   }) async {
+    final int sanitizedWeight = weight.clamp(-10000, 10000).toInt();
     ActionSingleDataResponse response = await _threadRepository
         .broadcastTransactionUsingHiveSigner<VoteBroadCastModel>(
       authdata.auth.token,
@@ -74,7 +75,7 @@ class SignTransactionHiveSignerController {
               voter: authdata.accountName,
               author: author,
               permlink: permlink,
-              weight: weight)),
+              weight: sanitizedWeight)),
     );
     if (response.isSuccess) {
       showToast(LocaleText.smVoteSuccessMessage);

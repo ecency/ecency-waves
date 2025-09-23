@@ -20,7 +20,7 @@ class SignTransactionHiveController extends HiveTransactionController {
   final UserAuthModel<HiveAuthModel> authData;
   final String? comment;
   final List<String>? imageLinks;
-  final double? weight;
+  final int? weight;
   final double? amount;
   final String? assetSymbol;
   final String? memo;
@@ -159,11 +159,13 @@ class SignTransactionHiveController extends HiveTransactionController {
             authData.auth.authKey,
             authData.auth.token);
       case SignTransactionType.vote:
+        final int sanitizedWeight =
+            weight!.clamp(-10000, 10000).toInt();
         return _threadRepository.votecontent(
           authData.accountName,
           author,
           permlink!,
-          weight!,
+          sanitizedWeight,
           null,
           authData.auth.authKey,
           authData.auth.token,

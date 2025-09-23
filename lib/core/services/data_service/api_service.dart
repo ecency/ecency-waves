@@ -604,7 +604,7 @@ class ApiService {
       String username,
       String author,
       String permlink,
-      double weight,
+      int weight,
       String? postingKey,
       String? authKey,
       String? token,

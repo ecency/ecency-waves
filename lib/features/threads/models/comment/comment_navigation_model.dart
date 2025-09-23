@@ -7,7 +7,7 @@ class SignTransactionNavigationModel {
   final List<String>? imageLinks;
   final String? pollId;
   final List<int>? choices;
-  final double? weight;
+  final int? weight;
   final double? amount;
   final String? assetSymbol;
   final String? memo;

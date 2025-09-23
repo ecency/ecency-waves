@@ -57,16 +57,17 @@ class SignTransactionPostingKeyController {
   }
 
   Future<void> initVoteProcess(
-    double weight, {
+    int weight, {
     required String author,
     required String permlink,
     required UserAuthModel<PostingAuthModel> authdata,
     required VoidCallback onSuccess,
     required Function(String) showToast,
   }) async {
+    final int sanitizedWeight = weight.clamp(-10000, 10000).toInt();
     ActionSingleDataResponse<String> commentResponse =
         await _threadRepository.votecontent(authdata.accountName, author,
-            permlink, weight, authdata.auth.postingKey, null, null);
+            permlink, sanitizedWeight, authdata.auth.postingKey, null, null);
     if (commentResponse.isSuccess) {
       showToast(LocaleText.smVoteSuccessMessage);
       onSuccess();
