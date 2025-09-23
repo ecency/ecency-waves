@@ -29,7 +29,8 @@ class NotificationTile extends StatelessWidget {
         ? theme.textTheme.bodyMedium
         : theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600);
 
-    final subtitle = _buildSubtitle();
+    final title = _buildTitle();
+    final subtitle = _buildSubtitle(title);
 
     return InkWellWrapper(
       onTap: onTap,
@@ -55,7 +56,7 @@ class NotificationTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _buildTitle(),
+                    title,
                     style: titleStyle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -93,8 +94,11 @@ class NotificationTile extends StatelessWidget {
       case 'follow':
         return LocaleText.notificationsFollowedYou(actorHandle);
       case 'mention':
-        return notification.title ??
-            LocaleText.notificationsMentionedYou(actorHandle);
+        final mentionContext = _buildMentionContext();
+        if (mentionContext != null && mentionContext.isNotEmpty) {
+          return '$actorHandle mentioned you in $mentionContext';
+        }
+        return LocaleText.notificationsMentionedYou(actorHandle);
       case 'reply':
         return LocaleText.notificationsRepliedToYou(actorHandle);
       case 'delegations':
@@ -142,20 +146,76 @@ class NotificationTile extends StatelessWidget {
     }
   }
 
-  String? _buildSubtitle() {
+  String? _buildMentionContext() {
+    final commentLink = _buildCommentLink();
+
+    if (notification.isPost) {
+      final title = notification.title;
+      if (title != null && title.isNotEmpty) {
+        return title;
+      }
+      if (commentLink != null && commentLink.isNotEmpty) {
+        return commentLink;
+      }
+      final parentTitle = notification.parentTitle;
+      if (parentTitle != null && parentTitle.isNotEmpty) {
+        return parentTitle;
+      }
+    } else {
+      if (commentLink != null && commentLink.isNotEmpty) {
+        return commentLink;
+      }
+      final parentTitle = notification.parentTitle;
+      if (parentTitle != null && parentTitle.isNotEmpty) {
+        return parentTitle;
+      }
+      final title = notification.title;
+      if (title != null && title.isNotEmpty) {
+        return title;
+      }
+    }
+
+    final permlink = notification.permlink;
+    if (permlink != null && permlink.isNotEmpty) {
+      return permlink;
+    }
+
+    return commentLink;
+  }
+
+  String? _buildCommentLink() {
+    final author = notification.contentAuthor;
+    final permlink = notification.permlink;
+    if (author == null || author.isEmpty || permlink == null || permlink.isEmpty) {
+      return null;
+    }
+
+    final sanitizedAuthor = author.startsWith('@') ? author.substring(1) : author;
+    return '@$sanitizedAuthor/$permlink';
+  }
+
+  String? _buildSubtitle(String title) {
     switch (notification.type) {
       case 'follow':
         return null;
       case 'mention':
-        final title = notification.title;
-        if (title != null && title.isNotEmpty) {
-          return title;
+        final body = notification.body;
+        if (body != null && body.isNotEmpty) {
+          return body;
         }
-        return LocaleText.notificationsMentionedYou(
-          notification.actorHandle.isNotEmpty
-              ? notification.actorHandle
-              : _fallbackActor,
-        );
+        final mentionParentTitle = notification.parentTitle;
+        if (mentionParentTitle != null &&
+            mentionParentTitle.isNotEmpty &&
+            mentionParentTitle != title) {
+          return mentionParentTitle;
+        }
+        final notificationTitle = notification.title;
+        if (notificationTitle != null &&
+            notificationTitle.isNotEmpty &&
+            notificationTitle != title) {
+          return notificationTitle;
+        }
+        return null;
       case 'reply':
         if (notification.body != null) {
           return notification.body;
@@ -170,7 +230,11 @@ class NotificationTile extends StatelessWidget {
               : _fallbackActor,
         );
       case 'delegations':
-        return notification.memo ?? notification.amount;
+        final memo = notification.memo;
+        if (memo != null && memo.isNotEmpty) {
+          return memo;
+        }
+        return null;
       case 'transfer':
         final parts = <String>[];
         final amount = notification.amount;

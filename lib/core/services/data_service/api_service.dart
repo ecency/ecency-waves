@@ -1121,7 +1121,7 @@ class ApiService {
 
     try {
       final response = await http
-          .put(url, headers: headers, body: json.encode(body))
+          .post(url, headers: headers, body: json.encode(body))
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode >= 200 && response.statusCode < 300) {

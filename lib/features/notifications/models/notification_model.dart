@@ -103,6 +103,26 @@ class NotificationModel {
     return _parseString(payload['img_url']);
   }
 
+  bool get isPost {
+    final value = payload['post'];
+    if (value is bool) {
+      return value;
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0') {
+        return false;
+      }
+    }
+    return false;
+  }
+
   String? get permlink {
     return _parseString(payload['permlink']);
   }
