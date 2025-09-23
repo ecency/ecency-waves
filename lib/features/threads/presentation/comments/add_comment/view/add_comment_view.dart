@@ -34,6 +34,7 @@ class AddCommentView extends StatefulWidget {
 
 class _AddCommentViewState extends State<AddCommentView> {
   static const int _maxCommentLength = 250;
+  static const double _keyboardActionsBarHeight = 45;
 
   final TextEditingController commentTextEditingController =
       TextEditingController();
@@ -123,7 +124,11 @@ class _AddCommentViewState extends State<AddCommentView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final keyboardViewInsets = MediaQuery.viewInsetsOf(context).bottom;
+    final keyboardActionsPadding =
+        keyboardViewInsets > 0 ? _keyboardActionsBarHeight : 0;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: _appBar(theme),
       body: KeyboardActions(
         disableScroll: true,
@@ -224,7 +229,7 @@ class _AddCommentViewState extends State<AddCommentView> {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
+          bottom: keyboardViewInsets + keyboardActionsPadding,
         ),
         child: SafeArea(
           top: false,
