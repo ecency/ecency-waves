@@ -1,5 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:characters/characters.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
@@ -31,6 +33,8 @@ class AddCommentView extends StatefulWidget {
 }
 
 class _AddCommentViewState extends State<AddCommentView> {
+  static const int _maxCommentLength = 250;
+
   final TextEditingController commentTextEditingController =
       TextEditingController();
   late final bool isRoot;
@@ -68,6 +72,8 @@ class _AddCommentViewState extends State<AddCommentView> {
 
   @override
   void initState() {
+    super.initState();
+
     if (widget.author == null && widget.permlink == null) {
       isRoot = true;
       final controller = context.read<ThreadFeedController>();
@@ -84,7 +90,12 @@ class _AddCommentViewState extends State<AddCommentView> {
     } else {
       isRoot = false;
     }
-    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        FocusScope.of(context).requestFocus(_nodeText);
+      }
+    });
   }
 
   Future<void> _loadRootThreadInfo(ThreadFeedType type) async {
@@ -103,11 +114,19 @@ class _AddCommentViewState extends State<AddCommentView> {
   }
 
   @override
+  void dispose() {
+    commentTextEditingController.dispose();
+    _nodeText.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: _appBar(theme),
       body: KeyboardActions(
+        disableScroll: true,
         config: _buildConfig(context),
         child: SafeArea(
           child: Padding(
@@ -115,62 +134,109 @@ class _AddCommentViewState extends State<AddCommentView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
+                Flexible(
+                  fit: FlexFit.loose,
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () =>
                         FocusScope.of(context).requestFocus(_nodeText),
-                    child: Container(
-                      constraints: const BoxConstraints(minHeight: 160),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(Radius.circular(12)),
-                        border: Border.all(
-                          color: theme.dividerColor.withOpacity(0.4),
-                        ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: 120,
+                        maxHeight: 220,
                       ),
-                      child: TextField(
-                        keyboardType: TextInputType.multiline,
-                        controller: commentTextEditingController,
-                        focusNode: _nodeText,
-                        textInputAction: TextInputAction.newline,
-                        expands: true,
-                        minLines: null,
-                        maxLines: null,
-                        textAlignVertical: TextAlignVertical.top,
-                        decoration: InputDecoration(
-                          hintText: hintText,
-                          border: InputBorder.none,
-                          hintStyle:
-                              theme.inputDecorationTheme.hintStyle ??
-                                  TextStyle(
-                                    color: theme.colorScheme.onSurface
-                                        .withOpacity(0.6),
-                                  ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
+                          border: Border.all(
+                            color: theme.dividerColor.withOpacity(0.4),
                           ),
-                          isCollapsed: true,
+                        ),
+                        child: TextField(
+                          keyboardType: TextInputType.multiline,
+                          controller: commentTextEditingController,
+                          focusNode: _nodeText,
+                          textInputAction: TextInputAction.newline,
+                          autofocus: true,
+                          minLines: 3,
+                          maxLines: 8,
+                          maxLength: _maxCommentLength,
+                          maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                          buildCounter: (
+                            _, {
+                            required int currentLength,
+                            required bool isFocused,
+                            int? maxLength,
+                          }) =>
+                              const SizedBox.shrink(),
+                          textAlignVertical: TextAlignVertical.top,
+                          decoration: InputDecoration(
+                            hintText: hintText,
+                            border: InputBorder.none,
+                            hintStyle:
+                                theme.inputDecorationTheme.hintStyle ??
+                                    TextStyle(
+                                      color: theme.colorScheme.onSurface
+                                          .withOpacity(0.6),
+                                    ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 8,
+                            ),
+                            isCollapsed: true,
+                          ),
                         ),
                       ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 8),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: commentTextEditingController,
+                  builder: (context, value, _) {
+                    final currentLength = value.text.characters.length;
+                    final isLimitReached = currentLength >= _maxCommentLength;
+                    final counterColor = isLimitReached
+                        ? theme.colorScheme.error
+                        : theme.textTheme.bodySmall?.color ??
+                            theme.colorScheme.onSurface.withOpacity(0.6);
+
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '$currentLength/$_maxCommentLength',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                              color: counterColor,
+                            ) ??
+                            TextStyle(color: counterColor),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: AddCommentBottomActionBar(
-            key: _bottomActionBarKey,
-            commentTextEditingController: commentTextEditingController,
-            isRoot: isRoot,
-            authorParam: widget.author,
-            permlinkParam: widget.permlink,
-            depthParam: widget.depth,
-            rootThreadInfo: _rootThreadInfo),
+      bottomNavigationBar: AnimatedPadding(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SafeArea(
+          top: false,
+          child: AddCommentBottomActionBar(
+              key: _bottomActionBarKey,
+              commentTextEditingController: commentTextEditingController,
+              isRoot: isRoot,
+              authorParam: widget.author,
+              permlinkParam: widget.permlink,
+              depthParam: widget.depth,
+              rootThreadInfo: _rootThreadInfo),
+        ),
       ),
     );
   }
