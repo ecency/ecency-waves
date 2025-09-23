@@ -49,11 +49,39 @@ class UserController extends ChangeNotifier {
   }
 
   Future<void> logOutUser() async {
-    await Future.wait([
-      _localRepository.logOut(),
-      MultiAccountProvider().onRemove(userData!.accountName)
-    ]);
-    _userSteamController.add(null);
+    if (userData == null) {
+      return;
+    }
+
+    final String currentAccountName = userData!.accountName;
+    final List<UserAuthModel> allAccounts =
+        await _localRepository.readAllUserAccounts(
+            currentUserName: currentAccountName);
+
+    final List<UserAuthModel> remainingAccounts =
+        List<UserAuthModel>.from(allAccounts)
+          ..removeWhere((element) => element.accountName == currentAccountName);
+
+    if (remainingAccounts.isEmpty) {
+      await Future.wait([
+        _localRepository.logOut(),
+        MultiAccountProvider()
+            .onRemove(currentAccountName, allAccounts: allAccounts)
+      ]);
+      userData = null;
+      _userSteamController.add(null);
+      notifyListeners();
+      return;
+    }
+
+    await MultiAccountProvider()
+        .onRemove(currentAccountName, allAccounts: allAccounts);
+
+    final UserAuthModel nextAccount = remainingAccounts.first;
+    await _localRepository.writeCurrentUser(nextAccount);
+    userData = nextAccount;
+    _userSteamController.add(nextAccount);
+    notifyListeners();
   }
 
   bool getTermsAcceptedFlag() {
