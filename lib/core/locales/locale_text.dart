@@ -13,6 +13,23 @@ class LocaleText {
   static String get login => "login".tr();
   static String get bookmarks => "bookmarks".tr();
   static String get notifications => "notifications".tr();
+  static String get report => "report".tr();
+  static String get copyContent => "copy_content".tr();
+  static String get contentCopied => "content_copied".tr();
+  static String get translate => "translate".tr();
+  static String get autoDetectLanguage => "auto_detect_language".tr();
+  static String get sourceLanguage => "source_language".tr();
+  static String get targetLanguage => "target_language".tr();
+  static String get originalText => "original_text".tr();
+  static String get translatedText => "translated_text".tr();
+  static String get translationUnavailable => "translation_unavailable".tr();
+  static String get translationError => "translation_error".tr();
+  static String detectedLanguage(String language, String confidence) =>
+      "detected_language".tr(args: [language, confidence]);
+  static String get reportSuccess => "report_success".tr();
+  static String get reportFailed => "report_failed".tr();
+  static String get reportContentConfirmation =>
+      "report_content_confirmation".tr();
   static String get myWaves => "my_waves".tr();
   static String get explore => "explore".tr();
   static String get darkMode => "dark_mode".tr();
