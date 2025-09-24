@@ -95,25 +95,37 @@ class ThreadFeedController extends ChangeNotifier
           return;
         }
 
+        // Ensure the current index is always pointing to a valid entry.
+        currentPage = 0;
+        final current = _threadInfoAt(currentPage);
+        if (current == null) {
+          if (items.isEmpty) viewState = ViewState.empty;
+          notifyListeners();
+          return;
+        }
+
         // fetch discussion for first root
         ActionListDataResponse<ThreadFeedModel> response =
         await _repository.getcomments(
-          pages[0].author,
-          pages[0].permlink,
+          current.author,
+          current.permlink,
           observer,
         );
 
         // fallback to second root once if needed
         if ((!response.isSuccess) || response.data == null || response.data!.isEmpty) {
           if (pages.length > 1) {
-            final alt = await _repository.getcomments(
-              pages[1].author,
-              pages[1].permlink,
-              observer,
-            );
+            final altHost = _threadInfoAt(1);
+            if (altHost != null) {
+              final alt = await _repository.getcomments(
+                altHost.author,
+                altHost.permlink,
+                observer,
+              );
             if (alt.isSuccess && alt.data != null && alt.data!.isNotEmpty) {
               response = alt;
               currentPage = 1;
+              }
             }
           }
         }
@@ -121,11 +133,16 @@ class ThreadFeedController extends ChangeNotifier
         if (response.isSuccess && response.data != null) {
           if (type == threadType) {
             final raw = response.data!;
-            debugPrint('[threads] discussion raw=${raw.length} root=${pages[currentPage].permlink}');
+            final host = _threadInfoAt(currentPage);
+            if (host == null) {
+              debugPrint('[threads] discussion skipped: invalid host index=$currentPage pages=${pages.length}');
+              return;
+            }
+            debugPrint('[threads] discussion raw=${raw.length} root=${host.permlink}');
 
             // top-level filter
             List<ThreadFeedModel> viewItems = filterTopLevelComments(
-              pages[currentPage].permlink,
+              host.permlink,
               items: raw,
             );
             debugPrint('[threads] topLevel after filter=${viewItems.length}');
@@ -295,18 +312,25 @@ class ThreadFeedController extends ChangeNotifier
     if (!super.isNextPageLoading && isDataDisplayedFromServer) {
       super.isNextPageLoading = true;
       currentPage++;
-      if (!super.isPageEnded && currentPage < pages.length) {
-        notifyListeners();
+        if (!super.isPageEnded && currentPage < pages.length) {
+          notifyListeners();
 
-        final response = await _repository.getcomments(
-          pages[currentPage].author,
-          pages[currentPage].permlink,
-          observer,
-        );
+          final host = _threadInfoAt(currentPage);
+          if (host == null) {
+            super.isNextPageLoading = false;
+            notifyListeners();
+            return;
+          }
 
-        if (response.isSuccess && response.data != null && type == threadType) {
-          final raw = response.data!;
-          var newItems = filterTopLevelComments(pages[currentPage].permlink, items: raw);
+          final response = await _repository.getcomments(
+            host.author,
+            host.permlink,
+            observer,
+          );
+
+          if (response.isSuccess && response.data != null && type == threadType) {
+            final raw = response.data!;
+            var newItems = filterTopLevelComments(host.permlink, items: raw);
           if (newItems.isEmpty && raw.isNotEmpty) {
             newItems = raw;
           }
@@ -377,6 +401,11 @@ class ThreadFeedController extends ChangeNotifier
     pages = [];
     items = [];
     newFeeds = [];
+  }
+
+  ThreadInfo? _threadInfoAt(int index) {
+    if (index < 0 || index >= pages.length) return null;
+    return pages[index];
   }
 
   String _getThreadAccountName({ThreadFeedType? type}) {
