@@ -122,7 +122,14 @@ class ActionSingleDataResponse<T> {
     } else if (!ignoreFromJson) {
       return null;
     } else {
-      return json['data'];
+      final dynamic raw = json['data'];
+      if (raw == null) {
+        return null;
+      }
+      if (raw is String) {
+        return raw as T;
+      }
+      return jsonEncode(raw) as T;
     }
   }
 }
