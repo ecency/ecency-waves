@@ -33,7 +33,8 @@ class AddCommentBottomActionBar extends StatefulWidget {
       required this.authorParam,
       required this.permlinkParam,
       required this.depthParam,
-      this.rootThreadInfo});
+      this.rootThreadInfo,
+      this.editingThread});
 
   final TextEditingController commentTextEditingController;
   final bool isRoot;
@@ -43,6 +44,7 @@ class AddCommentBottomActionBar extends StatefulWidget {
   // When creating a root post we might target a specific container host.
   // [rootThreadInfo] provides the author/permlink pair for that host.
   final ThreadInfo? rootThreadInfo;
+  final ThreadFeedModel? editingThread;
 
   @override
   State<AddCommentBottomActionBar> createState() =>
@@ -56,6 +58,26 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
 
   late ThemeData theme;
   bool _isPublishing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final existingImages = _initialImageLinks();
+    if (existingImages.isEmpty) {
+      return;
+    }
+    uploadedImageLinks = [...existingImages];
+    for (final link in existingImages) {
+      images.add(
+        ImageUploadModel(
+          id: imageUploadId,
+          imageLink: link,
+          uploadingImage: false,
+        ),
+      );
+      imageUploadId++;
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -129,7 +151,9 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
     }
     FocusScope.of(context).unfocus();
     final userData = context.read<UserController>().userData!;
-    _onPublish(userData);
+    final comment = widget.commentTextEditingController.text.trim();
+    _onPublish(userData, comment,
+        existingPermlink: widget.editingThread?.permlink);
   }
 
   FloatingActionButton _publishButton() {
@@ -141,31 +165,35 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
               width: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : const Icon(Icons.reply),
+          : Icon(widget.editingThread != null ? Icons.check : Icons.reply),
     );
   }
 
-  void _onPublish(UserAuthModel<dynamic> userData) {
-    String comment = widget.commentTextEditingController.text.trim();
+  void _onPublish(UserAuthModel<dynamic> userData, String comment,
+      {String? existingPermlink}) {
     if (comment.isEmpty) {
       context.showSnackBar(LocaleText.replyCannotBeEmpty);
     } else if (widget.isRoot &&
+        widget.editingThread == null &&
         widget.rootThreadInfo == null &&
         context.read<ThreadFeedController>().rootThreadInfo == null) {
       // Unable to determine which container to post to
       context.pop();
     } else if (userData.isPostingKeyLogin) {
       _setPublishing(true);
-      _postingKeyCommentTransaction(comment, userData, context);
+      _postingKeyCommentTransaction(comment, userData, context,
+          existingPermlink: existingPermlink);
     } else if (userData.isHiveSignerLogin) {
       _setPublishing(true);
-      _hiveSignerCommentTransaction(comment, userData, context);
+      _hiveSignerCommentTransaction(comment, userData, context,
+          existingPermlink: existingPermlink);
     } else if (userData.isHiveKeychainLogin) {
       _onTransactionDecision(
         comment,
         AuthType.hiveKeyChain,
         context,
         userData,
+        existingPermlink: existingPermlink,
       );
     } else if (userData.isHiveAuthLogin) {
       _onTransactionDecision(
@@ -173,9 +201,11 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         AuthType.hiveAuth,
         context,
         userData,
+        existingPermlink: existingPermlink,
       );
     } else {
-      _dialogForHiveTransaction(context, comment, userData);
+      _dialogForHiveTransaction(context, comment, userData,
+          existingPermlink: existingPermlink);
     }
   }
 
@@ -319,12 +349,16 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
   }
 
   void _postingKeyCommentTransaction(String comment,
-      UserAuthModel<dynamic> userData, BuildContext context) async {
+      UserAuthModel<dynamic> userData, BuildContext context,
+      {String? existingPermlink}) async {
     context.showLoader();
+    final ThreadInfo info = threadInfo(context);
     await SignTransactionPostingKeyController().initCommentProcess(comment,
         imageLinks: uploadedImageLinks,
-        author: author(context),
-        parentPermlink: permlink(context),
+        author: info.author,
+        parentPermlink: info.permlink,
+        baseTags: _editingBaseTags(),
+        existingPermlink: existingPermlink,
         authData: userData as UserAuthModel<PostingAuthModel>,
         onSuccess: (generatedPermlink) {
           if (!mounted) {
@@ -333,7 +367,8 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
           context.hideLoader();
           _setPublishing(false);
           context.pop(
-              generateCommentModel(generatedPermlink, userData.accountName));
+              generateCommentModel(
+                  existingPermlink ?? generatedPermlink, userData.accountName));
         },
         onFailure: () {
           if (!mounted) {
@@ -346,12 +381,18 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
   }
 
   void _hiveSignerCommentTransaction(String comment,
-      UserAuthModel<dynamic> userData, BuildContext context) async {
+      UserAuthModel<dynamic> userData, BuildContext context,
+      {String? existingPermlink}) async {
     context.showLoader();
+    final ThreadInfo info = threadInfo(context);
     await SignTransactionHiveSignerController().initCommentProcess(comment,
         imageLinks: uploadedImageLinks,
-        parentAuthor: author(context),
-        parentPermlink: permlink(context),
+        parentAuthor: info.author,
+        parentPermlink: info.permlink,
+        baseTags: _editingBaseTags(),
+        metadataApp: _editingMetadataApp(),
+        metadataFormat: _editingMetadataFormat(),
+        existingPermlink: existingPermlink,
         authData: userData as UserAuthModel<HiveSignerAuthModel>,
         onSuccess: (generatedPermlink) {
           if (!mounted) {
@@ -360,7 +401,8 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
           context.hideLoader();
           _setPublishing(false);
           context.pop(
-              generateCommentModel(generatedPermlink, userData.accountName));
+              generateCommentModel(
+                  existingPermlink ?? generatedPermlink, userData.accountName));
         },
         onFailure: () {
           if (!mounted) {
@@ -372,29 +414,38 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         showToast: (message) => context.showSnackBar(message));
   }
 
-  Future<dynamic> _dialogForHiveTransaction(
-      BuildContext context, String comment, UserAuthModel userData) {
+  Future<dynamic> _dialogForHiveTransaction(BuildContext context,
+      String comment, UserAuthModel userData,
+      {String? existingPermlink}) {
     return showDialog(
       useRootNavigator: true,
       context: context,
       builder: (_) => TransactionDecisionDialog(
         onContinue: (authType) {
-          _onTransactionDecision(comment, authType, context, userData);
+          _onTransactionDecision(comment, authType, context, userData,
+              existingPermlink: existingPermlink);
         },
       ),
     );
   }
 
   void _onTransactionDecision(String comment, AuthType authType,
-      BuildContext context, UserAuthModel userData) async {
+      BuildContext context, UserAuthModel userData,
+      {String? existingPermlink}) async {
     _setPublishing(true);
+    final ThreadInfo info = threadInfo(context);
     SignTransactionNavigationModel navigationData =
         SignTransactionNavigationModel(
             transactionType: SignTransactionType.comment,
-            author: author(context),
-            permlink: permlink(context),
+            author: info.author,
+            permlink: info.permlink,
             comment: comment,
             imageLinks: uploadedImageLinks,
+            baseTags: _editingBaseTags(),
+            metadataApp: _editingMetadataApp(),
+            metadataFormat: _editingMetadataFormat(),
+            existingPermlink:
+                existingPermlink ?? widget.editingThread?.permlink,
             ishiveKeyChainMethod: authType == AuthType.hiveKeyChain);
     context
         .pushNamed(Routes.hiveSignTransactionView, extra: navigationData)
@@ -410,6 +461,12 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
   }
 
   ThreadFeedModel? generateCommentModel(Object? permlink, String userName) {
+    if (widget.editingThread != null) {
+      return widget.editingThread!.copyWith(
+        body: widget.commentTextEditingController.text.trim(),
+        lastUpdate: DateTime.now(),
+      );
+    }
     if (permlink != null && permlink is String) {
       return ThreadFeedModel(
           postId: Act.generateRandomNumber(6),
@@ -426,6 +483,71 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
     return null;
   }
 
+  List<String> _initialImageLinks() {
+    final metadata = widget.editingThread?.jsonMetadata;
+    if (metadata == null) {
+      return const [];
+    }
+    final List<String> sources = [];
+    if (metadata.image != null && metadata.image!.isNotEmpty) {
+      sources.addAll(metadata.image!);
+    }
+    if (metadata.images != null && metadata.images!.isNotEmpty) {
+      sources.addAll(metadata.images!);
+    }
+    if (sources.isEmpty) {
+      return const [];
+    }
+    final List<String> results = [];
+    final Set<String> seen = {};
+    for (final raw in sources) {
+      final link = raw.trim();
+      if (link.isEmpty) {
+        continue;
+      }
+      if (seen.add(link)) {
+        results.add(link);
+      }
+    }
+    return results;
+  }
+
+  List<String>? _editingBaseTags() {
+    final tags = widget.editingThread?.jsonMetadata?.tags;
+    if (tags == null || tags.isEmpty) {
+      return null;
+    }
+    final List<String> result = [];
+    final Set<String> seen = {};
+    for (final tag in tags) {
+      final trimmed = tag.trim();
+      if (trimmed.isEmpty) {
+        continue;
+      }
+      final lower = trimmed.toLowerCase();
+      if (seen.add(lower)) {
+        result.add(lower);
+      }
+    }
+    return result.isEmpty ? null : result;
+  }
+
+  String? _editingMetadataApp() {
+    final app = widget.editingThread?.jsonMetadata?.app;
+    if (app == null || app.trim().isEmpty) {
+      return null;
+    }
+    return app;
+  }
+
+  String? _editingMetadataFormat() {
+    final format = widget.editingThread?.jsonMetadata?.format;
+    if (format == null || format.trim().isEmpty) {
+      return null;
+    }
+    return format;
+  }
+
   String author(BuildContext context) {
     return threadInfo(context).author;
   }
@@ -435,12 +557,27 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
   }
 
   ThreadInfo threadInfo(BuildContext context) {
+    if (widget.editingThread != null) {
+      final parentAuthor =
+          widget.authorParam ?? widget.editingThread!.parentAuthor;
+      final parentPermlink =
+          widget.permlinkParam ?? widget.editingThread!.parentPermlink;
+      if (parentAuthor != null && parentPermlink != null) {
+        return ThreadInfo(author: parentAuthor, permlink: parentPermlink);
+      }
+    }
+
     if (widget.isRoot) {
-      return widget.rootThreadInfo ??
-          context.read<ThreadFeedController>().rootThreadInfo!;
-    } else {
+      final controller = context.read<ThreadFeedController>();
+      final info = widget.rootThreadInfo ?? controller.rootThreadInfo;
+      if (info != null) {
+        return info;
+      }
+    } else if (widget.authorParam != null && widget.permlinkParam != null) {
       return ThreadInfo(
           author: widget.authorParam!, permlink: widget.permlinkParam!);
     }
+
+    throw StateError('Parent thread information is missing');
   }
 }

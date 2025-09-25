@@ -43,27 +43,48 @@ class Act {
     return data?.text;
   }
 
-  static List<String> compileTags(String comment) {
-    // Regex pattern for hashtags
-    RegExp pattern = RegExp(r'#(\w+)');
+  static List<String> compileTags(
+    String comment, {
+    List<String>? baseTags,
+    String? parentPermlink,
+  }) {
+    final RegExp pattern = RegExp(r'#(\w+)');
 
-    // Find all hashtags and discard the # character
-    List<String> hashtags = [];
-    Iterable<RegExpMatch> matches = pattern.allMatches(comment);
+    final List<String> ordered = [];
+    final Set<String> seen = {};
 
-    for (var match in matches) {
-      hashtags
-          .add(match.group(1)!); // group(1) contains the hashtag without the #
+    void addTag(String? tag) {
+      if (tag == null) {
+        return;
+      }
+      final String trimmed = tag.trim();
+      if (trimmed.isEmpty) {
+        return;
+      }
+      final String normalized = trimmed.toLowerCase();
+      if (seen.add(normalized)) {
+        ordered.add(normalized);
+      }
     }
-    
-    return [
+
+    addTag(parentPermlink);
+
+    final Iterable<String> defaults = baseTags ?? const [
       "hive-125125",
       "waves",
       "ecency",
       "mobile",
       "thread",
-      ...hashtags
     ];
+    for (final tag in defaults) {
+      addTag(tag);
+    }
+
+    for (final match in pattern.allMatches(comment)) {
+      addTag(match.group(1));
+    }
+
+    return ordered;
   }
 
   static String generatePermlink(String username) {

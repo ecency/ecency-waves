@@ -19,11 +19,20 @@ class SignTransactionPostingKeyController {
     required VoidCallback onFailure,
     required Function(String) showToast,
     required List<String> imageLinks,
+    List<String>? baseTags,
+    String? existingPermlink,
   }) async {
     try {
-      String generatedPermlink = Act.generatePermlink(authData.accountName);
+      final String generatedPermlink =
+          (existingPermlink?.isNotEmpty ?? false)
+              ? existingPermlink!
+              : Act.generatePermlink(authData.accountName);
       String commentWithImages = Act.commentWithImages(comment, imageLinks);
-      List<String> tags = Act.compileTags(comment);
+      List<String> tags = Act.compileTags(
+        comment,
+        baseTags: baseTags,
+        parentPermlink: parentPermlink,
+      );
       ActionSingleDataResponse<String> commentResponse =
           await _threadRepository.commentOnContent(
               authData.accountName,

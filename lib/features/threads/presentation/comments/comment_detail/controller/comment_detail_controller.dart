@@ -67,4 +67,22 @@ class CommentDetailController extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void onCommentUpdated(ThreadFeedModel thread) {
+    if (thread.author == mainThread.author &&
+        thread.permlink == mainThread.permlink) {
+      mainThread = thread;
+      notifyListeners();
+      return;
+    }
+
+    final index =
+        items.indexWhere((e) => e.author == thread.author && e.permlink == thread.permlink);
+    if (index != -1) {
+      final updatedItems = [...items];
+      updatedItems[index] = thread;
+      items = updatedItems;
+      notifyListeners();
+    }
+  }
 }

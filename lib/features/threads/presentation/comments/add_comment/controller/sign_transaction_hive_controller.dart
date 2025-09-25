@@ -28,6 +28,8 @@ class SignTransactionHiveController extends HiveTransactionController {
   String? _generatedPermlink;
   final String? pollId;
   final List<int>? choices;
+  final String? existingPermlink;
+  final List<String>? baseTags;
 
   SignTransactionHiveController(
       {required this.transactionType,
@@ -38,6 +40,7 @@ class SignTransactionHiveController extends HiveTransactionController {
       required super.onFailure,
       required super.ishiveKeyChainMethod,
       this.permlink,
+      this.existingPermlink,
       this.comment,
       this.imageLinks,
       this.weight,
@@ -45,7 +48,8 @@ class SignTransactionHiveController extends HiveTransactionController {
       this.assetSymbol,
       this.memo,
       this.pollId,
-      this.choices})
+      this.choices,
+      this.baseTags})
       : assert(
             !(transactionType == SignTransactionType.comment &&
                 (comment == null || imageLinks == null || permlink == null)),
@@ -146,13 +150,21 @@ class SignTransactionHiveController extends HiveTransactionController {
   Future<ActionSingleDataResponse<String>> transactionMethod() async {
     switch (transactionType) {
       case SignTransactionType.comment:
-        _generatedPermlink = Act.generatePermlink(authData.accountName);
-        List<String> tags = Act.compileTags(comment!);
+        final String permlinkToUse =
+            (existingPermlink?.isNotEmpty ?? false)
+                ? existingPermlink!
+                : Act.generatePermlink(authData.accountName);
+        _generatedPermlink = permlinkToUse;
+        List<String> tags = Act.compileTags(
+          comment!,
+          baseTags: baseTags,
+          parentPermlink: permlink,
+        );
         return _threadRepository.commentOnContent(
             authData.accountName,
             author,
             permlink!, //parentPermlink
-            _generatedPermlink!,
+            permlinkToUse,
             Act.commentWithImages(comment!, imageLinks!),
             tags,
             null,

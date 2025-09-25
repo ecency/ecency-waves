@@ -10,6 +10,7 @@ import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/classes/thread.dart';
+import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/comments/add_comment/widgets/add_comment_bottom_action_bar.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
@@ -22,11 +23,13 @@ class AddCommentView extends StatefulWidget {
     required this.author,
     required this.permlink,
     required this.depth,
+    this.editingThread,
   });
 
   final String? author;
   final String? permlink;
   final int? depth;
+  final ThreadFeedModel? editingThread;
 
   @override
   State<AddCommentView> createState() => _AddCommentViewState();
@@ -75,7 +78,14 @@ class _AddCommentViewState extends State<AddCommentView> {
   void initState() {
     super.initState();
 
-    if (widget.author == null && widget.permlink == null) {
+    final editingThread = widget.editingThread;
+    if (editingThread != null) {
+      commentTextEditingController.text = editingThread.body;
+      commentTextEditingController.selection = TextSelection.fromPosition(
+        TextPosition(offset: commentTextEditingController.text.length),
+      );
+      isRoot = editingThread.depth <= 1;
+    } else if (widget.author == null && widget.permlink == null) {
       isRoot = true;
       final controller = context.read<ThreadFeedController>();
       _selectedType = controller.threadType == ThreadFeedType.all
@@ -238,12 +248,32 @@ class _AddCommentViewState extends State<AddCommentView> {
             authorParam: widget.author,
             permlinkParam: widget.permlink,
             depthParam: widget.depth,
-            rootThreadInfo: _rootThreadInfo),
+            rootThreadInfo: _rootThreadInfo,
+            editingThread: widget.editingThread),
       ),
     );
   }
 
   AppBar _appBar(theme) {
+    if (widget.editingThread != null) {
+      return AppBar(
+        title: Text(LocaleText.edit),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.primaryColor,
+                foregroundColor: theme.colorScheme.onPrimary,
+              ),
+              onPressed: () => _bottomActionBarKey.currentState?.publish(),
+              child: Text(LocaleText.save),
+            ),
+          ),
+        ],
+      );
+    }
+
     return isRoot
         ? AppBar(
             title: ThreadTypeDropdown(

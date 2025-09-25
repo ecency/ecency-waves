@@ -12,17 +12,31 @@ import 'package:waves/features/threads/repository/thread_repository.dart';
 class SignTransactionHiveSignerController {
   final ThreadRepository _threadRepository = getIt<ThreadRepository>();
 
-  Future<void> initCommentProcess(String comment,
-      {required String parentAuthor,
-      required String parentPermlink,
-      required UserAuthModel<HiveSignerAuthModel> authData,
-      required Function(String) onSuccess,
-      required VoidCallback onFailure,
-      required Function(String) showToast,
-      required List<String> imageLinks}) async {
+  Future<void> initCommentProcess(
+    String comment, {
+    required String parentAuthor,
+    required String parentPermlink,
+    required UserAuthModel<HiveSignerAuthModel> authData,
+    required Function(String) onSuccess,
+    required VoidCallback onFailure,
+    required Function(String) showToast,
+    required List<String> imageLinks,
+    List<String>? baseTags,
+    String? metadataApp,
+    String? metadataFormat,
+    String? existingPermlink,
+  }) async {
     try {
-      String generatedPermlink = Act.generatePermlink(authData.accountName);
+      final String generatedPermlink =
+          (existingPermlink?.isNotEmpty ?? false)
+              ? existingPermlink!
+              : Act.generatePermlink(authData.accountName);
       String commentWithImages = Act.commentWithImages(comment, imageLinks);
+      final List<String> tags = Act.compileTags(
+        comment,
+        baseTags: baseTags,
+        parentPermlink: parentPermlink,
+      );
       ActionSingleDataResponse commentResponse = await _threadRepository
           .broadcastTransactionUsingHiveSigner<CommentBroadCastModel>(
         authData.auth.token,
@@ -33,7 +47,10 @@ class SignTransactionHiveSignerController {
               parentPermlink: parentPermlink,
               username: authData.accountName,
               permlink: generatedPermlink,
-              comment: commentWithImages),
+              comment: commentWithImages,
+              tags: tags,
+              app: metadataApp,
+              format: metadataFormat),
         ),
       );
       if (commentResponse.isSuccess) {

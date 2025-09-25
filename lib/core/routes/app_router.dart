@@ -110,10 +110,13 @@ class AppRouter {
                 state.uri.queryParameters[RouteKeys.accountName];
             String? permlink = state.uri.queryParameters[RouteKeys.permlink];
             String? depth = state.uri.queryParameters[RouteKeys.depth];
+            final editingThread =
+                state.extra is ThreadFeedModel ? state.extra as ThreadFeedModel : null;
             return AddCommentView(
               author: accountName,
               permlink: permlink,
               depth: depth != null ? int.tryParse(depth) : null,
+              editingThread: editingThread,
             );
           }),
       GoRoute(

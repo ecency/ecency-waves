@@ -51,15 +51,19 @@ class SocketProvider {
             String uid = asString(map, 'uuid');
             _controller
                 .add(SocketResponse(type: SocketType.signWait, value: uid));
+            break;
           case "sign_ack":
             _controller
                 .add(SocketResponse(type: SocketType.signAck, value: null));
+            break;
           case "sign_nack":
             _controller
                 .add(SocketResponse(type: SocketType.signNack, value: null));
+            break;
           case "sign_err":
             _controller
                 .add(SocketResponse(type: SocketType.signErr, value: null));
+            break;
         }
       }
     }, onError: (e) => _reconnect(), onDone: _reconnect, cancelOnError: true);

@@ -17,6 +17,8 @@ class LocaleText {
   static String get copyContent => "copy_content".tr();
   static String get contentCopied => "content_copied".tr();
   static String get translate => "translate".tr();
+  static String get edit => "edit".tr();
+  static String get save => "save".tr();
   static String get autoDetectLanguage => "auto_detect_language".tr();
   static String get sourceLanguage => "source_language".tr();
   static String get targetLanguage => "target_language".tr();

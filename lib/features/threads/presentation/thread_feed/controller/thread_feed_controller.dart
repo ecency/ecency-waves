@@ -297,6 +297,34 @@ class ThreadFeedController extends ChangeNotifier
     notifyListeners();
   }
 
+  void refreshOnCommentUpdated(ThreadFeedModel updated) {
+    var didUpdate = false;
+
+    final itemIndex =
+        items.indexWhere((e) => e.author == updated.author && e.permlink == updated.permlink);
+    if (itemIndex != -1) {
+      final updatedItems = [...items];
+      updatedItems[itemIndex] = updated;
+      items = updatedItems;
+      didUpdate = true;
+    }
+
+    if (newFeeds.isNotEmpty) {
+      final newFeedIndex = newFeeds
+          .indexWhere((e) => e.author == updated.author && e.permlink == updated.permlink);
+      if (newFeedIndex != -1) {
+        final updatedNewFeeds = [...newFeeds];
+        updatedNewFeeds[newFeedIndex] = updated;
+        newFeeds = updatedNewFeeds;
+        didUpdate = true;
+      }
+    }
+
+    if (didUpdate) {
+      notifyListeners();
+    }
+  }
+
   void _updateVoteInItems(
       int feedIndex, ActiveVoteModel newVote, List<ThreadFeedModel> target) {
     final upvotedItem = target[feedIndex];

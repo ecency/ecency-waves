@@ -45,6 +45,8 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
           as UserAuthModel<HiveAuthModel>,
       author: widget.data.author,
       permlink: widget.data.permlink,
+      existingPermlink: widget.data.existingPermlink,
+      baseTags: widget.data.baseTags,
       onFailure: () {
         Navigator.pop(context);
       },

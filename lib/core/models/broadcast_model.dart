@@ -81,13 +81,22 @@ class CommentBroadCastModel {
   final String username;
   final String permlink;
   final String comment;
+  final List<String> tags;
+  final String app;
+  final String format;
 
-  const CommentBroadCastModel(
-      {required this.parentAuthor,
-      required this.parentPermlink,
-      required this.username,
-      required this.permlink,
-      required this.comment});
+  const CommentBroadCastModel({
+    required this.parentAuthor,
+    required this.parentPermlink,
+    required this.username,
+    required this.permlink,
+    required this.comment,
+    List<String>? tags,
+    String? app,
+    String? format,
+  })  : tags = tags ?? const ["hive-125125", "waves", "ecency", "mobile", "thread"],
+        app = app ?? "ecency-waves",
+        format = format ?? "markdown+html";
 
   Map<String, dynamic> toJson() {
     return {
@@ -98,9 +107,9 @@ class CommentBroadCastModel {
       'title': "",
       'body': comment,
       'json_metadata': json.encode({
-        'tags': ["hive-125125", "waves", "ecency", "mobile", "thread"],
-        'app': "ecency-waves",
-        'format': "markdown+html",
+        'tags': tags,
+        'app': app,
+        'format': format,
       }),
     };
   }

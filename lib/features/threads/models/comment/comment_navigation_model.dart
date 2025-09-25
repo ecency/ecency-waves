@@ -11,8 +11,12 @@ class SignTransactionNavigationModel {
   final double? amount;
   final String? assetSymbol;
   final String? memo;
+  final String? existingPermlink;
   final bool ishiveKeyChainMethod;
   final SignTransactionType transactionType;
+  final List<String>? baseTags;
+  final String? metadataApp;
+  final String? metadataFormat;
 
   SignTransactionNavigationModel({
     required this.author,
@@ -25,6 +29,10 @@ class SignTransactionNavigationModel {
     this.amount,
     this.assetSymbol,
     this.memo,
+    this.existingPermlink,
+    this.baseTags,
+    this.metadataApp,
+    this.metadataFormat,
     required this.transactionType,
     required this.ishiveKeyChainMethod,
   });
