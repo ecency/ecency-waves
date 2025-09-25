@@ -12,43 +12,78 @@ import 'package:waves/features/explore/models/trending_tag_model.dart';
 import 'package:waves/features/explore/presentation/controller/explore_controller.dart';
 import 'package:waves/features/explore/presentation/widgets/thread_type_dropdown.dart';
 
-class ExploreView extends StatelessWidget {
+class ExploreView extends StatefulWidget {
   const ExploreView({super.key});
 
   @override
+  State<ExploreView> createState() => _ExploreViewState();
+}
+
+class _ExploreViewState extends State<ExploreView>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  late final ExploreController _exploreController;
+
+  @override
+  void initState() {
+    super.initState();
+    _exploreController = ExploreController();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChange);
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChange);
+    _tabController.dispose();
+    _exploreController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChange() {
+    if (!_tabController.indexIsChanging && _tabController.index == 1) {
+      _exploreController.loadAuthorsIfNeeded();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: ChangeNotifierProvider(
-        create: (_) => ExploreController(),
-        child: Consumer<ExploreController>(
-          builder: (context, controller, _) {
-            return Scaffold(
-              appBar: AppBar(
-                title: ThreadTypeDropdown(
-                  value: controller.threadType,
-                  onChanged: controller.onChangeThreadType,
-                ),
-                bottom: TabBar(
-                  tabs: [
-                    Tab(text: LocaleText.tags),
-                    Tab(text: LocaleText.users),
-                  ],
-                ),
+    return ChangeNotifierProvider.value(
+      value: _exploreController,
+      child: Consumer<ExploreController>(
+        builder: (context, controller, _) {
+          return Scaffold(
+            appBar: AppBar(
+              title: ThreadTypeDropdown(
+                value: controller.threadType,
+                onChanged: (type) {
+                  controller.onChangeThreadType(type);
+                  if (_tabController.index == 1) {
+                    controller.loadAuthorsIfNeeded();
+                  }
+                },
               ),
-              body: SafeArea(
-                top: false,
-                bottom: false,
-                child: TabBarView(
-                  children: [
-                    _TagsTab(),
-                    _UsersTab(),
-                  ],
-                ),
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(text: LocaleText.tags),
+                  Tab(text: LocaleText.users),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+            body: SafeArea(
+              top: false,
+              bottom: false,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _TagsTab(),
+                  _UsersTab(),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

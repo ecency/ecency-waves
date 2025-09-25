@@ -16,14 +16,15 @@ class ExploreController extends ChangeNotifier {
   List<TrendingTagModel> tags = [];
   List<TrendingAuthorModel> authors = [];
 
+  bool _authorsLoaded = false;
+
   ExploreController()
       : threadType = getIt<SettingsRepository>().readDefaultThread() {
-    loadData();
+    _loadTags();
   }
 
-  Future<void> loadData() async {
+  Future<void> _loadTags() async {
     tagsState = ViewState.loading;
-    authorsState = ViewState.loading;
     notifyListeners();
 
     final container = _getContainer();
@@ -35,15 +36,28 @@ class ExploreController extends ChangeNotifier {
       tags = [];
       tagsState = ViewState.error;
     }
+    notifyListeners();
+  }
 
+  Future<void> loadAuthorsIfNeeded() async {
+    if (_authorsLoaded) {
+      return;
+    }
+
+    authorsState = ViewState.loading;
+    notifyListeners();
+
+    final container = _getContainer();
     final authorRes = await _repository.getTrendingAuthors(container);
     if (authorRes.isSuccess && authorRes.data != null &&
         authorRes.data!.isNotEmpty) {
       authors = authorRes.data!;
       authorsState = ViewState.data;
+      _authorsLoaded = true;
     } else {
       authors = [];
       authorsState = ViewState.error;
+      _authorsLoaded = false;
     }
     notifyListeners();
   }
@@ -51,8 +65,16 @@ class ExploreController extends ChangeNotifier {
   void onChangeThreadType(ThreadFeedType type) {
     if (threadType != type) {
       threadType = type;
-      loadData();
+      _resetAuthors();
+      _loadTags();
     }
+  }
+
+  void _resetAuthors() {
+    authors = [];
+    authorsState = ViewState.loading;
+    _authorsLoaded = false;
+    notifyListeners();
   }
 
   String _getContainer() {
