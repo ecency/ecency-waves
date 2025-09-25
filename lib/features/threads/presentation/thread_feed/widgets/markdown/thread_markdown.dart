@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:waves/core/utilities/act.dart';
+import 'package:waves/core/utilities/hive_post_link_handler.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/parser.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
@@ -43,8 +44,11 @@ class ThreadMarkDown extends StatelessWidget {
         );
       },
       shrinkWrap: true,
-      onTapLink: (text, url, title) {
-        Act.launchThisUrl(url ?? 'https://google.com');
+      onTapLink: (text, url, title) async {
+        final handled = await HivePostLinkHandler.open(context, url);
+        if (!handled) {
+          await Act.launchThisUrl(url ?? 'https://google.com');
+        }
       },
     );
   }
