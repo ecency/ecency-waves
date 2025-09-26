@@ -99,7 +99,7 @@ class SignTransactionHiveController extends HiveTransactionController {
       case SignTransactionType.comment:
         return LocaleText.smCommentPublishMessage;
       case SignTransactionType.mute:
-        return "User is muted successfully";
+        return "User has been blocked successfully";
       case SignTransactionType.transfer:
         return LocaleText.smTipSuccessMessage;
     }
@@ -113,7 +113,7 @@ class SignTransactionHiveController extends HiveTransactionController {
       case SignTransactionType.comment:
         return LocaleText.emCommentDeclineMessage;
       case SignTransactionType.mute:
-        return "Mute operation is failed";
+        return "Blocking the user failed";
       case SignTransactionType.transfer:
         return LocaleText.emTipFailureMessage;
     }

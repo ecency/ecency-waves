@@ -48,7 +48,7 @@ class _UserProfileFollowMuteButtonsState
     }
     return DuoTextButtons(
       buttonHeight: widget.buttonHeight,
-      buttonOneText: "Mute",
+      buttonOneText: "Block User",
       buttonOneOnTap: () {
         context.authenticatedAction(action: () {
           final UserAuthModel userData =

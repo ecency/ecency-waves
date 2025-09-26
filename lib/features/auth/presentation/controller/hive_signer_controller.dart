@@ -28,15 +28,39 @@ class HiveSignerController {
   }
 
   HiveSignerHelperModel? extractTokenFromUrl(String url) {
-    if (url.contains("https://example.com/callback")) {
-      Uri uri = Uri.parse(url);
-      String? token = uri.queryParameters['access_token'];
-      String? username = uri.queryParameters['username'];
-      print(token);
-      if (token != null && username != null) {
-        return HiveSignerHelperModel(username: username, token: token);
-      }
+    final Uri? uri = Uri.tryParse(url);
+    if (uri == null) {
+      return null;
     }
+
+    final String scheme = uri.scheme.toLowerCase();
+    final String host = uri.host.toLowerCase();
+    final bool isLegacyCallback =
+        scheme == 'https' && host == 'example.com' && uri.path.contains('callback');
+    final bool isAppLinkCallback =
+        scheme == 'waves' && host == 'hivesigner-auth';
+
+    if (!isLegacyCallback && !isAppLinkCallback) {
+      return null;
+    }
+
+    final Map<String, String> parameters = {
+      ...uri.queryParameters,
+    };
+
+    if ((parameters['access_token'] == null ||
+            parameters['username'] == null) &&
+        uri.fragment.isNotEmpty) {
+      parameters.addAll(Uri.splitQueryString(uri.fragment));
+    }
+
+    final String? token = parameters['access_token'];
+    final String? username = parameters['username'];
+
+    if (token != null && token.isNotEmpty && username != null && username.isNotEmpty) {
+      return HiveSignerHelperModel(username: username, token: token);
+    }
+
     return null;
   }
 

@@ -36,6 +36,14 @@ class UserLocalRepository {
     return await _localService.writeTermsAcceptedFlag(status);
   }
 
+  Future<void> writeTermsAcceptanceGateVersion(String gateVersion) async {
+    return await _localService.writeTermsAcceptanceGateVersion(gateVersion);
+  }
+
+  String? readTermsAcceptanceGateVersion() {
+    return _localService.readTermsAcceptanceGateVersion();
+  }
+
   List<String> readDeletedAccounts() {
     return _localService.readDeletedAccounts();
   }

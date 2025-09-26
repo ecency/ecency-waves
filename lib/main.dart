@@ -24,6 +24,8 @@ void main() async {
   );
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
+  await _ensureWelcomeScreenGate(packageInfo);
+
   if (packageInfo.version == "1.0.0" && packageInfo.buildNumber == "9") {
     var isCleanUpDone = GetStorage().read('did_we_clean_up') as String? ?? 'no';
     if (isCleanUpDone == "no") {
@@ -55,6 +57,28 @@ void main() async {
       fallbackLocale: AppLocales.fallbackLocale,
       child: const MyApp()))),
   );
+}
+
+Future<void> _ensureWelcomeScreenGate(PackageInfo packageInfo) async {
+  const String requiredGateVersion = '1.1.2+123';
+  final userLocalService = get_it.getIt<UserLocalService>();
+
+  if (userLocalService.readTermsAcceptedFlag()) {
+    final currentUser = await userLocalService.readCurrentUser();
+    if (currentUser == null) {
+      await userLocalService.writeTermsAcceptedFlag(false);
+    }
+  }
+
+  final String? storedGateVersion =
+      userLocalService.readTermsAcceptanceGateVersion();
+
+  if (storedGateVersion == requiredGateVersion) {
+    return;
+  }
+
+  await userLocalService.writeTermsAcceptedFlag(false);
+  await userLocalService.writeTermsAcceptanceGateVersion(requiredGateVersion);
 }
 
 class MyApp extends StatelessWidget {

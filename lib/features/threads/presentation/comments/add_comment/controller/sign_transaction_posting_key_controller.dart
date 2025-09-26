@@ -115,10 +115,10 @@ class SignTransactionPostingKeyController {
         await _threadRepository.muteUser(
             authdata.accountName, author, authdata.auth.postingKey, null, null);
     if (response.isSuccess) {
-      showToast("User is muted successfully");
+      showToast("User has been blocked successfully");
       onSuccess();
     } else {
-      showToast("Mute operation is failed");
+      showToast("Blocking the user failed");
       onFailure();
     }
   }

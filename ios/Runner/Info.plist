@@ -66,8 +66,8 @@
                         </array>
                 </dict>
         </array>
-        <key>NSCameraUsageDescription</key>
-    <string>We need access to the camera for capturing photos.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Ecency Waves uses the camera so you can capture photos to include in your posts and profile updates.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>We need access to the photo library to select photos.</string>
     <key>NSPhotoLibraryAddUsageDescription</key>

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -37,8 +38,11 @@ class _WelcomeViewState extends State<WelcomeView> {
   }
 
   void _onTermsPress() {
-    // Navigate to a webview or open URL in browser
     Act.launchThisUrl("https://ecency.com/terms-of-service");
+  }
+
+  void _onGuidelinesPress() {
+    Act.launchThisUrl("https://ecency.com/privacy-policy");
   }
 
   Widget _renderInfo(IconData iconName, String heading, String body) {
@@ -77,31 +81,58 @@ class _WelcomeViewState extends State<WelcomeView> {
   }
 
   Widget _renderConsent() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Checkbox.adaptive(
-          value: isConsentChecked,
-          onChanged: _onCheckPress,
-        ),
-        Expanded(
-          child: GestureDetector(
-            onTap: _onTermsPress,
-            child: Text.rich(
-              TextSpan(
-                text: "I accept the ",
-                style: const TextStyle(fontSize: 14),
-                children: [
-                  TextSpan(
-                    text: "Terms and Conditions",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Checkbox.adaptive(
+              value: isConsentChecked,
+              onChanged: _onCheckPress,
+            ),
+            Expanded(
+              child: Text.rich(
+                TextSpan(
+                  text: "I accept the ",
+                  style: const TextStyle(fontSize: 14),
+                  children: [
+                    TextSpan(
+                      text: "Ecency Terms of Service",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      recognizer: TapGestureRecognizer()..onTap = _onTermsPress,
                     ),
-                  ),
-                ],
+                    const TextSpan(text: " and "),
+                    TextSpan(
+                      text: "Privacy Policy",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      recognizer:
+                          TapGestureRecognizer()..onTap = _onGuidelinesPress,
+                    ),
+                    const TextSpan(
+                      text:
+                          ". We do not tolerate abusive or objectionable content.",
+                    ),
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: Text(
+            'You can block abusive users directly from their profile menu.',
+            style: TextStyle(fontSize: 12),
           ),
         ),
       ],

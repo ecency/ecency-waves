@@ -12,6 +12,7 @@ class UserLocalService {
   static const String _currentUserAccountStorageKey = 'currentUserAccount';
   static const String _allUserAccountsStorageKey = 'allUserAccounts';
   static const String _termsAcceptedFlagKey = 'termsAcceptedFlag';
+  static const String _termsAcceptanceGateKey = 'termsAcceptanceGate';
   static const String _deletedAccountsKey = 'deletedAccounts';
 
   final FlutterSecureStorage _secureStorage;
@@ -102,6 +103,14 @@ class UserLocalService {
   bool readTermsAcceptedFlag() {
     bool? data = _getStorage.read(_termsAcceptedFlagKey);
     return data ?? false;
+  }
+
+  Future<void> writeTermsAcceptanceGateVersion(String gateVersion) async {
+    await _getStorage.write(_termsAcceptanceGateKey, gateVersion);
+  }
+
+  String? readTermsAcceptanceGateVersion() {
+    return _getStorage.read<String>(_termsAcceptanceGateKey);
   }
 
   List<String> readDeletedAccounts() {

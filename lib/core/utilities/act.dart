@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,18 +12,23 @@ class Act {
       return false;
     }
 
-    try {
-      if (Platform.isIOS) {
-        return await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+    final bool isHttpScheme = uri.scheme == 'http' || uri.scheme == 'https';
+    final List<LaunchMode> preferredModes = [
+      if (isHttpScheme) LaunchMode.inAppBrowserView,
+      LaunchMode.externalApplication,
+      LaunchMode.platformDefault,
+    ];
 
-      final canLaunch = await canLaunchUrl(uri);
-      if (canLaunch) {
-        return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    for (final mode in preferredModes) {
+      try {
+        final bool launched = await launchUrl(uri, mode: mode);
+        if (launched) {
+          return true;
+        }
+      } catch (e, stackTrace) {
+        dev.log('Failed to launch $url with mode $mode',
+            error: e, stackTrace: stackTrace);
       }
-    } catch (e, stackTrace) {
-      dev.log('Failed to launch $url', error: e, stackTrace: stackTrace);
-      return false;
     }
 
     dev.log("URL can't be launched.");
