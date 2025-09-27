@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:waves/core/utilities/constants/ui_constants.dart';
 
 class UserProfileInfoScrollTemplate extends StatelessWidget {
   const UserProfileInfoScrollTemplate({
@@ -11,21 +10,26 @@ class UserProfileInfoScrollTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: kScreenHorizontalPaddingDigit,
-            ),
-            child: SizedBox(
-              height: 35,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(children: children),
-              ),
-            )),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 520;
+        if (isWide) {
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: children,
+          );
+        }
+
+        return SizedBox(
+          height: 35,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: children),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waves/core/common/widgets/images/image_container.dart';
 import 'package:waves/features/user/models/user_model.dart';
-import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_follow_mute_buttons.dart';
 import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_user_info.dart';
 import 'package:waves/features/explore/presentation/widgets/waves_list_view.dart';
 
@@ -72,14 +71,6 @@ class _UserProfileViewWidgetState extends State<UserProfileViewWidget> {
             ImageContainer(
                 width: double.infinity,
                 url: widget.data.postingJsonMetadata?.profile?.coverImage),
-               Positioned(
-                bottom: 10,
-                right: 10,
-                child: UserProfileFollowMuteButtons(
-                  author: widget.data.name,
-                  buttonHeight: 30,
-                ),
-              ),
           ],
         ),
       ),

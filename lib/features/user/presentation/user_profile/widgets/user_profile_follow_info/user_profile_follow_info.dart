@@ -23,19 +23,51 @@ class FollowInfo extends StatelessWidget {
       future: controller.getFollowCount(),
       builder: (context, snapshot) {
         FollowCountModel? data = snapshot.data;
-        return direction == Axis.vertical
-            ? Column(
-                children: children(data, context),
-              )
-            : Row(
-                children: children(data, context),
+        if (direction == Axis.vertical) {
+          return Column(
+            children: [
+              ..._buildStats(data, withGap: true),
+              _buildDivider(),
+            ],
+          );
+        }
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 520;
+            final stats = _buildStats(data, withGap: !isWide);
+            if (isWide) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: stats,
+                  ),
+                  _buildDivider(),
+                ],
               );
+            }
+
+            return Row(
+              children: [
+                ...stats,
+                _buildDivider(),
+              ],
+            );
+          },
+        );
       },
     );
   }
 
-  List<Widget> children(FollowCountModel? data, BuildContext context) {
-    return [
+  List<Widget> _buildStats(
+    FollowCountModel? data, {
+    required bool withGap,
+  }) {
+    final stats = <Widget>[
       TextBox(
         showBorder: true,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -45,7 +77,6 @@ class FollowInfo extends StatelessWidget {
         backgroundColor: Colors.transparent,
         text: "Followers ${data?.followerCount ?? 0}",
       ),
-      const Gap(10),
       TextBox(
         showBorder: true,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -55,10 +86,23 @@ class FollowInfo extends StatelessWidget {
         backgroundColor: Colors.transparent,
         text: "Following ${data?.followingCount ?? 0}",
       ),
-      const Padding(
-        padding: EdgeInsets.symmetric(vertical: 15),
-        child: Divider(),
-      ),
     ];
+
+    if (!withGap) {
+      return stats;
+    }
+
+    return [
+      stats[0],
+      const Gap(10),
+      stats[1],
+    ];
+  }
+
+  Widget _buildDivider() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 15),
+      child: Divider(),
+    );
   }
 }

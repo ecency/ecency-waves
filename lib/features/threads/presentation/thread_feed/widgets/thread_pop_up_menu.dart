@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -12,9 +14,10 @@ import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dar
 import 'package:waves/features/threads/presentation/comments/comment_detail/controller/comment_detail_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_translate_bottom_sheet.dart';
+import 'package:waves/features/user/utils/block_user_helper.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
-enum _ThreadMenuAction { copy, translate, edit, report }
+enum _ThreadMenuAction { copy, translate, edit, block, report }
 
 class ThreadPopUpMenu extends StatelessWidget {
   const ThreadPopUpMenu({super.key, required this.item});
@@ -44,6 +47,13 @@ class ThreadPopUpMenu extends StatelessWidget {
         PopupMenuItem<_ThreadMenuAction>(
           value: _ThreadMenuAction.edit,
           child: Text(LocaleText.edit),
+        ),
+      );
+    } else {
+      entries.add(
+        const PopupMenuItem<_ThreadMenuAction>(
+          value: _ThreadMenuAction.block,
+          child: Text("Block User"),
         ),
       );
     }
@@ -104,6 +114,18 @@ class ThreadPopUpMenu extends StatelessWidget {
                 } catch (_) {}
               }
             });
+            break;
+          case _ThreadMenuAction.block:
+            BlockUserHelper.blockUser(
+              context,
+              author: item.author,
+              onSuccess: () {
+                Future.delayed(
+                  const Duration(seconds: 3),
+                  controller.refresh,
+                );
+              },
+            );
             break;
           case _ThreadMenuAction.report:
             showDialog(
