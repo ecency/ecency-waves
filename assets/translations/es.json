@@ -60,6 +60,8 @@
     "no_users_found": "No hay usuarios",
     "not_logged_in": "No conectado",
     "notifications": "Notificaciones",
+    "for_you": "For you",
+    "following": "Following",
     "notifications_delegated_to_you": "{} delegado {} a ti",
     "notifications_followed_you": "{} te siguió",
     "notifications_from_user": "{} de {}",
