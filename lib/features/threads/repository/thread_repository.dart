@@ -34,6 +34,13 @@ class ThreadRepository {
     return await _apiService.getComments(accountName, permlink, observer);
   }
 
+  Future<ActionListDataResponse<ThreadFeedModel>> getFollowingWaves(
+      String container, String username,
+      {int limit = 20, String? lastAuthor, String? lastPermlink}) async {
+    return await _apiService.fetchFollowingFeed(container, username,
+        limit: limit, lastAuthor: lastAuthor, lastPermlink: lastPermlink);
+  }
+
   Future<ActionSingleDataResponse<String>> commentOnContent(
     String username,
     String author,

@@ -13,6 +13,8 @@ class LocaleText {
   static String get login => "login".tr();
   static String get bookmarks => "bookmarks".tr();
   static String get notifications => "notifications".tr();
+  static String get forYou => "for_you".tr();
+  static String get following => "following".tr();
   static String get report => "report".tr();
   static String get copyContent => "copy_content".tr();
   static String get contentCopied => "content_copied".tr();

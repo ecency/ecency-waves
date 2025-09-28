@@ -1585,6 +1585,65 @@ class ApiService {
     }
   }
 
+  Future<ActionListDataResponse<ThreadFeedModel>> fetchFollowingFeed(
+      String container, String username,
+      {int limit = 20, String? lastAuthor, String? lastPermlink}) async {
+    try {
+      final queryParameters = <String, String>{
+        'container': container,
+        'username': username,
+        'limit': '$limit',
+      };
+      if (lastAuthor != null && lastAuthor.isNotEmpty) {
+        queryParameters['start_author'] = lastAuthor;
+      }
+      if (lastPermlink != null && lastPermlink.isNotEmpty) {
+        queryParameters['start_permlink'] = lastPermlink;
+      }
+      final url = Uri.https(
+        'ecency.com',
+        '/api/waves/following',
+        queryParameters,
+      );
+      final res = await http
+          .get(url, headers: _jsonHeaders)
+          .timeout(const Duration(seconds: 10));
+      if (res.statusCode == 200) {
+        final decoded = _tryDecode(res.body);
+        if (decoded is List) {
+          final items = decoded.map((e) {
+            final map = Map<String, dynamic>.from(e as Map);
+            map['post_id'] ??= map['id'];
+            map['created'] ??= map['timestamp'];
+            return ThreadFeedModel.fromJson(map);
+          }).toList();
+          return ActionListDataResponse<ThreadFeedModel>(
+            data: items,
+            status: ResponseStatus.success,
+            isSuccess: true,
+            errorMessage: '',
+          );
+        }
+      }
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: res.body.isNotEmpty
+            ? res.body
+            : 'Server Error (${res.statusCode})',
+      );
+    } on TimeoutException {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'API seems slow or inaccessible, try again later.',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
   Future<ActionListDataResponse<SearchUserModel>> searchUsers(String query,
       {int limit = 20}) async {
     final trimmed = query.trim();
