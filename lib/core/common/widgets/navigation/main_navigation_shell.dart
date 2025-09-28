@@ -150,7 +150,7 @@ class _NotificationNavIcon extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
-              color: theme.colorScheme.error,
+              color: theme.colorScheme.primary,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: theme.scaffoldBackgroundColor,
@@ -163,12 +163,12 @@ class _NotificationNavIcon extends StatelessWidget {
                 text,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onError,
+                      color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ) ??
                     TextStyle(
-                      color: theme.colorScheme.onError,
+                      color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
