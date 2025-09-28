@@ -35,15 +35,18 @@ class AppRouter {
   static final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
   static GoRouter router(BuildContext context) {
-    bool isTermsAccepted = context.select<UserController, bool>(
-        (settingsController) => settingsController.getTermsAcceptedFlag());
+    return Provider.of<GoRouter>(context, listen: false);
+  }
 
-    String initialPath = isTermsAccepted ? '/' : '/${Routes.welcomeView}';
+  static GoRouter createRouter(UserController userController) {
+    final isTermsAccepted = userController.getTermsAcceptedFlag();
+    final initialPath = isTermsAccepted ? '/' : '/${Routes.welcomeView}';
 
     return GoRouter(
-        navigatorKey: _rootNavigatorKey,
-        initialLocation: initialPath,
-        routes: routes());
+      navigatorKey: _rootNavigatorKey,
+      initialLocation: initialPath,
+      routes: routes(),
+    );
   }
 
   static List<RouteBase> routes() {

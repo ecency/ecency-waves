@@ -1,6 +1,8 @@
-import 'package:provider/single_child_widget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
+import 'package:waves/core/routes/app_router.dart';
 import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'package:waves/features/notifications/presentation/controller/notifications_controller.dart';
 import 'package:waves/features/notifications/repository/notifications_repository.dart';
@@ -18,6 +20,11 @@ class GlobalProviders {
     ChangeNotifierProvider(
       lazy: false,
       create: (context) => UserController(),
+    ),
+    ProxyProvider<UserController, GoRouter>(
+      lazy: false,
+      update: (context, userController, previousRouter) =>
+          previousRouter ?? AppRouter.createRouter(userController),
     ),
     ChangeNotifierProxyProvider<UserController, UserProfileController>(
       create: (context) => UserProfileController(accountName: null),

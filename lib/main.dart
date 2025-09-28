@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/locales/app_locales.dart';
 import 'package:waves/core/providers/global_providers.dart';
@@ -106,8 +107,10 @@ class MyApp extends StatelessWidget {
           final double textScaleFactor = isLargeScreen ? 1.15 : 1.0;
           final double iconScaleFactor = isLargeScreen ? 1.2 : 1.0;
 
+          final router = context.read<GoRouter>();
+
           return MaterialApp.router(
-            routerConfig: AppRouter.router(context),
+            routerConfig: router,
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
             locale: context.locale,

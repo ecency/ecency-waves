@@ -223,6 +223,10 @@ class _LoginPrompt extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.primaryColor,
+                foregroundColor: theme.colorScheme.onPrimary,
+              ),
               onPressed: () {
                 context.platformPushNamed(Routes.authView);
               },

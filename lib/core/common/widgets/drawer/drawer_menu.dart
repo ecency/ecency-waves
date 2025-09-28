@@ -102,18 +102,18 @@ class DrawerMenu extends StatelessWidget {
                         ],
                         DrawerTile(
                             onTap: () {
-                              Navigator.pop(context);
-                              context.platformPushNamed(Routes.exploreView);
-                            },
-                            text: LocaleText.explore,
-                            icon: Icons.explore),
-                        DrawerTile(
-                            onTap: () {
                               context.popAndPlatformPushNamed(
                                   Routes.bookmarksView);
                             },
                             text: LocaleText.bookmarks,
                             icon: Icons.bookmarks),
+                        DrawerTile(
+                            onTap: () {
+                              Navigator.pop(context);
+                              context.platformPushNamed(Routes.exploreView);
+                            },
+                            text: LocaleText.explore,
+                            icon: Icons.explore),
                         DrawerTile(
                             onTap: () {
                               context
