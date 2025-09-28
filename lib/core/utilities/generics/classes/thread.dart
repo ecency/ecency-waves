@@ -110,7 +110,7 @@ class Thread {
       case ThreadFeedType.leo:
         return 'leothreads';
       case ThreadFeedType.all:
-        return 'All';
+        return 'ecency.waves';
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
+import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
 import 'package:waves/features/threads/repository/thread_local_repository.dart';
@@ -16,7 +17,9 @@ class FollowingFeedController extends ChangeNotifier
 
   FollowingFeedController({required String? initialObserver})
       : observer = initialObserver,
-        threadType = getIt<ThreadLocalRepository>().readDefaultThread() {
+        threadType = getIt<ThreadLocalRepository>().readDefaultThread(),
+        _container = '' {
+    _container = _resolveContainer(threadType);
     pageLimit = 20;
     init();
   }
@@ -24,6 +27,7 @@ class FollowingFeedController extends ChangeNotifier
   String? observer;
   ThreadFeedType threadType;
   String? errorMessage;
+  String _container;
 
   String? _lastAuthor;
   String? _lastPermlink;
@@ -51,7 +55,7 @@ class FollowingFeedController extends ChangeNotifier
 
     final ActionListDataResponse<ThreadFeedModel> response =
         await _repository.getFollowingWaves(
-      _getContainer(),
+      _container,
       observer!,
       limit: pageLimit,
       lastAuthor: _lastAuthor,
@@ -117,11 +121,15 @@ class FollowingFeedController extends ChangeNotifier
     await refresh();
   }
 
-  void updateThreadType(ThreadFeedType type) {
-    if (threadType != type) {
-      threadType = type;
-      refresh();
+  void updateThreadType(ThreadFeedType type, {String? container}) {
+    final nextContainer = _resolveContainer(type, container: container);
+    if (threadType == type && _container == nextContainer) {
+      return;
     }
+
+    threadType = type;
+    _container = nextContainer;
+    refresh();
   }
 
   void _reset() {
@@ -133,18 +141,11 @@ class FollowingFeedController extends ChangeNotifier
     isNextPageLoading = false;
   }
 
-  String _getContainer() {
-    switch (threadType) {
-      case ThreadFeedType.ecency:
-        return 'ecency.waves';
-      case ThreadFeedType.peakd:
-        return 'peak.snaps';
-      case ThreadFeedType.liketu:
-        return 'liketu.moments';
-      case ThreadFeedType.leo:
-        return 'leothreads';
-      case ThreadFeedType.all:
-        return 'ecency.waves';
+  static String _resolveContainer(ThreadFeedType type, {String? container}) {
+    final candidate = (container ?? Thread.getThreadAccountName(type: type)).trim();
+    if (candidate.isEmpty || candidate.toLowerCase() == 'all') {
+      return Thread.getThreadAccountName(type: ThreadFeedType.ecency);
     }
+    return candidate;
   }
 }

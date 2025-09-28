@@ -12,6 +12,7 @@ import 'package:waves/features/auth/presentation/view/hive_key_chain_auth_view.d
 import 'package:waves/features/auth/presentation/view/hive_signer_auth_view.dart';
 import 'package:waves/features/auth/presentation/view/posting_key_auth_view.dart';
 import 'package:waves/features/bookmarks/views/thread_bookmark/bookmark_view.dart';
+import 'package:waves/core/common/widgets/navigation/main_navigation_shell.dart';
 import 'package:waves/features/explore/presentation/tag_feed/view/tag_feed_view.dart';
 import 'package:waves/features/explore/presentation/view/explore_view.dart';
 import 'package:waves/features/search/presentation/view/search_view.dart';
@@ -31,6 +32,7 @@ import 'package:waves/features/welcome/view/welcome_view.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+  static final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
   static GoRouter router(BuildContext context) {
     bool isTermsAccepted = context.select<UserController, bool>(
@@ -51,47 +53,102 @@ class AppRouter {
         name: Routes.welcomeView,
         builder: (context, state) => const WelcomeView(),
       ),
-      GoRoute(
-        path: '/',
-        name: Routes.initialView,
-        builder: (context, state) => const ThreadFeedView(),
-      ),
-      GoRoute(
-        path: '/${Routes.exploreView}',
-        name: Routes.exploreView,
-        builder: (context, state) => const ExploreView(),
-      ),
-      GoRoute(
-        path: '/${Routes.searchView}',
-        name: Routes.searchView,
-        builder: (context, state) => const SearchView(),
-      ),
-      GoRoute(
-        path: '/${Routes.tagFeedView}',
-        name: Routes.tagFeedView,
-        builder: (context, state) {
-          final tag = state.uri.queryParameters[RouteKeys.tag]!;
-          final typeParam = state.uri.queryParameters[RouteKeys.threadType];
-          final defaultType = getIt<SettingsRepository>().readDefaultThread();
-          final threadType = typeParam != null
-              ? enumFromString<ThreadFeedType>(
-                  typeParam,
-                  ThreadFeedType.values,
-                  defaultValue: defaultType,
-                )
-              : defaultType;
-          return TagFeedView(tag: tag, threadType: threadType);
-        },
-      ),
-      GoRoute(
-        path: '/${Routes.bookmarksView}',
-        name: Routes.bookmarksView,
-        builder: (context, state) => const BookmarksView(),
-      ),
-      GoRoute(
-        path: '/${Routes.notificationsView}',
-        name: Routes.notificationsView,
-        builder: (context, state) => const NotificationsView(),
+      ShellRoute(
+        navigatorKey: _shellNavigatorKey,
+        builder: (context, state, child) =>
+            MainNavigationShell(state: state, child: child),
+        routes: [
+          GoRoute(
+            path: '/',
+            name: Routes.initialView,
+            builder: (context, state) => const ThreadFeedView(),
+          ),
+          GoRoute(
+            path: '/${Routes.exploreView}',
+            name: Routes.exploreView,
+            builder: (context, state) => const ExploreView(),
+          ),
+          GoRoute(
+            path: '/${Routes.searchView}',
+            name: Routes.searchView,
+            builder: (context, state) => const SearchView(),
+          ),
+          GoRoute(
+            path: '/${Routes.notificationsView}',
+            name: Routes.notificationsView,
+            builder: (context, state) => const NotificationsView(),
+          ),
+          GoRoute(
+            path: '/${Routes.tagFeedView}',
+            name: Routes.tagFeedView,
+            builder: (context, state) {
+              final tag = state.uri.queryParameters[RouteKeys.tag]!;
+              final typeParam = state.uri.queryParameters[RouteKeys.threadType];
+              final defaultType = getIt<SettingsRepository>().readDefaultThread();
+              final threadType = typeParam != null
+                  ? enumFromString<ThreadFeedType>(
+                      typeParam,
+                      ThreadFeedType.values,
+                      defaultValue: defaultType,
+                    )
+                  : defaultType;
+              return TagFeedView(tag: tag, threadType: threadType);
+            },
+          ),
+          GoRoute(
+            path: '/${Routes.bookmarksView}',
+            name: Routes.bookmarksView,
+            builder: (context, state) => const BookmarksView(),
+          ),
+          GoRoute(
+            path: '/${Routes.commentDetailView}',
+            name: Routes.commentDetailView,
+            builder: (context, state) {
+              return CommentDetailView(
+                item: state.extra as ThreadFeedModel,
+              );
+            },
+          ),
+          GoRoute(
+            path: '/${Routes.userProfileView}',
+            name: Routes.userProfileView,
+            builder: (context, state) {
+              final name = state.uri.queryParameters[RouteKeys.accountName]!;
+              final typeParam = state.uri.queryParameters[RouteKeys.threadType];
+              final defaultType = getIt<SettingsRepository>().readDefaultThread();
+              final threadType = typeParam != null
+                  ? enumFromString<ThreadFeedType>(
+                      typeParam,
+                      ThreadFeedType.values,
+                      defaultValue: ThreadFeedType.ecency,
+                    )
+                  : defaultType;
+              return UserProfileView(
+                accountName: name,
+                threadType: threadType,
+              );
+            },
+          ),
+          GoRoute(
+            path: '/${Routes.followListView}',
+            name: Routes.followListView,
+            builder: (context, state) {
+              final name = state.uri.queryParameters[RouteKeys.accountName]!;
+              final followParam = state.uri.queryParameters[RouteKeys.followType];
+              final followType = followParam != null
+                  ? enumFromString<FollowType>(
+                      followParam,
+                      FollowType.values,
+                      defaultValue: FollowType.followers,
+                    )
+                  : FollowType.followers;
+              return FollowListView(
+                accountName: name,
+                followType: followType,
+              );
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/${Routes.authView}',
@@ -163,54 +220,6 @@ class AppRouter {
         builder: (context, state) {
           return HiveKeyChainAuthView(
             authType: state.extra as AuthType,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/${Routes.commentDetailView}',
-        name: Routes.commentDetailView,
-        builder: (context, state) {
-          return CommentDetailView(
-            item: state.extra as ThreadFeedModel,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/${Routes.userProfileView}',
-        name: Routes.userProfileView,
-        builder: (context, state) {
-          final name = state.uri.queryParameters[RouteKeys.accountName]!;
-          final typeParam = state.uri.queryParameters[RouteKeys.threadType];
-          final defaultType = getIt<SettingsRepository>().readDefaultThread();
-          final threadType = typeParam != null
-              ? enumFromString<ThreadFeedType>(
-                  typeParam,
-                  ThreadFeedType.values,
-                  defaultValue: ThreadFeedType.ecency,
-                )
-              : defaultType;
-          return UserProfileView(
-            accountName: name,
-            threadType: threadType,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/${Routes.followListView}',
-        name: Routes.followListView,
-        builder: (context, state) {
-          final name = state.uri.queryParameters[RouteKeys.accountName]!;
-          final followParam = state.uri.queryParameters[RouteKeys.followType];
-          final followType = followParam != null
-              ? enumFromString<FollowType>(
-                  followParam,
-                  FollowType.values,
-                  defaultValue: FollowType.followers,
-                )
-              : FollowType.followers;
-          return FollowListView(
-            accountName: name,
-            followType: followType,
           );
         },
       ),

@@ -3,12 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/drawer/drawer_menu.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
+import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/server_error.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
-import 'package:waves/features/notifications/presentation/controller/notifications_controller.dart';
+import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/following_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/drop_down_filter.dart';
@@ -59,9 +60,32 @@ class _ThreadFeedViewState extends State<ThreadFeedView>
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
+        leading: Builder(
+          builder: (context) {
+            if (isLoggedIn) {
+              final userName = context.read<UserController>().userData?.accountName;
+              return Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: UserProfileImage(
+                  url: userName,
+                  radius: 18,
+                  verticalPadding: 8,
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                ),
+              );
+            }
+
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            );
+          },
+        ),
         title: DropDownFilter(onChanged: (type) {
+          final container = Thread.getThreadAccountName(type: type);
           forYouController.onTapFilter(type);
-          followingController.updateThreadType(type);
+          followingController.updateThreadType(type, container: container);
         }),
         bottom: TabBar(
           controller: _tabController,
@@ -90,59 +114,6 @@ class _ThreadFeedViewState extends State<ThreadFeedView>
             Tab(text: LocaleText.following),
           ],
         ),
-        actions: [
-          if (isLoggedIn)
-            Consumer<NotificationsController>(
-              builder: (context, notificationsController, child) {
-                final theme = Theme.of(context);
-                final unread = notificationsController.unreadCount;
-                return IconButton(
-                  icon: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Icon(
-                        Icons.notifications_none_outlined,
-                        color: theme.primaryColor,
-                      ),
-                      if (unread > 0)
-                        Positioned(
-                          right: -2,
-                          top: -2,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.primaryColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              unread > 99 ? '99+' : unread.toString(),
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  tooltip: LocaleText.notifications,
-                  onPressed: () {
-                    context.platformPushNamed(Routes.notificationsView);
-                  },
-                );
-              },
-            ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: LocaleText.search,
-            onPressed: () {
-              context.platformPushNamed(Routes.searchView);
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: TabBarView(

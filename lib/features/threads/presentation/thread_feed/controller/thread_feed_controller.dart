@@ -447,7 +447,7 @@ class ThreadFeedController extends ChangeNotifier
       case ThreadFeedType.leo:
         return "leothreads";
       case ThreadFeedType.all:
-        return "All";
+        return "ecency.waves";
     }
   }
 }

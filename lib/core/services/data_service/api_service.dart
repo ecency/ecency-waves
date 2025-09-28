@@ -51,6 +51,7 @@ class ApiService {
   Map<String, String> get _jsonHeaders => const {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'User-Agent': 'WavesApp/1.0 (+https://ecency.com)',
   };
 
   String? currentAccountPostsNode(AccountPostType type, String account) =>
@@ -1602,7 +1603,7 @@ class ApiService {
       }
       final url = Uri.https(
         'ecency.com',
-        '/api/waves/following',
+        '/private-api/waves/following',
         queryParameters,
       );
       final res = await http

@@ -123,8 +123,9 @@ class ThreadListView extends StatelessWidget {
           right: 16,
           child: FloatingActionButton(
             heroTag: 'forYouComposeFab',
-            backgroundColor: theme.colorScheme.primary,
-            foregroundColor: theme.colorScheme.onPrimary,
+            backgroundColor: theme.primaryColor,
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
             onPressed: () => _onCreateThread(context, controller),
             child: const Icon(Icons.add),
           ),
