@@ -107,6 +107,54 @@ class ThreadRepository {
         username, author, postingKey, authKey, token);
   }
 
+  Future<ActionSingleDataResponse<String>> setFollowStatus(
+    String username,
+    String author,
+    bool follow,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    return await _apiService.setFollowStatus(
+        username, author, follow, postingKey, authKey, token);
+  }
+
+  Future<ActionSingleDataResponse<String>> updateFollowStatus(
+    String username,
+    String author,
+    bool follow,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    return await _apiService.updateFollowStatus(
+        username, author, follow, postingKey, authKey, token);
+  }
+
+  Future<ActionSingleDataResponse<String>> setFollowStatus(
+    String username,
+    String author,
+    bool follow,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    return await _apiService.setFollowStatus(
+        username, author, follow, postingKey, authKey, token);
+  }
+
+  Future<ActionSingleDataResponse<String>> setFollowStatus(
+    String username,
+    String author,
+    bool follow,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
+    return await _apiService.setFollowStatus(
+        username, author, follow, postingKey, authKey, token);
+  }
+
   Future<ActionSingleDataResponse<ReportResponse>> reportThread(
       String author, String permlink) async {
     return await _apiService.reportThread(author, permlink);

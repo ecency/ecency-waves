@@ -27,7 +27,7 @@ class FollowInfo extends StatelessWidget {
           return Column(
             children: [
               ..._buildStats(data, withGap: true),
-              _buildDivider(),
+              _buildDivider(Axis.vertical),
             ],
           );
         }
@@ -35,8 +35,12 @@ class FollowInfo extends StatelessWidget {
         return LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 520;
-            final stats = _buildStats(data, withGap: !isWide);
-            if (isWide) {
+            final hasTightHeight =
+                constraints.hasBoundedHeight && constraints.maxHeight <= 40;
+            final useColumnLayout = isWide && !hasTightHeight;
+            final stats = _buildStats(data, withGap: !useColumnLayout);
+
+            if (useColumnLayout) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -46,7 +50,7 @@ class FollowInfo extends StatelessWidget {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: stats,
                   ),
-                  _buildDivider(),
+                  _buildDivider(Axis.vertical),
                 ],
               );
             }
@@ -54,7 +58,7 @@ class FollowInfo extends StatelessWidget {
             return Row(
               children: [
                 ...stats,
-                _buildDivider(),
+                _buildDivider(Axis.horizontal),
               ],
             );
           },
@@ -99,7 +103,17 @@ class FollowInfo extends StatelessWidget {
     ];
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(Axis orientation) {
+    if (orientation == Axis.horizontal) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: SizedBox(
+          height: 20,
+          child: VerticalDivider(),
+        ),
+      );
+    }
+
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 15),
       child: Divider(),

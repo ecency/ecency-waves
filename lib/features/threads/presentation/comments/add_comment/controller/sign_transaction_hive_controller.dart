@@ -30,6 +30,7 @@ class SignTransactionHiveController extends HiveTransactionController {
   final List<int>? choices;
   final String? existingPermlink;
   final List<String>? baseTags;
+  final bool? follow;
 
   SignTransactionHiveController(
       {required this.transactionType,
@@ -49,7 +50,8 @@ class SignTransactionHiveController extends HiveTransactionController {
       this.memo,
       this.pollId,
       this.choices,
-      this.baseTags})
+      this.baseTags,
+      this.follow})
       : assert(
             !(transactionType == SignTransactionType.comment &&
                 (comment == null || imageLinks == null || permlink == null)),
@@ -102,6 +104,10 @@ class SignTransactionHiveController extends HiveTransactionController {
         return "User has been blocked successfully";
       case SignTransactionType.transfer:
         return LocaleText.smTipSuccessMessage;
+      case SignTransactionType.follow:
+        return (follow ?? true)
+            ? "User followed successfully"
+            : "User unfollowed successfully";
     }
   }
 
@@ -116,6 +122,10 @@ class SignTransactionHiveController extends HiveTransactionController {
         return "Blocking the user failed";
       case SignTransactionType.transfer:
         return LocaleText.emTipFailureMessage;
+      case SignTransactionType.follow:
+        return (follow ?? true)
+            ? "Unable to follow user"
+            : "Unable to unfollow user";
     }
   }
 
@@ -206,6 +216,15 @@ class SignTransactionHiveController extends HiveTransactionController {
           amount!,
           assetSymbol!,
           memo ?? '',
+          null,
+          authData.auth.authKey,
+          authData.auth.token,
+        );
+      case SignTransactionType.follow:
+        return _threadRepository.setFollowStatus(
+          authData.accountName,
+          author,
+          follow ?? true,
           null,
           authData.auth.authKey,
           authData.auth.token,

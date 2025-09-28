@@ -711,6 +711,456 @@ class ApiService {
     }
   }
 
+  Future<ActionSingleDataResponse<String>> setFollowStatus(
+      String username,
+      String author,
+      bool follow,
+      String? postingKey,
+      String? authKey,
+      String? token,
+      ) async {
+    try {
+      final jsonString = await setFollowStatusFromPlatform(
+          username, author, follow, postingKey, authKey, token);
+      final response = ActionSingleDataResponse<String>.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
+      String follower,
+      String following,
+      ) async {
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'bridge.get_relationship_between_accounts',
+        'params': {
+          'account': follower,
+          'target': following,
+        },
+        'id': 1,
+      });
+
+      if (response == null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'RPC error: no node responded',
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: _rpcErrorMessage(response),
+        );
+      }
+
+      final result = (decoded is Map) ? decoded['result'] : null;
+      if (result is Map) {
+        final follows = result['follows'];
+        final isFollowing = follows is bool
+            ? follows
+            : (follows is String
+                ? follows.toLowerCase() == 'true'
+                : false);
+        return ActionSingleDataResponse<bool>(
+          data: isFollowing,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      } else if (result is bool) {
+        return ActionSingleDataResponse<bool>(
+          data: result,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Unexpected response',
+      );
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<String>> setFollowStatus(
+      String username,
+      String author,
+      bool follow,
+      String? postingKey,
+      String? authKey,
+      String? token,
+      ) async {
+    try {
+      final jsonString = await setFollowStatusFromPlatform(
+          username, author, follow, postingKey, authKey, token);
+      final response = ActionSingleDataResponse<String>.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
+      String follower,
+      String following,
+      ) async {
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'bridge.get_relationship_between_accounts',
+        'params': {
+          'account1': follower,
+          'account2': following,
+        },
+        'id': 1,
+      });
+
+      if (response == null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'RPC error: no node responded',
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: _rpcErrorMessage(response),
+        );
+      }
+
+      final result = (decoded is Map) ? decoded['result'] : null;
+      if (result is Map) {
+        final follows = result['follows'];
+        final isFollowing = follows is bool
+            ? follows
+            : (follows is String
+                ? follows.toLowerCase() == 'true'
+                : false);
+        return ActionSingleDataResponse<bool>(
+          data: isFollowing,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      } else if (result is bool) {
+        return ActionSingleDataResponse<bool>(
+          data: result,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Unexpected response',
+      );
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<String>> updateFollowStatus(
+      String username,
+      String author,
+      bool follow,
+      String? postingKey,
+      String? authKey,
+      String? token,
+      ) async {
+    try {
+      final jsonString = await updateFollowStatusFromPlatform(
+          username, author, follow, postingKey, authKey, token);
+      final response = ActionSingleDataResponse<String>.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<bool>> loadFollowRelationship(
+      String follower,
+      String following,
+      ) async {
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'bridge.get_relationship_between_accounts',
+        'params': {
+          'account1': follower,
+          'account2': following,
+        },
+        'id': 1,
+      });
+
+      if (response == null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'RPC error: no node responded',
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: _rpcErrorMessage(response),
+        );
+      }
+
+      final result = (decoded is Map) ? decoded['result'] : null;
+      if (result is Map) {
+        final follows = result['follows'];
+        final isFollowing = follows is bool
+            ? follows
+            : (follows is String
+                ? follows.toLowerCase() == 'true'
+                : false);
+        return ActionSingleDataResponse<bool>(
+          data: isFollowing,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      } else if (result is bool) {
+        return ActionSingleDataResponse<bool>(
+          data: result,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Unexpected response',
+      );
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<String>> setFollowStatus(
+      String username,
+      String author,
+      bool follow,
+      String? postingKey,
+      String? authKey,
+      String? token,
+      ) async {
+    try {
+      final jsonString = await setFollowStatusFromPlatform(
+          username, author, follow, postingKey, authKey, token);
+      final response = ActionSingleDataResponse<String>.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
+      String follower,
+      String following,
+      ) async {
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'bridge.get_relationship_between_accounts',
+        'params': {
+          'account1': follower,
+          'account2': following,
+        },
+        'id': 1,
+      });
+
+      if (response == null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'RPC error: no node responded',
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: _rpcErrorMessage(response),
+        );
+      }
+
+      final result = (decoded is Map) ? decoded['result'] : null;
+      if (result is Map) {
+        final follows = result['follows'];
+        final isFollowing = follows is bool
+            ? follows
+            : (follows is String
+                ? follows.toLowerCase() == 'true'
+                : false);
+        return ActionSingleDataResponse<bool>(
+          data: isFollowing,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      } else if (result is bool) {
+        return ActionSingleDataResponse<bool>(
+          data: result,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Unexpected response',
+      );
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<String>> setFollowStatus(
+      String username,
+      String author,
+      bool follow,
+      String? postingKey,
+      String? authKey,
+      String? token,
+      ) async {
+    try {
+      final jsonString = await setFollowStatusFromPlatform(
+          username, author, follow, postingKey, authKey, token);
+      final response = ActionSingleDataResponse<String>.fromJsonString(
+        jsonString,
+        null,
+        ignoreFromJson: true,
+      );
+      return response;
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
+      String follower,
+      String following,
+      ) async {
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'bridge.get_relationship_between_accounts',
+        'params': {
+          'account1': follower,
+          'account2': following,
+        },
+        'id': 1,
+      });
+
+      if (response == null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'RPC error: no node responded',
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        return ActionSingleDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: _rpcErrorMessage(response),
+        );
+      }
+
+      final result = (decoded is Map) ? decoded['result'] : null;
+      if (result is Map) {
+        final follows = result['follows'];
+        final isFollowing = follows is bool
+            ? follows
+            : (follows is String
+                ? follows.toLowerCase() == 'true'
+                : false);
+        return ActionSingleDataResponse<bool>(
+          data: isFollowing,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      } else if (result is bool) {
+        return ActionSingleDataResponse<bool>(
+          data: result,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Unexpected response',
+      );
+    } catch (e) {
+      return ActionSingleDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
   // -------------------------- HiveSigner broadcast --------------------------
 
   Future<ActionSingleDataResponse> broadcastTransactionUsingHiveSigner<T>(

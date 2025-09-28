@@ -18,4 +18,24 @@ class UserRepository {
       String accountName) async {
     return await _apiService.getFollowCount(accountName);
   }
+
+  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
+      String follower, String following) async {
+    return await _apiService.fetchFollowRelationship(follower, following);
+  }
+
+  Future<ActionSingleDataResponse<bool>> loadFollowRelationship(
+      String follower, String following) async {
+    return await _apiService.loadFollowRelationship(follower, following);
+  }
+
+  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
+      String follower, String following) async {
+    return await _apiService.fetchFollowRelationship(follower, following);
+  }
+
+  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
+      String follower, String following) async {
+    return await _apiService.fetchFollowRelationship(follower, following);
+  }
 }

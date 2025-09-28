@@ -122,4 +122,125 @@ class SignTransactionPostingKeyController {
       onFailure();
     }
   }
+
+  Future<void> initFollowProcess({
+    required String author,
+    required bool follow,
+    required UserAuthModel<PostingAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required VoidCallback onFailure,
+    required Function(String) showToast,
+  }) async {
+    ActionSingleDataResponse<String> response =
+        await _threadRepository.setFollowStatus(
+            authdata.accountName,
+            author,
+            follow,
+            authdata.auth.postingKey,
+            null,
+            null);
+    if (response.isSuccess) {
+      showToast(follow
+          ? "User has been followed successfully"
+          : "User has been unfollowed successfully");
+      onSuccess();
+    } else {
+      showToast(follow
+          ? "Following the user failed"
+          : "Unfollowing the user failed");
+      onFailure();
+    }
+  }
+
+  Future<void> initFollowProcess({
+    required String author,
+    required bool follow,
+    required UserAuthModel<PostingAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required VoidCallback onFailure,
+    required Function(String) showToast,
+  }) async {
+    ActionSingleDataResponse<String> response =
+        await _threadRepository.updateFollowStatus(
+            authdata.accountName,
+            author,
+            follow,
+            authdata.auth.postingKey,
+            null,
+            null);
+    if (response.isSuccess) {
+      showToast(follow
+          ? "User has been followed successfully"
+          : "User has been unfollowed successfully");
+      onSuccess();
+    } else {
+      showToast(follow
+          ? "Following the user failed"
+          : "Unfollowing the user failed");
+      onFailure();
+    }
+  }
+
+  Future<void> initFollowProcess({
+    required String author,
+    required bool follow,
+    required UserAuthModel<PostingAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required VoidCallback onFailure,
+    required Function(String) showToast,
+  }) async {
+    ActionSingleDataResponse<String> response =
+        await _threadRepository.setFollowStatus(
+            authdata.accountName,
+            author,
+            follow,
+            authdata.auth.postingKey,
+            null,
+            null);
+    if (response.isSuccess) {
+      showToast(follow
+          ? "User has been followed successfully"
+          : "User has been unfollowed successfully");
+      onSuccess();
+    } else {
+      showToast(follow
+          ? "Following the user failed"
+          : "Unfollowing the user failed");
+      onFailure();
+    }
+  }
+
+  Future<void> initFollowProcess({
+    required String author,
+    required bool follow,
+    required UserAuthModel<PostingAuthModel> authdata,
+    required VoidCallback onSuccess,
+    required VoidCallback onFailure,
+    required Function(String) showToast,
+  }) async {
+    final response = await _threadRepository.setFollowStatus(
+      authdata.accountName,
+      author,
+      follow,
+      authdata.auth.postingKey,
+      null,
+      null,
+    );
+
+    if (response.isSuccess) {
+      final successMessage = follow
+          ? "User followed successfully"
+          : "User unfollowed successfully";
+      showToast(successMessage);
+      onSuccess();
+    } else {
+      final failureMessage = response.errorMessage.isNotEmpty
+          ? response.errorMessage
+          : (follow
+              ? "Unable to follow user"
+              : "Unable to unfollow user");
+      showToast(failureMessage);
+      onFailure();
+    }
+  }
 }

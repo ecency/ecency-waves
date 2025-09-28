@@ -66,7 +66,7 @@ Future<String> castPollVoteFromPlatform(
   String? authKey,
   String? token,
 ) async {
-     return _error();
+  return _error();
 }
 
 Future<String> getImageUploadProofWithPostingKeyFromPlatform(
@@ -82,7 +82,18 @@ Future<String> muteUserFromPlatform(
   String? postingKey,
   String? authKey,
   String? token,
-){
+) {
+  return _error();
+}
+
+Future<String> setFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
   return _error();
 }
 

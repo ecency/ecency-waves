@@ -20,6 +20,8 @@ class BroadcastModel<T> {
       return model.toJson();
     } else if (model is TransferBroadcastModel) {
       return model.toJson();
+    } else if (model is FollowBroadcastModel) {
+      return model.toJson();
     } else {
       throw Exception('Unknown type');
     }
@@ -134,6 +136,34 @@ class MuteBroadcastModel {
           "follower": username,
           "following": author,
           "what": ["ignore"]
+        }
+      ])
+    };
+  }
+}
+
+class FollowBroadcastModel {
+  final String username;
+  final String author;
+  final bool follow;
+
+  const FollowBroadcastModel({
+    required this.username,
+    required this.author,
+    required this.follow,
+  });
+
+  Map<String, dynamic> toJson() {
+    final List<String> what = follow ? ["blog"] : <String>[];
+    return {
+      "id": "follow",
+      "required_posting_auths": [username],
+      "json": json.encode([
+        "follow",
+        {
+          "follower": username,
+          "following": author,
+          "what": what,
         }
       ])
     };

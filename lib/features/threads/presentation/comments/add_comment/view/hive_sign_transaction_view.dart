@@ -33,6 +33,7 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       amount: widget.data.amount,
       assetSymbol: widget.data.assetSymbol,
       memo: widget.data.memo,
+      follow: widget.data.follow,
       showError: (error) => context.showSnackBar(error),
       onSuccess: (data) {
         if (hiveSignTransactionController.transactionType ==
@@ -47,6 +48,7 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       permlink: widget.data.permlink,
       existingPermlink: widget.data.existingPermlink,
       baseTags: widget.data.baseTags,
+      follow: widget.data.follow,
       onFailure: () {
         Navigator.pop(context);
       },

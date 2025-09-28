@@ -17,6 +17,7 @@ class SignTransactionNavigationModel {
   final List<String>? baseTags;
   final String? metadataApp;
   final String? metadataFormat;
+  final bool? follow;
 
   SignTransactionNavigationModel({
     required this.author,
@@ -35,5 +36,6 @@ class SignTransactionNavigationModel {
     this.metadataFormat,
     required this.transactionType,
     required this.ishiveKeyChainMethod,
+    this.follow,
   });
 }

@@ -121,3 +121,80 @@ Future<String> muteUserFromPlatform(
 ) {
   throw UnimplementedError();
 }
+
+Future<String> setFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}
+
+Future<String> setFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}
+
+Future<String> updateFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}
+
+Future<String> setFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}
+
+Future<String> setFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}
+
+Future<String> setFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}
+
+Future<String> setFollowStatusFromPlatform(
+  String username,
+  String author,
+  bool follow,
+  String? postingKey,
+  String? authKey,
+  String? token,
+) {
+  throw UnimplementedError();
+}
