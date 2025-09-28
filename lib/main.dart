@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -91,14 +93,33 @@ class MyApp extends StatelessWidget {
       providers: GlobalProviders.providers,
       child: Consumer<ThemeController>(
         builder: (context, themeController, child) {
+          const double tabletBreakpoint = 600;
+          final platformDispatcher = WidgetsBinding.instance.platformDispatcher;
+          final ui.FlutterView? view = platformDispatcher.views.isNotEmpty
+              ? platformDispatcher.views.first
+              : platformDispatcher.implicitView;
+          final mediaQueryData = view != null
+              ? MediaQueryData.fromView(view)
+              : const MediaQueryData();
+          final double shortestSide = mediaQueryData.size.shortestSide;
+          final bool isLargeScreen = shortestSide >= tabletBreakpoint;
+          final double textScaleFactor = isLargeScreen ? 1.15 : 1.0;
+          final double iconScaleFactor = isLargeScreen ? 1.2 : 1.0;
+
           return MaterialApp.router(
             routerConfig: AppRouter.router(context),
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
             locale: context.locale,
             title: 'Waves',
-            theme: themeController.getLightTheme(),
-            darkTheme: themeController.getDarkTheme(),
+            theme: themeController.getLightTheme(
+              textScaleFactor: textScaleFactor,
+              iconScaleFactor: iconScaleFactor,
+            ),
+            darkTheme: themeController.getDarkTheme(
+              textScaleFactor: textScaleFactor,
+              iconScaleFactor: iconScaleFactor,
+            ),
             themeMode: themeController.themeMode,
             debugShowCheckedModeBanner: false,
             builder: (context, child) {

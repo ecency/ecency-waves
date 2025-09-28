@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:waves/core/common/extensions/image_thumbs.dart';
 import 'package:waves/core/common/widgets/inkwell_wrapper.dart';
-import 'package:waves/core/utilities/responsive/responsive_layout.dart';
 
 class UserProfileImage extends StatelessWidget {
   const UserProfileImage(
@@ -23,26 +22,27 @@ class UserProfileImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final responsive = ResponsiveLayout.of(context);
-    final baseRadius = radius ?? 20;
-    final effectiveRadius = responsive.scaleAvatar(baseRadius);
-    final effectivePadding = responsive.scaleComponent(verticalPadding);
-    final effectiveIconSize = responsive.scaleIcon(defaultIconSize ?? 30);
-
+    final mediaQuery = MediaQuery.of(context);
+    const double tabletBreakpoint = 600;
+    final double shortestSide = mediaQuery.size.shortestSide;
+    final bool isLargeScreen = shortestSide >= tabletBreakpoint;
+    final double avatarScale = isLargeScreen ? 1.15 : 1.0;
+    final double baseRadius = radius ?? 20;
+    final double effectiveRadius = baseRadius * avatarScale;
+    final double effectiveIconSize = (defaultIconSize ?? 30) * avatarScale;
+    final double effectiveVerticalPadding = verticalPadding * avatarScale;
+    final String avatarSize = _avatarSizeForRadius(effectiveRadius);
     return InkWellWrapper(
         onTap: onTap,
         borderRadius:
             onTap != null ? const BorderRadius.all(Radius.circular(100)) : null,
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: effectivePadding),
+          padding: EdgeInsets.symmetric(vertical: effectiveVerticalPadding),
           child: CircleAvatar(
             radius: effectiveRadius,
             foregroundImage: url != null && url!.isNotEmpty
                 ? NetworkImage(
-                    context.userOwnerThumb(
-                      url!,
-                      size: _avatarSize(effectiveRadius),
-                    ),
+                    context.userOwnerThumb(url!, size: avatarSize),
                   )
                 : null,
             backgroundColor: fillColor ?? theme.colorScheme.tertiary,
@@ -54,10 +54,10 @@ class UserProfileImage extends StatelessWidget {
         ));
   }
 
-  String _avatarSize(double radius) {
-    if (radius <= 20) {
+  String _avatarSizeForRadius(double radiusValue) {
+    if (radiusValue <= 20) {
       return 'small';
-    } else if (radius <= 40) {
+    } else if (radiusValue <= 40) {
       return 'medium';
     } else {
       return 'large';

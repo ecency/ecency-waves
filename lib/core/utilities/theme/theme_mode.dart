@@ -52,7 +52,11 @@ class ThemeController extends ChangeNotifier {
     }
   }
 
-  ThemeData getLightTheme() {
+  ThemeData getLightTheme({double textScaleFactor = 1.0, double iconScaleFactor = 1.0}) {
+    final appBarIconTheme = IconThemeData(
+      color: _primaryColor,
+      size: 24.0 * iconScaleFactor,
+    );
     return ThemeData(
       primaryColorLight: _secondaryColor,
       primaryColorDark: _primaryColor,
@@ -71,11 +75,11 @@ class ThemeController extends ChangeNotifier {
         elevation: 0,
         titleTextStyle: TextStyle(
           fontFamily: _fontFamily,
-          fontSize: 18,
+          fontSize: 18 * textScaleFactor,
           fontWeight: FontWeight.w600,
           color: _primaryColor,
         ),
-        iconTheme: IconThemeData(color: _primaryColor),
+        iconTheme: appBarIconTheme,
       ),
       colorScheme: ColorScheme.light(
           onPrimary: _staticColor,
@@ -91,58 +95,16 @@ class ThemeController extends ChangeNotifier {
           secondary: _secondaryColor,
           tertiary: _tertiaryColor),
       fontFamily: _fontFamily,
-      iconTheme: IconThemeData(color: _primaryColor),
-      textTheme: TextTheme(
-        labelSmall: TextStyle(
-          fontSize: 10.0,
-          fontWeight: FontWeight.w400,
-          color: _primaryColor,
-        ),
-        labelMedium: TextStyle(
-          fontSize: 11.0,
-          fontWeight: FontWeight.w400,
-          color: _primaryColor,
-        ),
-        labelLarge: TextStyle(
-          fontSize: 12,
-          color: _primaryColor,
-          fontWeight: FontWeight.w600,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 13.0,
-          fontWeight: FontWeight.w400,
-          color: _primaryColor,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          color: _primaryColor,
-          fontWeight: FontWeight.w400,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 15,
-          color: _primaryColor,
-          fontWeight: FontWeight.w400,
-        ),
-        displaySmall: TextStyle(
-          fontSize: 16,
-          color: _primaryColor,
-          fontWeight: FontWeight.w500,
-        ),
-        displayMedium: TextStyle(
-          fontSize: 18,
-          color: _primaryColor,
-          fontWeight: FontWeight.w500,
-        ),
-        displayLarge: TextStyle(
-          fontSize: 20.0,
-          fontWeight: FontWeight.bold,
-          color: _primaryColor,
-        ),
-      ),
+      iconTheme: IconThemeData(color: _primaryColor, size: 24.0 * iconScaleFactor),
+      textTheme: _buildTextTheme(_primaryColor, textScaleFactor),
     );
   }
 
-  ThemeData getDarkTheme() {
+  ThemeData getDarkTheme({double textScaleFactor = 1.0, double iconScaleFactor = 1.0}) {
+    final appBarIconTheme = IconThemeData(
+      color: _secondaryColor,
+      size: 24.0 * iconScaleFactor,
+    );
     return ThemeData(
       primaryColorLight: _primaryColor,
       primaryColorDark: _secondaryColor,
@@ -160,11 +122,11 @@ class ThemeController extends ChangeNotifier {
         elevation: 0,
         titleTextStyle: TextStyle(
           fontFamily: _fontFamily,
-          fontSize: 18,
+          fontSize: 18 * textScaleFactor,
           fontWeight: FontWeight.w600,
           color: _secondaryColor,
         ),
-        iconTheme: IconThemeData(color: _secondaryColor),
+        iconTheme: appBarIconTheme,
       ),
       colorScheme: ColorScheme.dark(
           onPrimary: _staticColor,
@@ -180,54 +142,28 @@ class ThemeController extends ChangeNotifier {
           secondary: _primaryColor,
           tertiary: Colors.grey.shade900),
       fontFamily: _fontFamily,
-      iconTheme: IconThemeData(color: _secondaryColor),
-      textTheme: TextTheme(
-        labelSmall: TextStyle(
-          fontSize: 10.0,
-          fontWeight: FontWeight.w400,
-          color: _secondaryColor,
-        ),
-        labelMedium: TextStyle(
-          fontSize: 11.0,
-          fontWeight: FontWeight.w400,
-          color: _secondaryColor,
-        ),
-        labelLarge: TextStyle(
-          fontSize: 12,
-          color: _secondaryColor,
-          fontWeight: FontWeight.w600,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 13.0,
-          fontWeight: FontWeight.w400,
-          color: _secondaryColor,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          color: _secondaryColor,
-          fontWeight: FontWeight.w400,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 15,
-          color: _secondaryColor,
-          fontWeight: FontWeight.w400,
-        ),
-        displaySmall: TextStyle(
-          fontSize: 16,
-          color: _secondaryColor,
-          fontWeight: FontWeight.w500,
-        ),
-        displayMedium: TextStyle(
-          fontSize: 18,
-          color: _secondaryColor,
-          fontWeight: FontWeight.w500,
-        ),
-        displayLarge: TextStyle(
-          fontSize: 20.0,
-          fontWeight: FontWeight.bold,
-          color: _secondaryColor,
-        ),
-      ),
+      iconTheme: IconThemeData(color: _secondaryColor, size: 24.0 * iconScaleFactor),
+      textTheme: _buildTextTheme(_secondaryColor, textScaleFactor),
+    );
+  }
+
+  TextTheme _buildTextTheme(Color color, double textScaleFactor) {
+    TextStyle buildStyle(double fontSize, FontWeight fontWeight) => TextStyle(
+          fontSize: fontSize * textScaleFactor,
+          fontWeight: fontWeight,
+          color: color,
+        );
+
+    return TextTheme(
+      labelSmall: buildStyle(10.0, FontWeight.w400),
+      labelMedium: buildStyle(11.0, FontWeight.w400),
+      labelLarge: buildStyle(12.0, FontWeight.w600),
+      bodySmall: buildStyle(13.0, FontWeight.w400),
+      bodyMedium: buildStyle(14.0, FontWeight.w400),
+      bodyLarge: buildStyle(15.0, FontWeight.w400),
+      displaySmall: buildStyle(16.0, FontWeight.w500),
+      displayMedium: buildStyle(18.0, FontWeight.w500),
+      displayLarge: buildStyle(20.0, FontWeight.bold),
     );
   }
 
@@ -242,6 +178,6 @@ class ThemeController extends ChangeNotifier {
           colorScheme: const ColorScheme.dark(
               brightness: Brightness.light,
               primary: Color(0xff254C87),
-              secondary:  Color(0xff526D91),
-              surface:  Color(0xff2e3d51)));
+              secondary: Color(0xff526D91),
+              surface: Color(0xff2e3d51)));
 }
