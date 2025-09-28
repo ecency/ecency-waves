@@ -133,17 +133,6 @@ Future<String> setFollowStatusFromPlatform(
   throw UnimplementedError();
 }
 
-Future<String> setFollowStatusFromPlatform(
-  String username,
-  String author,
-  bool follow,
-  String? postingKey,
-  String? authKey,
-  String? token,
-) {
-  throw UnimplementedError();
-}
-
 Future<String> updateFollowStatusFromPlatform(
   String username,
   String author,
@@ -152,49 +141,12 @@ Future<String> updateFollowStatusFromPlatform(
   String? authKey,
   String? token,
 ) {
-  throw UnimplementedError();
-}
-
-Future<String> setFollowStatusFromPlatform(
-  String username,
-  String author,
-  bool follow,
-  String? postingKey,
-  String? authKey,
-  String? token,
-) {
-  throw UnimplementedError();
-}
-
-Future<String> setFollowStatusFromPlatform(
-  String username,
-  String author,
-  bool follow,
-  String? postingKey,
-  String? authKey,
-  String? token,
-) {
-  throw UnimplementedError();
-}
-
-Future<String> setFollowStatusFromPlatform(
-  String username,
-  String author,
-  bool follow,
-  String? postingKey,
-  String? authKey,
-  String? token,
-) {
-  throw UnimplementedError();
-}
-
-Future<String> setFollowStatusFromPlatform(
-  String username,
-  String author,
-  bool follow,
-  String? postingKey,
-  String? authKey,
-  String? token,
-) {
-  throw UnimplementedError();
+  return setFollowStatusFromPlatform(
+    username,
+    author,
+    follow,
+    postingKey,
+    authKey,
+    token,
+  );
 }

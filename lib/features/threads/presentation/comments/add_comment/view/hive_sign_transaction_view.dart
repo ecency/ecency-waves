@@ -48,7 +48,6 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       permlink: widget.data.permlink,
       existingPermlink: widget.data.existingPermlink,
       baseTags: widget.data.baseTags,
-      follow: widget.data.follow,
       onFailure: () {
         Navigator.pop(context);
       },

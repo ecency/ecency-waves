@@ -190,59 +190,14 @@ Future<String> updateFollowStatusFromPlatform(
   String? authKey,
   String? token,
 ) async {
-  final String id = 'followUser${DateTime.now().toIso8601String()}';
-  final String response = await platform.invokeMethod('followUser', {
-    'id': id,
-    'username': username,
-    'author': author,
-    'follow': follow,
-    'postingKey': postingKey ?? '',
-    'token': token ?? '',
-    'authKey': authKey ?? '',
-  });
-  return response;
-}
-
-Future<String> setFollowStatusFromPlatform(
-  String username,
-  String author,
-  bool follow,
-  String? postingKey,
-  String? authKey,
-  String? token,
-) async {
-  final String id = 'followUser${DateTime.now().toIso8601String()}';
-  final String response = await platform.invokeMethod('followUser', {
-    'id': id,
-    'username': username,
-    'author': author,
-    'follow': follow,
-    'postingKey': postingKey ?? '',
-    'token': token ?? '',
-    'authKey': authKey ?? '',
-  });
-  return response;
-}
-
-Future<String> setFollowStatusFromPlatform(
-  String username,
-  String author,
-  bool follow,
-  String? postingKey,
-  String? authKey,
-  String? token,
-) async {
-  final String id = 'followUser${DateTime.now().toIso8601String()}';
-  final String response = await platform.invokeMethod('followUser', {
-    'id': id,
-    'username': username,
-    'author': author,
-    'follow': follow,
-    'postingKey': postingKey ?? '',
-    'token': token ?? '',
-    'authKey': authKey ?? '',
-  });
-  return response;
+  return setFollowStatusFromPlatform(
+    username,
+    author,
+    follow,
+    postingKey,
+    authKey,
+    token,
+  );
 }
 
 Future<String> castPollVoteFromPlatform(

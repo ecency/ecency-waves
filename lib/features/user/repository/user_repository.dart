@@ -28,14 +28,4 @@ class UserRepository {
       String follower, String following) async {
     return await _apiService.loadFollowRelationship(follower, following);
   }
-
-  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
-      String follower, String following) async {
-    return await _apiService.fetchFollowRelationship(follower, following);
-  }
-
-  Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(
-      String follower, String following) async {
-    return await _apiService.fetchFollowRelationship(follower, following);
-  }
 }

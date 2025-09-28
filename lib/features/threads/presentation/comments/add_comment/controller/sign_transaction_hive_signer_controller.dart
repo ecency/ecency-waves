@@ -163,39 +163,6 @@ class SignTransactionHiveSignerController {
     required VoidCallback onFailure,
     required Function(String) showToast,
   }) async {
-    ActionSingleDataResponse response = await _threadRepository
-        .broadcastTransactionUsingHiveSigner<FollowBroadcastModel>(
-      authdata.auth.token,
-      BroadcastModel(
-        type: BroadCastType.custom_json,
-        data: FollowBroadcastModel(
-          username: authdata.accountName,
-          author: author,
-          follow: follow,
-        ),
-      ),
-    );
-    if (response.isSuccess) {
-      showToast(follow
-          ? "User has been followed successfully"
-          : "User has been unfollowed successfully");
-      onSuccess();
-    } else {
-      showToast(follow
-          ? "Following the user failed"
-          : "Unfollowing the user failed");
-      onFailure();
-    }
-  }
-
-  Future<void> initFollowProcess({
-    required String author,
-    required bool follow,
-    required UserAuthModel<HiveSignerAuthModel> authdata,
-    required VoidCallback onSuccess,
-    required VoidCallback onFailure,
-    required Function(String) showToast,
-  }) async {
     final response = await _threadRepository
         .broadcastTransactionUsingHiveSigner<FollowBroadcastModel>(
       authdata.auth.token,
