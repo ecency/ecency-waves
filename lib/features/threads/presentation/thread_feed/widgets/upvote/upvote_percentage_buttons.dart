@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waves/core/utilities/responsive/responsive_layout.dart';
 
 class UpVotePercentageButtons extends StatelessWidget {
   const UpVotePercentageButtons(
@@ -14,12 +15,14 @@ class UpVotePercentageButtons extends StatelessWidget {
     final textColor = isDark
         ? Colors.black87
         : theme.colorScheme.onPrimary;
+    final responsive = ResponsiveLayout.of(context);
+    final avatarRadius = responsive.scaleAvatar(20);
     return GestureDetector(
       onTap: () {
         onTap(percentageValue);
       },
       child: CircleAvatar(
-        radius: 20,
+        radius: avatarRadius,
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: textColor,
         child: Text(

@@ -9,6 +9,7 @@ import 'package:waves/core/locales/app_locales.dart';
 import 'package:waves/core/providers/global_providers.dart';
 import 'package:waves/core/routes/app_router.dart';
 import 'package:waves/core/services/user_local_service.dart';
+import 'package:waves/core/utilities/responsive/responsive_layout.dart';
 import 'package:waves/core/utilities/theme/theme_mode.dart';
 import 'core/dependency_injection/dependency_injection.dart' as get_it;
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -100,6 +101,24 @@ class MyApp extends StatelessWidget {
             darkTheme: themeController.getDarkTheme(),
             themeMode: themeController.themeMode,
             debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              final mediaQuery = MediaQuery.of(context);
+              final responsiveData =
+                  ResponsiveLayoutData.fromMediaQuery(mediaQuery);
+              final baseScale = mediaQuery.textScaler.scale(1.0);
+              final combinedScale =
+                  baseScale * responsiveData.textScaleFactor;
+
+              return MediaQuery(
+                data: mediaQuery.copyWith(
+                  textScaler: TextScaler.linear(combinedScale),
+                ),
+                child: ResponsiveLayout(
+                  data: responsiveData,
+                  child: child ?? const SizedBox.shrink(),
+                ),
+              );
+            },
           );
         },
       ),

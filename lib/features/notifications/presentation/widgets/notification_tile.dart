@@ -3,6 +3,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/common/widgets/inkwell_wrapper.dart';
 import 'package:waves/core/locales/locale_text.dart';
+import 'package:waves/core/utilities/responsive/responsive_layout.dart';
 import 'package:waves/features/notifications/models/notification_model.dart';
 
 class NotificationTile extends StatelessWidget {
@@ -32,25 +33,36 @@ class NotificationTile extends StatelessWidget {
     final title = _buildTitle();
     final subtitle = _buildSubtitle(title);
 
+    final responsive = ResponsiveLayout.of(context);
+    final borderRadius = BorderRadius.circular(
+      responsive.value(mobile: 16, tablet: 18, desktop: 20),
+    );
+    final horizontalPadding = responsive.scaleComponent(12);
+    final verticalPadding = responsive.scaleComponent(8);
+    final interItemSpacing = responsive.scaleComponent(12);
+
     return InkWellWrapper(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: borderRadius,
       child: Container(
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: borderRadius,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             UserProfileImage(
               url: notification.actor.isEmpty ? null : notification.actor,
               radius: 22,
-              verticalPadding: 4,
+              verticalPadding: responsive.scaleComponent(4),
               onTap: onAvatarTap,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: interItemSpacing),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +74,7 @@ class NotificationTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 4),
+                    SizedBox(height: responsive.scaleComponent(4)),
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall,
@@ -70,7 +82,7 @@ class NotificationTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  const SizedBox(height: 6),
+                  SizedBox(height: responsive.scaleComponent(6)),
                   Text(
                     timeago.format(notification.timestamp),
                     style: theme.textTheme.bodySmall?.copyWith(
