@@ -60,6 +60,8 @@
     "no_users_found": "未找到用户",
     "not_logged_in": "未登录",
     "notifications": "通知",
+    "for_you": "为你",
+    "following": "关注",
     "notifications_delegated_to_you": "{} 委托给你 {}",
     "notifications_followed_you": "{} 关注你",
     "notifications_from_user": "{} 来自 {}",
