@@ -24,6 +24,7 @@ import 'package:waves/features/threads/presentation/comments/add_comment/view/ad
 import 'package:waves/features/threads/presentation/comments/add_comment/view/hive_sign_transaction_view.dart';
 import 'package:waves/features/threads/presentation/comments/comment_detail/view/comment_detail_view.dart';
 import 'package:waves/features/threads/presentation/thread_feed/view/thread_feed_view.dart';
+import 'package:waves/features/user/presentation/user_profile/view/follow_list_view.dart';
 import 'package:waves/features/user/presentation/user_profile/view/user_profile_view.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 import 'package:waves/features/welcome/view/welcome_view.dart';
@@ -191,6 +192,25 @@ class AppRouter {
           return UserProfileView(
             accountName: name,
             threadType: threadType,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/${Routes.followListView}',
+        name: Routes.followListView,
+        builder: (context, state) {
+          final name = state.uri.queryParameters[RouteKeys.accountName]!;
+          final followParam = state.uri.queryParameters[RouteKeys.followType];
+          final followType = followParam != null
+              ? enumFromString<FollowType>(
+                  followParam,
+                  FollowType.values,
+                  defaultValue: FollowType.followers,
+                )
+              : FollowType.followers;
+          return FollowListView(
+            accountName: name,
+            followType: followType,
           );
         },
       ),

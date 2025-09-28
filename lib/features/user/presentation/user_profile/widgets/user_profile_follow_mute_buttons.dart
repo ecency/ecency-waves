@@ -58,11 +58,11 @@ class _UserProfileFollowMuteButtonsState
     final bool disableFollowButton =
         _isFetchingFollow || _isUpdatingFollow || viewer == widget.author;
     final bool isFollowing = _isFollowing;
-    final followLabel = isFollowing ? "Unfollow User" : "Follow User";
+    final followLabel = isFollowing ? "Unfollow" : "Follow";
 
     return DuoTextButtons(
       buttonHeight: widget.buttonHeight,
-      buttonOneText: "Block User",
+      buttonOneText: "Block",
       buttonOneOnTap: () {
         BlockUserHelper.blockUser(
           context,

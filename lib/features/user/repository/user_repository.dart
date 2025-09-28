@@ -2,6 +2,7 @@
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/services/data_service/api_service.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
+import 'package:waves/features/user/models/follow_user_item_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 
 class UserRepository {
@@ -27,5 +28,29 @@ class UserRepository {
   Future<ActionSingleDataResponse<bool>> loadFollowRelationship(
       String follower, String following) async {
     return await _apiService.loadFollowRelationship(follower, following);
+  }
+
+  Future<ActionListDataResponse<FollowUserItemModel>> getFollowers(
+    String accountName, {
+    String? start,
+    int limit = 20,
+  }) async {
+    return await _apiService.getFollowers(
+      accountName,
+      start: start,
+      limit: limit,
+    );
+  }
+
+  Future<ActionListDataResponse<FollowUserItemModel>> getFollowing(
+    String accountName, {
+    String? start,
+    int limit = 20,
+  }) async {
+    return await _apiService.getFollowing(
+      accountName,
+      start: start,
+      limit: limit,
+    );
   }
 }

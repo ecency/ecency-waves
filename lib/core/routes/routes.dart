@@ -13,6 +13,7 @@ class Routes {
   static const String hiveSignTransactionView = 'hiveSignTransactionView';
   static const String commentDetailView = 'commentDetailView';
   static const String userProfileView = 'userProfile';
+  static const String followListView = 'followList';
   static const String settingsView = 'settings';
   static const String exploreView = 'explore';
   static const String tagFeedView = 'tagFeed';

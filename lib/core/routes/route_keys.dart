@@ -5,4 +5,5 @@ class RouteKeys {
   static const String isHiveKeyChainLogin = 'isHiveKeyChainLogin';
   static const String tag = 'tag';
   static const String threadType = 'threadType';
+  static const String followType = 'followType';
 }

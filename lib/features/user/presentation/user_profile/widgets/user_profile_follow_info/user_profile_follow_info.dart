@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/text_box.dart';
+import 'package:waves/core/routes/route_keys.dart';
+import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
+import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
 import 'package:waves/features/user/presentation/user_profile/controller/user_profile_controller.dart';
 
@@ -26,7 +30,7 @@ class FollowInfo extends StatelessWidget {
         if (direction == Axis.vertical) {
           return Column(
             children: [
-              ..._buildStats(data, withGap: true),
+              ..._buildStats(context, data, withGap: true),
               _buildDivider(Axis.vertical),
             ],
           );
@@ -38,7 +42,7 @@ class FollowInfo extends StatelessWidget {
             final hasTightHeight =
                 constraints.hasBoundedHeight && constraints.maxHeight <= 40;
             final useColumnLayout = isWide && !hasTightHeight;
-            final stats = _buildStats(data, withGap: !useColumnLayout);
+            final stats = _buildStats(context, data, withGap: !useColumnLayout);
 
             if (useColumnLayout) {
               return Column(
@@ -68,6 +72,7 @@ class FollowInfo extends StatelessWidget {
   }
 
   List<Widget> _buildStats(
+    BuildContext context,
     FollowCountModel? data, {
     required bool withGap,
   }) {
@@ -80,6 +85,7 @@ class FollowInfo extends StatelessWidget {
             horizontal: kScreenHorizontalPaddingDigit, vertical: 6),
         backgroundColor: Colors.transparent,
         text: "Followers ${data?.followerCount ?? 0}",
+        onTap: () => _openFollowList(context, FollowType.followers),
       ),
       TextBox(
         showBorder: true,
@@ -89,6 +95,7 @@ class FollowInfo extends StatelessWidget {
             horizontal: kScreenHorizontalPaddingDigit, vertical: 6),
         backgroundColor: Colors.transparent,
         text: "Following ${data?.followingCount ?? 0}",
+        onTap: () => _openFollowList(context, FollowType.following),
       ),
     ];
 
@@ -117,6 +124,16 @@ class FollowInfo extends StatelessWidget {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 15),
       child: Divider(),
+    );
+  }
+
+  void _openFollowList(BuildContext context, FollowType type) {
+    context.platformPushNamed(
+      Routes.followListView,
+      queryParameters: {
+        RouteKeys.accountName: accountName,
+        RouteKeys.followType: enumToString(type),
+      },
     );
   }
 }

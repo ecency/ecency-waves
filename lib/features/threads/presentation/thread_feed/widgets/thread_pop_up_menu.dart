@@ -53,7 +53,7 @@ class ThreadPopUpMenu extends StatelessWidget {
       entries.add(
         const PopupMenuItem<_ThreadMenuAction>(
           value: _ThreadMenuAction.block,
-          child: Text("Block User"),
+          child: Text("Block"),
         ),
       );
     }

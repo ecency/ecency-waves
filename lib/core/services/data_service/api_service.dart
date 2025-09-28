@@ -21,6 +21,7 @@ import 'package:waves/features/threads/models/thread_feeds/reported/report_repon
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/notifications/models/notification_model.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
+import 'package:waves/features/user/models/follow_user_item_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 import 'package:waves/features/explore/models/trending_tag_model.dart';
 import 'package:waves/features/explore/models/trending_author_model.dart';
@@ -855,6 +856,101 @@ class ApiService {
     String following,
   ) async {
     return _fetchFollowRelationship(follower, following);
+  }
+
+  Future<ActionListDataResponse<FollowUserItemModel>> getFollowers(
+    String accountName, {
+    String? start,
+    int limit = 20,
+  }) async {
+    return _fetchFollowUsers(
+      method: 'condenser_api.get_followers',
+      accountName: accountName,
+      start: start,
+      limit: limit,
+      parser: FollowUserItemModel.fromFollowerJson,
+    );
+  }
+
+  Future<ActionListDataResponse<FollowUserItemModel>> getFollowing(
+    String accountName, {
+    String? start,
+    int limit = 20,
+  }) async {
+    return _fetchFollowUsers(
+      method: 'condenser_api.get_following',
+      accountName: accountName,
+      start: start,
+      limit: limit,
+      parser: FollowUserItemModel.fromFollowingJson,
+    );
+  }
+
+  Future<ActionListDataResponse<FollowUserItemModel>> _fetchFollowUsers({
+    required String method,
+    required String accountName,
+    String? start,
+    required int limit,
+    required FollowUserItemModel Function(Map<String, dynamic>) parser,
+  }) async {
+    try {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': method,
+        'params': [accountName, start ?? '', 'blog', limit],
+        'id': 1,
+      });
+
+      if (response == null) {
+        return ActionListDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: 'RPC error: no node responded',
+        );
+      }
+
+      final decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        return ActionListDataResponse(
+          status: ResponseStatus.failed,
+          errorMessage: _rpcErrorMessage(response),
+        );
+      }
+
+      final result = (decoded is Map) ? decoded['result'] : null;
+      if (result is List) {
+        final items = <FollowUserItemModel>[];
+        for (final entry in result) {
+          if (entry is Map) {
+            final map = Map<String, dynamic>.from(entry as Map);
+            final item = parser(map);
+            if (item.name.isNotEmpty) {
+              items.add(item);
+            }
+          }
+        }
+        if (start != null && start.isNotEmpty && items.isNotEmpty) {
+          if (items.first.name == start) {
+            items.removeAt(0);
+          }
+        }
+        return ActionListDataResponse<FollowUserItemModel>(
+          data: items,
+          status: ResponseStatus.success,
+          isSuccess: true,
+          errorMessage: '',
+        );
+      }
+
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: 'Unexpected response',
+      );
+    } catch (e) {
+      return ActionListDataResponse(
+        status: ResponseStatus.failed,
+        errorMessage: e.toString(),
+      );
+    }
   }
 
   // -------------------------- HiveSigner broadcast --------------------------
