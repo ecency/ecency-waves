@@ -16,12 +16,14 @@ class VoteIconButton extends StatefulWidget {
       required this.item,
       this.iconColor,
       this.textStyle,
-      this.iconGap});
+      this.iconGap,
+      this.showCount = true});
 
   final ThreadFeedModel item;
   final Color? iconColor;
   final TextStyle? textStyle;
   final double? iconGap;
+  final bool showCount;
 
   @override
   State<VoteIconButton> createState() => _VoteIconButtonState();
@@ -74,22 +76,24 @@ class _VoteIconButtonState extends State<VoteIconButton> {
             ),
           ),
         ),
-        if (items.isNotEmpty) Gap(widget.iconGap ?? 5),
-        items.isNotEmpty
-            ? InkWellWrapper(
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                onTap: () => _showVoters(context),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        if (widget.showCount && items.isNotEmpty)
+          Gap(widget.iconGap ?? 5),
+        if (widget.showCount)
+          items.isNotEmpty
+              ? InkWellWrapper(
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  onTap: () => _showVoters(context),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    child: textWidget,
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 4, vertical: 4),
                   child: textWidget,
-                ),
-              )
-            : Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: textWidget,
-              )
+                )
       ],
     );
   }

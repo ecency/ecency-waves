@@ -1,11 +1,9 @@
-import 'package:cool_dropdown/cool_dropdown.dart';
-import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/classes/thread.dart';
 
-class ThreadTypeAppBarDropdown extends StatefulWidget {
+class ThreadTypeAppBarDropdown extends StatelessWidget {
   const ThreadTypeAppBarDropdown({
     super.key,
     required this.value,
@@ -14,22 +12,6 @@ class ThreadTypeAppBarDropdown extends StatefulWidget {
 
   final ThreadFeedType value;
   final ValueChanged<ThreadFeedType> onChanged;
-
-  @override
-  State<ThreadTypeAppBarDropdown> createState() =>
-      _ThreadTypeAppBarDropdownState();
-}
-
-class _ThreadTypeAppBarDropdownState
-    extends State<ThreadTypeAppBarDropdown> {
-  final DropdownController<ThreadFeedType> _dropdownController =
-      DropdownController<ThreadFeedType>();
-
-  @override
-  void dispose() {
-    _dropdownController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,94 +29,78 @@ class _ThreadTypeAppBarDropdownState
 
     final List<ThreadFeedType> types =
         ThreadFeedType.values.where((e) => e != ThreadFeedType.all).toList();
-    final String selectedLabel =
-        Thread.gethreadName(type: widget.value);
+    final String selectedLabel = Thread.gethreadName(type: value);
 
-    return AnimatedContainer(
-      key: const ValueKey('dropdown'),
-      duration: const Duration(milliseconds: 200),
-      width: 175,
-      child: Stack(
-        children: [
-          CoolDropdown<ThreadFeedType>(
-            controller: _dropdownController,
-            defaultItem: CoolDropdownItem<ThreadFeedType>(
-              isSelected: true,
-              label: selectedLabel,
-              value: widget.value,
-            ),
-            dropdownItemOptions: DropdownItemOptions(
-              render: DropdownItemRender.all,
-              selectedBoxDecoration:
-                  BoxDecoration(color: Colors.grey.shade600),
-              textStyle: TextStyle(color: theme.primaryColorDark),
-              selectedTextStyle: TextStyle(color: theme.primaryColorDark),
-            ),
-            dropdownOptions: DropdownOptions(
-              color: dropdownBackground,
-            ),
-            dropdownTriangleOptions:
-                const DropdownTriangleOptions(height: 5, width: 0),
-            dropdownList: types
-                .map(
-                  (e) => CoolDropdownItem<ThreadFeedType>(
-                    isSelected: e == widget.value,
-                    label: Thread.gethreadName(type: e),
-                    value: e,
+    return PopupMenuButton<ThreadFeedType>(
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      tooltip: '',
+      color: dropdownBackground,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      constraints: const BoxConstraints(minWidth: 175),
+      onSelected: (type) {
+        if (type != value) {
+          onChanged(type);
+        }
+      },
+      itemBuilder: (context) => types
+          .map(
+            (type) => PopupMenuItem<ThreadFeedType>(
+              value: type,
+              child: Row(
+                children: [
+                  if (type == value) ...[
+                    Icon(
+                      Icons.check,
+                      size: 18,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const Gap(8),
+                  ] else
+                    const SizedBox(width: 26),
+                  Expanded(
+                    child: Text(
+                      Thread.gethreadName(type: type),
+                      style: theme.textTheme.bodyMedium,
+                    ),
                   ),
-                )
-                .toList(),
-            onChange: (ThreadFeedType type) {
-              if (widget.value != type) {
-                widget.onChanged(type);
-              }
-              _dropdownController.close();
-            },
-            resultOptions: ResultOptions(
-              placeholder: selectedLabel,
-              render: ResultRender.all,
-              openBoxDecoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(6)),
-                color: dropdownBackground,
-                border: Border.all(color: Colors.transparent),
+                ],
               ),
-              boxDecoration: BoxDecoration(
-                color: dropdownBackground,
-                borderRadius: const BorderRadius.all(Radius.circular(6)),
-                border: Border.all(color: Colors.transparent),
-              ),
-              textStyle: const TextStyle(color: Colors.transparent),
             ),
+          )
+          .toList(),
+      child: SizedBox(
+        key: const ValueKey('dropdown'),
+        width: 175,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: dropdownBackground,
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
           ),
-          Positioned.fill(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: IgnorePointer(
-              child: Container(
-                color: dropdownBackground,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      Thread.gethreadName(type: widget.value),
-                      textAlign: TextAlign.center,
-                      style: titleStyle,
-                    ),
-                    const Gap(2),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Icon(
-                        Icons.arrow_drop_down,
-                        color: foregroundColor,
-                      ),
-                    ),
-                  ],
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  selectedLabel,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: titleStyle,
                 ),
               ),
-            ),
+              const Gap(2),
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: foregroundColor,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

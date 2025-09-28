@@ -188,10 +188,24 @@ class _NotificationsViewState extends State<NotificationsView> {
         break;
     }
 
-    final author = notification.contentAuthor;
-    final permlink = notification.permlink;
+    final contentAuthor = notification.contentAuthor;
+    final contentPermlink = notification.permlink;
 
-    if (author == null || author.isEmpty || permlink == null || permlink.isEmpty) {
+    String? targetAuthor = contentAuthor;
+    String? targetPermlink = contentPermlink;
+
+    if (type == 'reply') {
+      final parentAuthor = notification.parentAuthor;
+      final parentPermlink = notification.parentPermlink;
+      if (parentAuthor != null && parentAuthor.isNotEmpty &&
+          parentPermlink != null && parentPermlink.isNotEmpty) {
+        targetAuthor = parentAuthor;
+        targetPermlink = parentPermlink;
+      }
+    }
+
+    if (targetAuthor == null || targetAuthor.isEmpty ||
+        targetPermlink == null || targetPermlink.isEmpty) {
       _openProfile(notification.actor);
       return;
     }
@@ -213,7 +227,8 @@ class _NotificationsViewState extends State<NotificationsView> {
     try {
       final repository = getIt<ThreadRepository>();
       final observer = context.read<UserController>().userName;
-      final response = await repository.getcomments(author, permlink, observer);
+      final response =
+          await repository.getcomments(targetAuthor, targetPermlink, observer);
 
       if (dialogContext != null) {
         Navigator.of(dialogContext!).pop();
@@ -226,7 +241,8 @@ class _NotificationsViewState extends State<NotificationsView> {
         final items = response.data!;
         ThreadFeedModel? target;
         for (final item in items) {
-          if (item.author == author && item.permlink == permlink) {
+          if (item.author == targetAuthor &&
+              item.permlink == targetPermlink) {
             target = item;
             break;
           }

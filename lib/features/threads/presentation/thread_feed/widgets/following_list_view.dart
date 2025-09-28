@@ -43,6 +43,7 @@ class FollowingListView extends StatelessWidget {
                         ThreadTile(
                           item: items[index],
                           threadType: controller.threadType,
+                          showVoteAndCommentCount: false,
                         ),
                         if (index == items.length - 1)
                           PaginationLoader(

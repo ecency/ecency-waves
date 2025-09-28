@@ -15,6 +15,7 @@ class InteractionTile extends StatelessWidget {
   const InteractionTile(
       {this.hideCommentInfo = false,
       this.showVoteAndComment = true,
+      this.showVoteAndCommentCount = true,
       super.key,
       required this.item,
       this.removeCommentGesture = false});
@@ -22,6 +23,7 @@ class InteractionTile extends StatelessWidget {
   final ThreadFeedModel item;
   final bool hideCommentInfo;
   final bool showVoteAndComment;
+  final bool showVoteAndCommentCount;
   final bool removeCommentGesture;
 
   @override
@@ -51,6 +53,7 @@ class InteractionTile extends StatelessWidget {
           iconColor: iconColor,
           iconGap: iconGap,
           textStyle: style(theme),
+          showCount: showVoteAndCommentCount,
         ),
       );
     }
@@ -79,7 +82,8 @@ class InteractionTile extends StatelessWidget {
           icon: Icons.comment,
           iconColor: iconColor,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
-          text: "${item.children ?? 0}",
+          text:
+              showVoteAndCommentCount ? "${item.children ?? 0}" : null,
           iconGap: iconGap,
           textStyle: style(theme),
         ),

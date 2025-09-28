@@ -16,6 +16,7 @@ class ThreadTile extends StatelessWidget {
       {this.hideCommentInfo = false,
       this.threadType = ThreadFeedType.ecency,
       this.showVoteAndComment = true,
+      this.showVoteAndCommentCount = true,
       super.key,
       required this.item});
 
@@ -23,6 +24,7 @@ class ThreadTile extends StatelessWidget {
   final bool hideCommentInfo;
   final ThreadFeedType threadType;
   final bool showVoteAndComment;
+  final bool showVoteAndCommentCount;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,7 @@ class ThreadTile extends StatelessWidget {
                   item: item,
                   hideCommentInfo: hideCommentInfo,
                   showVoteAndComment: showVoteAndComment,
+                  showVoteAndCommentCount: showVoteAndCommentCount,
                 )
               ],
             ),

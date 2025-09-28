@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/routes/routes.dart';
+import 'package:waves/features/notifications/presentation/controller/notifications_controller.dart';
 import 'package:waves/features/user/view/user_controller.dart';
 
 class MainNavigationShell extends StatelessWidget {
@@ -19,38 +20,26 @@ class MainNavigationShell extends StatelessWidget {
     _NavigationDestination(
       routeName: Routes.initialView,
       location: '/',
-      item: BottomNavigationBarItem(
-        icon: Icon(Icons.home_outlined),
-        activeIcon: Icon(Icons.home),
-        label: '',
-      ),
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home,
     ),
     _NavigationDestination(
       routeName: Routes.searchView,
       location: '/${Routes.searchView}',
-      item: BottomNavigationBarItem(
-        icon: Icon(Icons.search_outlined),
-        activeIcon: Icon(Icons.search),
-        label: '',
-      ),
+      icon: Icons.search_outlined,
+      activeIcon: Icons.search,
     ),
     _NavigationDestination(
       routeName: Routes.exploreView,
       location: '/${Routes.exploreView}',
-      item: BottomNavigationBarItem(
-        icon: Icon(Icons.explore_outlined),
-        activeIcon: Icon(Icons.explore),
-        label: '',
-      ),
+      icon: Icons.explore_outlined,
+      activeIcon: Icons.explore,
     ),
     _NavigationDestination(
       routeName: Routes.notificationsView,
       location: '/${Routes.notificationsView}',
-      item: BottomNavigationBarItem(
-        icon: Icon(Icons.notifications_none_outlined),
-        activeIcon: Icon(Icons.notifications),
-        label: '',
-      ),
+      icon: Icons.notifications_none_outlined,
+      activeIcon: Icons.notifications,
     ),
   ];
 
@@ -59,6 +48,9 @@ class MainNavigationShell extends StatelessWidget {
     final theme = Theme.of(context);
     final isLoggedIn =
         context.select<UserController, bool>((controller) => controller.isUserLoggedIn);
+    final unreadCount = context.select<NotificationsController, int>(
+      (controller) => controller.unreadCount,
+    );
     final location = state.uri.path;
     var currentIndex =
         _destinations.indexWhere((destination) => destination.location == location);
@@ -86,7 +78,27 @@ class MainNavigationShell extends StatelessWidget {
             context.goNamed(destination.routeName);
           }
         },
-        items: _destinations.map((destination) => destination.item).toList(),
+        items: _destinations.map((destination) {
+          final isNotifications = destination.routeName == Routes.notificationsView;
+          final iconWidget = isNotifications
+              ? _NotificationNavIcon(
+                  iconData: destination.icon,
+                  unreadCount: unreadCount,
+                )
+              : Icon(destination.icon);
+          final activeIconWidget = isNotifications
+              ? _NotificationNavIcon(
+                  iconData: destination.activeIcon,
+                  unreadCount: unreadCount,
+                )
+              : Icon(destination.activeIcon);
+
+          return BottomNavigationBarItem(
+            icon: iconWidget,
+            activeIcon: activeIconWidget,
+            label: destination.label,
+          );
+        }).toList(),
       ),
     );
   }
@@ -96,10 +108,75 @@ class _NavigationDestination {
   const _NavigationDestination({
     required this.routeName,
     required this.location,
-    required this.item,
+    required this.icon,
+    required this.activeIcon,
+    this.label = '',
   });
 
   final String routeName;
   final String location;
-  final BottomNavigationBarItem item;
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+}
+
+class _NotificationNavIcon extends StatelessWidget {
+  const _NotificationNavIcon({
+    required this.iconData,
+    required this.unreadCount,
+  });
+
+  final IconData iconData;
+  final int unreadCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = Icon(iconData);
+
+    if (unreadCount <= 0) {
+      return icon;
+    }
+
+    final theme = Theme.of(context);
+    final text = unreadCount > 99 ? '99+' : unreadCount.toString();
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        icon,
+        Positioned(
+          right: -8,
+          top: -4,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.error,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: theme.scaffoldBackgroundColor,
+                width: 1,
+              ),
+            ),
+            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+            child: Center(
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onError,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ) ??
+                    TextStyle(
+                      color: theme.colorScheme.onError,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
