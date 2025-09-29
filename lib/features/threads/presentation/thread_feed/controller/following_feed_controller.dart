@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
+import 'package:waves/core/services/moderation_service.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
@@ -14,6 +15,7 @@ class FollowingFeedController extends ChangeNotifier
     with PaginationMixin
     implements ControllerInterface<ThreadFeedModel> {
   final ThreadRepository _repository = getIt<ThreadRepository>();
+  final ModerationService _moderationService = getIt<ModerationService>();
 
   FollowingFeedController({required String? initialObserver})
       : observer = initialObserver,
@@ -31,6 +33,10 @@ class FollowingFeedController extends ChangeNotifier
 
   String? _lastAuthor;
   String? _lastPermlink;
+
+  Set<String> _mutedAuthors = const <String>{};
+  bool _hasLoadedMutedAuthors = false;
+  bool _shouldForceMutedRefresh = true;
 
   @override
   List<ThreadFeedModel> items = [];
@@ -53,6 +59,11 @@ class FollowingFeedController extends ChangeNotifier
   Future<void> _fetchPage() async {
     if (!isUserLoggedIn) return;
 
+    final mutedAuthors = await _loadMutedAuthors(
+      forceRefresh: _shouldForceMutedRefresh,
+    );
+    _shouldForceMutedRefresh = false;
+
     final ActionListDataResponse<ThreadFeedModel> response =
         await _repository.getFollowingWaves(
       _container,
@@ -70,7 +81,10 @@ class FollowingFeedController extends ChangeNotifier
         }
         isPageEnded = true;
       } else {
-        final filtered = Thread.filterInvisibleContent(data);
+        final filtered = Thread.filterInvisibleContent(
+          data,
+          mutedAuthors: mutedAuthors,
+        );
         final last = data.last;
         _lastAuthor = last.author;
         _lastPermlink = last.permlink;
@@ -116,6 +130,8 @@ class FollowingFeedController extends ChangeNotifier
       return;
     }
     viewState = ViewState.loading;
+    _hasLoadedMutedAuthors = false;
+    _shouldForceMutedRefresh = true;
     notifyListeners();
     await _fetchPage();
   }
@@ -123,6 +139,8 @@ class FollowingFeedController extends ChangeNotifier
   Future<void> updateObserver(String? newObserver) async {
     if (observer == newObserver) return;
     observer = newObserver;
+    _hasLoadedMutedAuthors = false;
+    _shouldForceMutedRefresh = true;
     await refresh();
   }
 
@@ -144,6 +162,25 @@ class FollowingFeedController extends ChangeNotifier
     errorMessage = null;
     isPageEnded = false;
     isNextPageLoading = false;
+    _hasLoadedMutedAuthors = false;
+  }
+
+  Future<Set<String>> _loadMutedAuthors({bool forceRefresh = false}) async {
+    if (!isUserLoggedIn) {
+      _mutedAuthors = const <String>{};
+      _hasLoadedMutedAuthors = true;
+      return _mutedAuthors;
+    }
+
+    if (!_hasLoadedMutedAuthors || forceRefresh) {
+      _mutedAuthors = await _moderationService.loadMutedAccounts(
+        observer,
+        forceRefresh: forceRefresh,
+      );
+      _hasLoadedMutedAuthors = true;
+    }
+
+    return _mutedAuthors;
   }
 
   bool removeAuthorContent(String author) {

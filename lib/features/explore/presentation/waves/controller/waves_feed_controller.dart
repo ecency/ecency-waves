@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
+import 'package:waves/core/services/moderation_service.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
@@ -13,12 +14,17 @@ class WavesFeedController extends ChangeNotifier
     with PaginationMixin
     implements ControllerInterface<ThreadFeedModel> {
   final ExploreRepository _exploreRepository = getIt<ExploreRepository>();
+  final ModerationService _moderationService = getIt<ModerationService>();
 
   final String? tag;
   final String? username;
   ThreadFeedType threadType;
   String? errorMessage;
   String? observer;
+
+  Set<String> _mutedAuthors = const <String>{};
+  bool _hasLoadedMutedAuthors = false;
+  bool _shouldForceMutedRefresh = false;
 
   String? _lastAuthor;
   String? _lastPermlink;
@@ -54,6 +60,10 @@ class WavesFeedController extends ChangeNotifier
 
   Future<void> _fetchPage() async {
     final container = _getContainer();
+    final mutedAuthors = await _loadMutedAuthors(
+      forceRefresh: _shouldForceMutedRefresh,
+    );
+    _shouldForceMutedRefresh = false;
     ActionListDataResponse<ThreadFeedModel> waveRes;
     if (tag != null) {
       waveRes = await _exploreRepository.getTagWaves(
@@ -78,7 +88,10 @@ class WavesFeedController extends ChangeNotifier
     if (waveRes.isSuccess && waveRes.data != null) {
       final data = waveRes.data!;
       if (data.isNotEmpty) {
-        final filtered = Thread.filterInvisibleContent(data);
+        final filtered = Thread.filterInvisibleContent(
+          data,
+          mutedAuthors: mutedAuthors,
+        );
         final last = data.last;
         _lastAuthor = last.author;
         _lastPermlink = last.permlink;
@@ -125,6 +138,8 @@ class WavesFeedController extends ChangeNotifier
     errorMessage = null;
     isPageEnded = false;
     viewState = ViewState.loading;
+    _hasLoadedMutedAuthors = false;
+    _shouldForceMutedRefresh = true;
     notifyListeners();
     init();
   }
@@ -151,6 +166,8 @@ class WavesFeedController extends ChangeNotifier
       return;
     }
     observer = value;
+    _hasLoadedMutedAuthors = false;
+    _shouldForceMutedRefresh = true;
     refresh();
   }
 
@@ -159,6 +176,25 @@ class WavesFeedController extends ChangeNotifier
       threadType = type;
       refresh();
     }
+  }
+
+  Future<Set<String>> _loadMutedAuthors({bool forceRefresh = false}) async {
+    final normalizedObserver = observer?.trim();
+    if (normalizedObserver == null || normalizedObserver.isEmpty) {
+      _mutedAuthors = const <String>{};
+      _hasLoadedMutedAuthors = true;
+      return _mutedAuthors;
+    }
+
+    if (!_hasLoadedMutedAuthors || forceRefresh) {
+      _mutedAuthors = await _moderationService.loadMutedAccounts(
+        normalizedObserver,
+        forceRefresh: forceRefresh,
+      );
+      _hasLoadedMutedAuthors = true;
+    }
+
+    return _mutedAuthors;
   }
 
   String _getContainer() {

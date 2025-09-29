@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/providers/bookmark_provider.dart';
+import 'package:waves/core/services/moderation_service.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
@@ -22,6 +23,7 @@ class ThreadFeedController extends ChangeNotifier
     implements ControllerInterface<ThreadFeedModel> {
   final ThreadRepository _repository = getIt<ThreadRepository>();
   final ThreadLocalRepository _localRepository = getIt<ThreadLocalRepository>();
+  final ModerationService _moderationService = getIt<ModerationService>();
   late ThreadFeedType threadType;
   final AccountPostType _postType = AccountPostType.posts;
 
@@ -37,6 +39,10 @@ class ThreadFeedController extends ChangeNotifier
   List<ThreadFeedModel> items = [];
   List<ThreadFeedModel> newFeeds = [];
 
+  Set<String> _mutedAuthors = const <String>{};
+  bool _hasLoadedMutedAuthors = false;
+  bool _shouldForceMutedRefresh = true;
+
   @override
   ViewState viewState = ViewState.loading;
 
@@ -48,6 +54,8 @@ class ThreadFeedController extends ChangeNotifier
 
   @override
   Future<void> init() async {
+    await _ensureMutedAuthors(forceRefresh: _shouldForceMutedRefresh);
+    _shouldForceMutedRefresh = false;
     if (threadType == ThreadFeedType.all) {
       await _loadAllFeedType(threadType);
     } else {
@@ -57,6 +65,8 @@ class ThreadFeedController extends ChangeNotifier
 
   Future<void> updateObserver(String? newObserver) async {
     observer = newObserver;
+    _hasLoadedMutedAuthors = false;
+    _shouldForceMutedRefresh = true;
     await refresh();
   }
 
@@ -71,6 +81,7 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   Future<void> _loadSingleFeedType(ThreadFeedType type) async {
+    await _ensureMutedAuthors();
     _loadLocalThreads(type);
 
     final accountPostResponse = await _repository.getAccountPosts(
@@ -162,7 +173,10 @@ class ThreadFeedController extends ChangeNotifier
               reportedThreads: _localRepository.readReportedThreads(),
             );
 
-            viewItems = Thread.filterInvisibleContent(viewItems);
+            viewItems = Thread.filterInvisibleContent(
+              viewItems,
+              mutedAuthors: _mutedAuthors,
+            );
 
             if (viewItems.isEmpty) {
               await _localRepository.removeLocalThreads(type);
@@ -196,6 +210,7 @@ class ThreadFeedController extends ChangeNotifier
 
   Future<void> _loadAllFeedType(ThreadFeedType type) async {
     try {
+      await _ensureMutedAuthors();
       final totalFeeds = await Future.wait<List<ThreadFeedModel>?>(
         [
           _loadFeed(ThreadFeedType.ecency),
@@ -246,7 +261,10 @@ class ThreadFeedController extends ChangeNotifier
         if (filtered.isEmpty && raw.isNotEmpty) {
           filtered = raw;
         }
-        return Thread.filterInvisibleContent(filtered);
+        return Thread.filterInvisibleContent(
+          filtered,
+          mutedAuthors: _mutedAuthors,
+        );
       }
     }
     return null;
@@ -258,7 +276,10 @@ class ThreadFeedController extends ChangeNotifier
       return;
     }
 
-    final filtered = Thread.filterInvisibleContent(localThreads);
+    final filtered = Thread.filterInvisibleContent(
+      localThreads,
+      mutedAuthors: _mutedAuthors,
+    );
     if (filtered.length != localThreads.length) {
       unawaited(_localRepository.writeLocalThreads(filtered, type));
     }
@@ -276,7 +297,11 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   void loadNewFeeds() {
-    items = [...newFeeds];
+    final filtered = Thread.filterInvisibleContent(
+      newFeeds,
+      mutedAuthors: _mutedAuthors,
+    );
+    items = [...filtered];
     isDataDisplayedFromServer = true;
     viewState = ViewState.data;
     _loadNextPageOnFewerResults(threadType);
@@ -314,6 +339,12 @@ class ThreadFeedController extends ChangeNotifier
         host != null &&
         (newComment.parentAuthor != host.author ||
             newComment.parentPermlink != host.permlink)) {
+      return;
+    }
+    if (Thread.filterInvisibleContent(
+      [newComment],
+      mutedAuthors: _mutedAuthors,
+    ).isEmpty) {
       return;
     }
     items = [newComment, ...items];
@@ -387,7 +418,10 @@ class ThreadFeedController extends ChangeNotifier
           if (newItems.isEmpty && raw.isNotEmpty) {
             newItems = raw;
           }
-          newItems = Thread.filterInvisibleContent(newItems);
+          newItems = Thread.filterInvisibleContent(
+            newItems,
+            mutedAuthors: _mutedAuthors,
+          );
           items = [...items, ...newItems];
           if (saveLocal) _localRepository.writeLocalThreads(items, type);
         }
@@ -420,6 +454,7 @@ class ThreadFeedController extends ChangeNotifier
       viewState = ViewState.loading;
       notifyListeners();
     }
+    _shouldForceMutedRefresh = true;
     _reset();
     await init();
   }
@@ -488,6 +523,10 @@ class ThreadFeedController extends ChangeNotifier
     pages = [];
     items = [];
     newFeeds = [];
+    _hasLoadedMutedAuthors = false;
+    if (_shouldForceMutedRefresh) {
+      _mutedAuthors = const <String>{};
+    }
   }
 
   ThreadInfo? _threadInfoAt(int index) {
@@ -508,5 +547,24 @@ class ThreadFeedController extends ChangeNotifier
       case ThreadFeedType.all:
         return "ecency.waves";
     }
+  }
+
+  Future<Set<String>> _ensureMutedAuthors({bool forceRefresh = false}) async {
+    final normalizedObserver = observer?.trim();
+    if (normalizedObserver == null || normalizedObserver.isEmpty) {
+      _mutedAuthors = const <String>{};
+      _hasLoadedMutedAuthors = true;
+      return _mutedAuthors;
+    }
+
+    if (!_hasLoadedMutedAuthors || forceRefresh) {
+      _mutedAuthors = await _moderationService.loadMutedAccounts(
+        normalizedObserver,
+        forceRefresh: forceRefresh,
+      );
+      _hasLoadedMutedAuthors = true;
+    }
+
+    return _mutedAuthors;
   }
 }
