@@ -319,65 +319,68 @@ class ApiService {
 
       List<dynamic> entries = [];
 
-      // Always fetch the root post first so payout fields are present
-      final rootRes = await _postWithFallback({
+      // bridge.get_discussion returns the post and its replies in one call and
+      // includes accurate stats.gray/stats.hide flags, so use it first.
+      final discussionRes = await _postWithFallback({
         'jsonrpc': '2.0',
-        'method': 'condenser_api.get_content',
-        'params': [accountName, permlink],
+        'method': 'bridge.get_discussion',
+        'params': {
+          'author': accountName,
+          'permlink': permlink,
+          if (observer != null) 'observer': observer,
+        },
         'id': 1,
       });
-      if (rootRes != null) {
-        final decoded = jsonDecode(rootRes.body);
-        final root = (decoded is Map) ? decoded['result'] : null;
-        if (root is Map && (root['id'] ?? 0) != 0) {
-          entries.add(root);
-        }
-      }
 
-      // Fetch top-level replies
-      final repliesRes = await _postWithFallback({
-        'jsonrpc': '2.0',
-        'method': 'condenser_api.get_content_replies',
-        'params': [accountName, permlink],
-        'id': 1,
-      });
-      if (repliesRes != null) {
-        final decoded = jsonDecode(repliesRes.body);
+      if (discussionRes != null) {
+        final decoded = jsonDecode(discussionRes.body);
         if (!(decoded is Map && decoded['error'] != null)) {
           final result = (decoded is Map) ? decoded['result'] : decoded;
-          if (result is List) {
+          if (result is Map<String, dynamic>) {
+            final post = result['post'];
+            if (post is Map<String, dynamic>) entries.add(post);
+            final replies = result['replies'];
+            if (replies is List) {
+              entries.addAll(replies);
+            } else if (replies is Map) {
+              entries.addAll((replies as Map).values);
+            }
+          } else if (result is List) {
             entries.addAll(result);
           }
         }
       }
 
-      // If we still only have the root (no replies), try bridge.get_discussion
-      if (entries.length <= 1) {
-        final discussionRes = await _postWithFallback({
+      // If bridge.get_discussion failed to yield data, fall back to condenser
+      // calls to keep compatibility with older nodes.
+      if (entries.isEmpty) {
+        // Always fetch the root post so payout fields are present
+        final rootRes = await _postWithFallback({
           'jsonrpc': '2.0',
-          'method': 'bridge.get_discussion',
-          'params': {
-            'author': accountName,
-            'permlink': permlink,
-            if (observer != null) 'observer': observer,
-          },
+          'method': 'condenser_api.get_content',
+          'params': [accountName, permlink],
           'id': 1,
         });
+        if (rootRes != null) {
+          final decoded = jsonDecode(rootRes.body);
+          final root = (decoded is Map) ? decoded['result'] : null;
+          if (root is Map && (root['id'] ?? 0) != 0) {
+            entries.add(root);
+          }
+        }
 
-        if (discussionRes != null) {
-          final decoded = jsonDecode(discussionRes.body);
+        // Fetch top-level replies
+        final repliesRes = await _postWithFallback({
+          'jsonrpc': '2.0',
+          'method': 'condenser_api.get_content_replies',
+          'params': [accountName, permlink],
+          'id': 1,
+        });
+        if (repliesRes != null) {
+          final decoded = jsonDecode(repliesRes.body);
           if (!(decoded is Map && decoded['error'] != null)) {
             final result = (decoded is Map) ? decoded['result'] : decoded;
-            if (result is Map<String, dynamic>) {
-              final post = result['post'];
-              if (post is Map<String, dynamic>) entries.add(post);
-              final replies = result['replies'];
-              if (replies is List) {
-                entries.addAll(replies);
-              } else if (replies is Map) {
-                entries.addAll((replies as Map).values);
-              }
-            } else if (result is List) {
+            if (result is List) {
               entries.addAll(result);
             }
           }

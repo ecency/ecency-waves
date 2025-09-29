@@ -62,6 +62,12 @@ class Thread {
     return (entry.authorReputation ?? 0) < 0;
   }
 
+  /// Removes any items that should not appear in feed views, such as entries
+  /// flagged by curators (`netRshares` threshold), muted content reported by
+  /// the API via `stats.gray`, observer-specific hides exposed through
+  /// `stats.hide`, or authors with very low reputation scores. This method is
+  /// used by all thread controllers before presenting data to ensure container
+  /// feeds stay in sync with Hive visibility rules.
   static List<ThreadFeedModel> filterInvisibleContent(
       List<ThreadFeedModel> items) {
     return items
