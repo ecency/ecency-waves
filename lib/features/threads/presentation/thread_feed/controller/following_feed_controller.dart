@@ -70,11 +70,16 @@ class FollowingFeedController extends ChangeNotifier
         }
         isPageEnded = true;
       } else {
-        items = [...items, ...data];
+        final filtered = Thread.filterInvisibleContent(data);
         final last = data.last;
         _lastAuthor = last.author;
         _lastPermlink = last.permlink;
-        viewState = ViewState.data;
+        if (filtered.isNotEmpty) {
+          items = [...items, ...filtered];
+          viewState = ViewState.data;
+        } else if (items.isEmpty) {
+          viewState = ViewState.empty;
+        }
         if (data.length < pageLimit) {
           isPageEnded = true;
         }
@@ -139,6 +144,21 @@ class FollowingFeedController extends ChangeNotifier
     errorMessage = null;
     isPageEnded = false;
     isNextPageLoading = false;
+  }
+
+  bool removeAuthorContent(String author) {
+    final filteredItems =
+        items.where((element) => element.author != author).toList();
+    if (filteredItems.length == items.length) {
+      return false;
+    }
+
+    items = filteredItems;
+    if (items.isEmpty) {
+      viewState = ViewState.empty;
+    }
+    notifyListeners();
+    return true;
   }
 
   static String _resolveContainer(ThreadFeedType type, {String? container}) {

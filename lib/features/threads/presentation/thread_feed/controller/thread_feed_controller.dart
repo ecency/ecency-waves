@@ -75,6 +75,7 @@ class ThreadFeedController extends ChangeNotifier
       _getThreadAccountName(),
       _postType,
       pageLimit,
+      observer: observer,
     );
     dumpAccountPosts(accountPostResponse);
 
@@ -222,8 +223,12 @@ class ThreadFeedController extends ChangeNotifier
   }
 
   Future<List<ThreadFeedModel>?> _loadFeed(ThreadFeedType type) async {
-    final postResponse =
-    await _repository.getFirstAccountPost(_getThreadAccountName(type: type), _postType, 1);
+    final postResponse = await _repository.getFirstAccountPost(
+      _getThreadAccountName(type: type),
+      _postType,
+      1,
+      observer: observer,
+    );
     if (postResponse.isSuccess && postResponse.data != null) {
       final response = await _repository.getcomments(
         postResponse.data!.author,
@@ -397,6 +402,40 @@ class ThreadFeedController extends ChangeNotifier
     }
     _reset();
     await init();
+  }
+
+  bool removeAuthorContent(String author) {
+    final filteredItems =
+        items.where((element) => element.author != author).toList();
+    final filteredNewFeeds =
+        newFeeds.where((element) => element.author != author).toList();
+    final filteredPages =
+        pages.where((element) => element.author != author).toList();
+
+    final didChange = filteredItems.length != items.length ||
+        filteredNewFeeds.length != newFeeds.length ||
+        filteredPages.length != pages.length;
+
+    if (!didChange) {
+      return false;
+    }
+
+    items = filteredItems;
+    newFeeds = filteredNewFeeds;
+    pages = filteredPages;
+
+    if (pages.isEmpty) {
+      currentPage = 0;
+    } else if (currentPage >= pages.length) {
+      currentPage = pages.length - 1;
+    }
+
+    if (items.isEmpty) {
+      viewState = ViewState.empty;
+    }
+
+    notifyListeners();
+    return true;
   }
 
   List<ThreadFeedModel> filterTopLevelComments(String parentPermlink,

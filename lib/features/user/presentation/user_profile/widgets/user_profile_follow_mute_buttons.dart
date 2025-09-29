@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/widgets/buttons/duo_text_buttons.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
+import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
+import 'package:waves/features/threads/presentation/thread_feed/controller/following_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/user/repository/user_repository.dart';
 import 'package:waves/features/user/utils/block_user_helper.dart';
@@ -78,9 +80,17 @@ class _UserProfileFollowMuteButtonsState
   }
 
   void refreshFeeds() {
-    Future.delayed(const Duration(seconds: 3)).then((_) {
-      feedController.refresh();
-    });
+    feedController.removeAuthorContent(widget.author);
+
+    try {
+      context
+          .read<FollowingFeedController>()
+          .removeAuthorContent(widget.author);
+    } catch (_) {}
+
+    try {
+      context.read<WavesFeedController>().removeAuthorContent(widget.author);
+    } catch (_) {}
   }
 
   Future<void> _loadFollowState(String viewer) async {

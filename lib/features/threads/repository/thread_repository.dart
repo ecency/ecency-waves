@@ -12,20 +12,21 @@ class ThreadRepository {
 
   Future<ActionListDataResponse<ThreadFeedModel>> getAccountPosts(
       String accountName, AccountPostType type, int limit,
-      {String? lastAuthor, String? lastPermlink}) async {
+      {String? lastAuthor, String? lastPermlink, String? observer}) async {
     return await _apiService.getAccountPosts(
-        accountName, type, limit, lastAuthor, lastPermlink);
+        accountName, type, limit, lastAuthor, lastPermlink, observer);
   }
 
   Future<ActionSingleDataResponse<ThreadFeedModel>> getFirstAccountPost(
       String accountName, AccountPostType type, int limit,
-      {String? lastAuthor, String? lastPermlink}) async {
+      {String? lastAuthor, String? lastPermlink, String? observer}) async {
     return await _apiService.getFirstAccountPost(
       accountName,
       type,
       limit,
       lastAuthor,
       lastPermlink,
+      observer,
     );
   }
 

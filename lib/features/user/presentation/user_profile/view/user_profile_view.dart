@@ -10,6 +10,7 @@ import 'package:waves/features/explore/presentation/waves/controller/waves_feed_
 import 'package:waves/features/user/models/user_model.dart';
 import 'package:waves/features/user/presentation/user_profile/controller/user_profile_controller.dart';
 import 'package:waves/features/user/presentation/user_profile/widgets/user_profile_widget.dart';
+import 'package:waves/features/user/view/user_controller.dart';
 
 class UserProfileView extends StatelessWidget {
   const UserProfileView({
@@ -30,9 +31,23 @@ class UserProfileView extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => UserProfileController(accountName: accountName),
         ),
-        ChangeNotifierProvider(
-          create: (_) =>
-              WavesFeedController.account(username: accountName, threadType: threadType),
+        ChangeNotifierProxyProvider<UserController, WavesFeedController>(
+          create: (context) => WavesFeedController.account(
+            username: accountName,
+            threadType: threadType,
+            observer: context.read<UserController>().userName,
+          ),
+          update: (context, userController, previous) {
+            if (previous == null) {
+              return WavesFeedController.account(
+                username: accountName,
+                threadType: threadType,
+                observer: userController.userName,
+              );
+            }
+            previous.updateObserver(userController.userName);
+            return previous;
+          },
         ),
       ],
       builder: (context, child) {

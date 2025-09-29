@@ -54,6 +54,10 @@ class Thread {
     return entry.stats?.gray ?? false;
   }
 
+  static bool isObserverHidden(ThreadFeedModel entry) {
+    return entry.stats?.hide ?? false;
+  }
+
   static bool isLowReputation(ThreadFeedModel entry) {
     return (entry.authorReputation ?? 0) < 0;
   }
@@ -61,7 +65,8 @@ class Thread {
   static List<ThreadFeedModel> filterInvisibleContent(
       List<ThreadFeedModel> items) {
     return items
-        .where((e) => !(isHidden(e) || isMuted(e) || isLowReputation(e)))
+        .where((e) =>
+            !(isHidden(e) || isMuted(e) || isObserverHidden(e) || isLowReputation(e)))
         .toList();
   }
 

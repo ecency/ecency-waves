@@ -18,13 +18,25 @@ class ExploreRepository {
 
   Future<ActionListDataResponse<ThreadFeedModel>> getTagWaves(
           String container, String tag,
-          {int limit = 20, String? lastAuthor, String? lastPermlink}) =>
+          {int limit = 20,
+          String? lastAuthor,
+          String? lastPermlink,
+          String? observer}) =>
       _apiService.getTagWaves(container, tag,
-          limit: limit, lastAuthor: lastAuthor, lastPermlink: lastPermlink);
+          limit: limit,
+          lastAuthor: lastAuthor,
+          lastPermlink: lastPermlink,
+          observer: observer);
 
   Future<ActionListDataResponse<ThreadFeedModel>> getAccountWaves(
           String container, String username,
-          {int limit = 20, String? lastAuthor, String? lastPermlink}) =>
+          {int limit = 20,
+          String? lastAuthor,
+          String? lastPermlink,
+          String? observer}) =>
       _apiService.getAccountWaves(container, username,
-          limit: limit, lastAuthor: lastAuthor, lastPermlink: lastPermlink);
+          limit: limit,
+          lastAuthor: lastAuthor,
+          lastPermlink: lastPermlink,
+          observer: observer);
 }

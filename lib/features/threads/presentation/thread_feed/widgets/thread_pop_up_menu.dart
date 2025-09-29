@@ -11,7 +11,9 @@ import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/parser.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
+import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
 import 'package:waves/features/threads/presentation/comments/comment_detail/controller/comment_detail_controller.dart';
+import 'package:waves/features/threads/presentation/thread_feed/controller/following_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
 import 'package:waves/features/threads/presentation/thread_feed/widgets/thread_translate_bottom_sheet.dart';
 import 'package:waves/features/user/utils/block_user_helper.dart';
@@ -120,10 +122,18 @@ class ThreadPopUpMenu extends StatelessWidget {
               context,
               author: item.author,
               onSuccess: () {
-                Future.delayed(
-                  const Duration(seconds: 3),
-                  controller.refresh,
-                );
+                controller.removeAuthorContent(item.author);
+                try {
+                  context
+                      .read<FollowingFeedController>()
+                      .removeAuthorContent(item.author);
+                } catch (_) {}
+
+                try {
+                  context
+                      .read<WavesFeedController>()
+                      .removeAuthorContent(item.author);
+                } catch (_) {}
               },
             );
             break;

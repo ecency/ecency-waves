@@ -151,10 +151,11 @@ class ApiService {
       int limit,
       String? lastAuthor,
       String? lastPermlink,
+      String? observer,
       ) async {
     try {
       final response = await _getAccountPosts(
-          type, accountName, lastAuthor, lastPermlink, limit);
+          type, accountName, lastAuthor, lastPermlink, limit, observer);
 
       if (response.statusCode == 200) {
         return ActionListDataResponse<ThreadFeedModel>(
@@ -185,6 +186,7 @@ class ApiService {
       String? lastAuthor,
       String? lastPermlink,
       int limit,
+      String? observer,
       ) async {
     final params = {
       'sort': enumToString(type),
@@ -192,6 +194,7 @@ class ApiService {
       'limit': limit,
       if (lastAuthor != null) 'start_author': lastAuthor,
       if (lastPermlink != null) 'start_permlink': lastPermlink,
+      if (observer != null) 'observer': observer,
     };
 
     // Sticky per feed (sort+account)
@@ -261,10 +264,11 @@ class ApiService {
       int limit,
       String? lastAuthor,
       String? lastPermlink,
+      String? observer,
       ) async {
     try {
       final response = await _getAccountPosts(
-          type, accountName, lastAuthor, lastPermlink, limit);
+          type, accountName, lastAuthor, lastPermlink, limit, observer);
 
       if (response.statusCode == 200) {
         final list = ThreadFeedModel.fromRawJson(response.body);
@@ -1484,7 +1488,10 @@ class ApiService {
 
   Future<ActionListDataResponse<ThreadFeedModel>> getTagWaves(
       String container, String tag,
-      {int limit = 20, String? lastAuthor, String? lastPermlink}) async {
+      {int limit = 20,
+      String? lastAuthor,
+      String? lastPermlink,
+      String? observer}) async {
     try {
       final query = StringBuffer(
           'https://ecency.com/private-api/waves/tags?container=$container&tag=$tag&limit=$limit');
@@ -1493,6 +1500,9 @@ class ApiService {
       }
       if (lastPermlink != null) {
         query.write('&start_permlink=$lastPermlink');
+      }
+      if (observer != null && observer.isNotEmpty) {
+        query.write('&observer=$observer');
       }
       final url = Uri.parse(query.toString());
       final res = await http
@@ -1536,7 +1546,10 @@ class ApiService {
 
   Future<ActionListDataResponse<ThreadFeedModel>> getAccountWaves(
       String container, String username,
-      {int limit = 20, String? lastAuthor, String? lastPermlink}) async {
+      {int limit = 20,
+      String? lastAuthor,
+      String? lastPermlink,
+      String? observer}) async {
     try {
       final query = StringBuffer(
           'https://ecency.com/private-api/waves/account?container=$container&username=$username&limit=$limit');
@@ -1545,6 +1558,9 @@ class ApiService {
       }
       if (lastPermlink != null) {
         query.write('&start_permlink=$lastPermlink');
+      }
+      if (observer != null && observer.isNotEmpty) {
+        query.write('&observer=$observer');
       }
       final url = Uri.parse(query.toString());
       final res = await http

@@ -4,6 +4,7 @@ import 'package:waves/core/models/action_response.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/core/utilities/generics/controllers/controller_interface.dart';
 import 'package:waves/core/utilities/generics/mixins/pagination_mixin.dart';
+import 'package:waves/core/utilities/generics/classes/thread.dart';
 import 'package:waves/features/explore/repository/explore_repository.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/threads/presentation/thread_feed/view_models/view_model.dart';
@@ -17,6 +18,7 @@ class WavesFeedController extends ChangeNotifier
   final String? username;
   ThreadFeedType threadType;
   String? errorMessage;
+  String? observer;
 
   String? _lastAuthor;
   String? _lastPermlink;
@@ -30,6 +32,7 @@ class WavesFeedController extends ChangeNotifier
   WavesFeedController.tag({
     required this.tag,
     required this.threadType,
+    this.observer,
   })  : username = null {
     pageLimit = 20;
     init();
@@ -38,6 +41,7 @@ class WavesFeedController extends ChangeNotifier
   WavesFeedController.account({
     required this.username,
     required this.threadType,
+    this.observer,
   })  : tag = null {
     pageLimit = 20;
     init();
@@ -52,20 +56,43 @@ class WavesFeedController extends ChangeNotifier
     final container = _getContainer();
     ActionListDataResponse<ThreadFeedModel> waveRes;
     if (tag != null) {
-      waveRes = await _exploreRepository.getTagWaves(container, tag!,
-          limit: pageLimit, lastAuthor: _lastAuthor, lastPermlink: _lastPermlink);
+      waveRes = await _exploreRepository.getTagWaves(
+        container,
+        tag!,
+        limit: pageLimit,
+        lastAuthor: _lastAuthor,
+        lastPermlink: _lastPermlink,
+        observer: observer,
+      );
     } else {
-      waveRes = await _exploreRepository.getAccountWaves(container, username!,
-          limit: pageLimit, lastAuthor: _lastAuthor, lastPermlink: _lastPermlink);
+      waveRes = await _exploreRepository.getAccountWaves(
+        container,
+        username!,
+        limit: pageLimit,
+        lastAuthor: _lastAuthor,
+        lastPermlink: _lastPermlink,
+        observer: observer,
+      );
     }
 
-    if (waveRes.isSuccess && waveRes.data != null && waveRes.data!.isNotEmpty) {
-      items.addAll(waveRes.data!);
-      final last = waveRes.data!.last;
-      _lastAuthor = last.author;
-      _lastPermlink = last.permlink;
-      viewState = ViewState.data;
-      if (waveRes.data!.length < pageLimit) {
+    if (waveRes.isSuccess && waveRes.data != null) {
+      final data = waveRes.data!;
+      if (data.isNotEmpty) {
+        final filtered = Thread.filterInvisibleContent(data);
+        final last = data.last;
+        _lastAuthor = last.author;
+        _lastPermlink = last.permlink;
+        if (filtered.isNotEmpty) {
+          items.addAll(filtered);
+          viewState = ViewState.data;
+        } else if (items.isEmpty) {
+          viewState = ViewState.empty;
+        }
+        if (data.length < pageLimit) {
+          isPageEnded = true;
+        }
+      } else if (items.isEmpty) {
+        viewState = ViewState.empty;
         isPageEnded = true;
       }
     } else {
@@ -100,6 +127,31 @@ class WavesFeedController extends ChangeNotifier
     viewState = ViewState.loading;
     notifyListeners();
     init();
+  }
+
+  bool removeAuthorContent(String author) {
+    final filteredItems =
+        items.where((element) => element.author != author).toList();
+    if (filteredItems.length == items.length) {
+      return false;
+    }
+
+    items = filteredItems;
+    if (items.isEmpty) {
+      viewState = ViewState.empty;
+      isPageEnded = true;
+      isNextPageLoading = false;
+    }
+    notifyListeners();
+    return true;
+  }
+
+  void updateObserver(String? value) {
+    if (observer == value) {
+      return;
+    }
+    observer = value;
+    refresh();
   }
 
   void updateThreadType(ThreadFeedType type) {

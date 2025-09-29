@@ -5,6 +5,7 @@ import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
 import 'package:waves/features/explore/presentation/widgets/waves_list_view.dart';
 import 'package:waves/features/explore/presentation/widgets/thread_type_dropdown.dart';
+import 'package:waves/features/user/view/user_controller.dart';
 
 class TagFeedView extends StatelessWidget {
   final String tag;
@@ -14,8 +15,23 @@ class TagFeedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => WavesFeedController.tag(tag: tag, threadType: threadType),
+    return ChangeNotifierProxyProvider<UserController, WavesFeedController>(
+      create: (context) => WavesFeedController.tag(
+        tag: tag,
+        threadType: threadType,
+        observer: context.read<UserController>().userName,
+      ),
+      update: (context, userController, previous) {
+        if (previous == null) {
+          return WavesFeedController.tag(
+            tag: tag,
+            threadType: threadType,
+            observer: userController.userName,
+          );
+        }
+        previous.updateObserver(userController.userName);
+        return previous;
+      },
       child: Builder(builder: (context) {
         final controller = context.watch<WavesFeedController>();
         return Scaffold(
