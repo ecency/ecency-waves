@@ -122,6 +122,8 @@ class _TagsTab extends StatelessWidget {
                 );
               },
             );
+          } else if (state == ViewState.empty) {
+            return Center(child: Text(LocaleText.noHashtagsFound));
           } else {
             return Center(child: Text(LocaleText.error));
           }
@@ -167,6 +169,8 @@ class _UsersTab extends StatelessWidget {
                 );
               },
             );
+          } else if (state == ViewState.empty) {
+            return Center(child: Text(LocaleText.noUsersFound));
           } else {
             return Center(child: Text(LocaleText.error));
           }
