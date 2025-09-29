@@ -63,6 +63,7 @@ class FollowUserHelper {
         follow,
         AuthType.hiveKeyChain,
         onSuccess,
+        onFailure,
       );
     } else if (userData.isHiveAuthLogin) {
       _onTransactionDecision(
@@ -71,6 +72,7 @@ class FollowUserHelper {
         follow,
         AuthType.hiveAuth,
         onSuccess,
+        onFailure,
       );
     } else {
       _showTransactionSelection(
@@ -78,6 +80,7 @@ class FollowUserHelper {
         author,
         follow,
         onSuccess,
+        onFailure,
       );
     }
   }
@@ -138,6 +141,7 @@ class FollowUserHelper {
     bool follow,
     AuthType authType,
     VoidCallback? onSuccess,
+    VoidCallback? onFailure,
   ) {
     final navigationData = SignTransactionNavigationModel(
       transactionType: SignTransactionType.follow,
@@ -151,10 +155,24 @@ class FollowUserHelper {
           extra: navigationData,
         )
         .then((value) {
-      if (value != null) {
+      if (_didTransactionSucceed(value)) {
         onSuccess?.call();
+      } else {
+        onFailure?.call();
       }
+    }).catchError((_) {
+      onFailure?.call();
     });
+  }
+
+  static bool _didTransactionSucceed(dynamic value) {
+    if (value == null) {
+      return false;
+    }
+    if (value is bool) {
+      return value;
+    }
+    return true;
   }
 
   static Future<void> _showTransactionSelection(
@@ -162,18 +180,27 @@ class FollowUserHelper {
     String author,
     bool follow,
     VoidCallback? onSuccess,
+    VoidCallback? onFailure,
   ) async {
+    var hasSelectedAuth = false;
     await showDialog(
       context: context,
       builder: (_) => TransactionDecisionDialog(
-        onContinue: (authType) => _onTransactionDecision(
-          context,
-          author,
-          follow,
-          authType,
-          onSuccess,
-        ),
+        onContinue: (authType) {
+          hasSelectedAuth = true;
+          _onTransactionDecision(
+            context,
+            author,
+            follow,
+            authType,
+            onSuccess,
+            onFailure,
+          );
+        },
       ),
     );
+    if (!hasSelectedAuth) {
+      onFailure?.call();
+    }
   }
 }

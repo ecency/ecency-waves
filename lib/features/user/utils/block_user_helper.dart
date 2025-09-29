@@ -187,11 +187,13 @@ class BlockUserHelper {
           extra: navigationData,
         )
         .then((value) {
-      if (value != null) {
+      if (_didTransactionSucceed(value)) {
         onSuccess?.call();
       } else {
         onFailure?.call();
       }
+    }).catchError((_) {
+      onFailure?.call();
     });
   }
 
@@ -203,19 +205,36 @@ class BlockUserHelper {
     VoidCallback? onSuccess,
     VoidCallback? onFailure,
   ) async {
+    var hasSelectedAuth = false;
     await showDialog(
       context: context,
       builder: (_) => TransactionDecisionDialog(
-        onContinue: (authType) => _onTransactionDecision(
-          context,
-          author,
-          block,
-          authType,
-          userData,
-          onSuccess,
-          onFailure,
-        ),
+        onContinue: (authType) {
+          hasSelectedAuth = true;
+          _onTransactionDecision(
+            context,
+            author,
+            block,
+            authType,
+            userData,
+            onSuccess,
+            onFailure,
+          );
+        },
       ),
     );
+    if (!hasSelectedAuth) {
+      onFailure?.call();
+    }
+  }
+
+  static bool _didTransactionSucceed(dynamic value) {
+    if (value == null) {
+      return false;
+    }
+    if (value is bool) {
+      return value;
+    }
+    return true;
   }
 }
