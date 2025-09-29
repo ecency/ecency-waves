@@ -79,7 +79,7 @@ class CommentDetailView extends StatelessWidget {
                     final ThreadFeedModel reply = replies[index];
                     return ThreadTile(
                       item: reply,
-                      hideCommentInfo: true,
+                      hideCommentInfo: false,
                     );
                   },
                   separatorBuilder: (context, index) =>

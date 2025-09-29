@@ -164,10 +164,13 @@ class ThreadFeedController extends ChangeNotifier
 
             viewItems = Thread.filterInvisibleContent(viewItems);
 
-            if (viewItems.isEmpty && viewState != ViewState.data) {
+            if (viewItems.isEmpty) {
+              await _localRepository.removeLocalThreads(type);
+              items = [];
+              isDataDisplayedFromServer = true;
               viewState = ViewState.empty;
-            } else if (viewItems.isNotEmpty) {
-              _localRepository.writeLocalThreads(viewItems, type);
+            } else {
+              await _localRepository.writeLocalThreads(viewItems, type);
 
               // >>> ALWAYS APPLY SERVER DATA <<<
               items = [...viewItems];

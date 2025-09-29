@@ -19,6 +19,10 @@ class ThreadLocalRepository {
     return await _localService.writeThreads(threads, type);
   }
 
+  Future<void> removeLocalThreads(ThreadFeedType type) async {
+    return await _localService.removeThreads(type);
+  }
+
   Future<void> removeAuthorFromCache(String author) async {
     final normalizedAuthor = author.toLowerCase();
 
