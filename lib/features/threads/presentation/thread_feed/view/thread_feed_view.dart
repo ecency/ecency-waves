@@ -6,6 +6,7 @@ import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/server_error.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -50,6 +51,7 @@ class _ThreadFeedViewState extends State<ThreadFeedView>
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final forYouController = context.read<ThreadFeedController>();
     final followingController = context.read<FollowingFeedController>();
     final isLoggedIn =
@@ -138,7 +140,7 @@ class _ForYouTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.read<ThreadFeedController>();
-    return Selector<ThreadFeedController, ViewState>(
+    return LocaleAwareSelector<ThreadFeedController, ViewState>(
       selector: (_, provider) => provider.viewState,
       builder: (context, value, child) {
         if (value == ViewState.data) {
@@ -175,7 +177,7 @@ class _FollowingTab extends StatelessWidget {
     }
 
     final controller = context.read<FollowingFeedController>();
-    return Selector<FollowingFeedController, ViewState>(
+    return LocaleAwareSelector<FollowingFeedController, ViewState>(
       selector: (_, provider) => provider.viewState,
       builder: (context, value, child) {
         if (value == ViewState.data) {

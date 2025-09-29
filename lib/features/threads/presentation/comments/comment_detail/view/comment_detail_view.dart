@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/widgets/dialog/log_in_dialog.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
@@ -37,7 +38,7 @@ class CommentDetailView extends StatelessWidget {
       create: (context) => CommentDetailController(
           mainThread: item, observer: userController.userName),
       builder: (context, child) {
-        return Selector<CommentDetailController, ThreadFeedModel>(
+        return LocaleAwareSelector<CommentDetailController, ThreadFeedModel>(
           selector: (_, myType) => myType.mainThread,
           builder: (context, item, child) {
             return Scaffold(
@@ -63,12 +64,12 @@ class CommentDetailView extends StatelessWidget {
     );
   }
 
-  Selector<CommentDetailController, ViewState> _comments() {
-    return Selector<CommentDetailController, ViewState>(
+  LocaleAwareSelector<CommentDetailController, ViewState> _comments() {
+    return LocaleAwareSelector<CommentDetailController, ViewState>(
       selector: (_, myType) => myType.viewState,
       builder: (context, state, child) {
         if (state == ViewState.data) {
-          return Selector<CommentDetailController, List<ThreadFeedModel>>(
+          return LocaleAwareSelector<CommentDetailController, List<ThreadFeedModel>>(
             shouldRebuild: (previous, next) =>
                 previous != next || previous.length != next.length,
             selector: (_, myType) => myType.items,

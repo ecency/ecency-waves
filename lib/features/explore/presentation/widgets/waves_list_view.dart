@@ -6,6 +6,7 @@ import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
 import 'package:waves/core/common/extensions/ui.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/constants/ui_constants.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -81,7 +82,7 @@ class _WavesListViewState extends State<WavesListView> {
     final double backToTopBottomOffset =
         16 + MediaQuery.of(context).padding.bottom;
 
-    return Selector<WavesFeedController, ViewState>(
+    return LocaleAwareSelector<WavesFeedController, ViewState>(
       selector: (_, c) => c.viewState,
       builder: (context, state, _) {
         final error =

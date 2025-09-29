@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/drawer/drawer_tile.dart';
 import 'package:waves/core/locales/locale_text.dart';
@@ -16,6 +17,7 @@ class SettingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watchLocale();
     final themeController = context.read<ThemeController>();
 
     return Provider(

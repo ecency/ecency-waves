@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/widgets/thread_type_app_bar_dropdown.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/threads/presentation/thread_feed/controller/thread_feed_controller.dart';
@@ -11,7 +12,7 @@ class DropDownFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ThreadFeedController, ThreadFeedType>(
+    return LocaleAwareSelector<ThreadFeedController, ThreadFeedType>(
       selector: (_, controller) => controller.threadType,
       builder: (context, selectedType, _) {
         return ThreadTypeAppBarDropdown(

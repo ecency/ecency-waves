@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/common/widgets/inkwell_wrapper.dart';
 import 'package:waves/core/locales/locale_text.dart';
+import 'package:waves/core/locales/timeago_localizations.dart';
 import 'package:waves/core/utilities/responsive/responsive_layout.dart';
 import 'package:waves/features/notifications/models/notification_model.dart';
 
@@ -84,7 +84,7 @@ class NotificationTile extends StatelessWidget {
                   ],
                   SizedBox(height: responsive.scaleComponent(6)),
                   Text(
-                    timeago.format(notification.timestamp),
+                    formatRelativeTime(context, notification.timestamp),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.hintColor,
                     ),

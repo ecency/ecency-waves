@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:waves/core/locales/locale_text.dart';
+import 'package:waves/core/locales/timeago_localizations.dart';
 import 'package:waves/core/services/poll_service/poll_model.dart';
 import 'package:waves/features/threads/models/thread_feeds/thread_json_meta_data/thread_json_meta_data.dart';
 
@@ -29,10 +29,15 @@ class PollHeader extends StatelessWidget {
     }
 
     String timeString = "";
-    if(meta.endTime != null){
-      timeString = meta.endTime!.isAfter(DateTime.now()) 
-        ? "Ends in ${timeago.format(meta.endTime!, allowFromNow: true, locale: 'en_short')}"
-        : "Ended";
+    if (meta.endTime != null) {
+      timeString = meta.endTime!.isAfter(DateTime.now())
+          ? "Ends in ${formatRelativeTime(
+              context,
+              meta.endTime!,
+              allowFromNow: true,
+              short: true,
+            )}"
+          : "Ended";
     }
 
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/server_error.dart';
@@ -62,7 +63,7 @@ class UserProfileView extends StatelessWidget {
             ),
             backgroundColor: theme.scaffoldBackgroundColor,
             body: SafeArea(
-              child: Selector<UserProfileController, ViewState>(
+              child: LocaleAwareSelector<UserProfileController, ViewState>(
                 selector: (_, provider) => provider.viewState,
                 builder: (context, value, child) {
                   if (value == ViewState.data) {
@@ -85,7 +86,7 @@ class UserProfileView extends StatelessWidget {
   }
 
   Widget _dataState(ThemeData theme) {
-    return Selector<UserProfileController, UserModel>(
+    return LocaleAwareSelector<UserProfileController, UserModel>(
       selector: (_, provider) => provider.data!,
       builder: (context, data, chidld) {
         return UserProfileViewWidget(

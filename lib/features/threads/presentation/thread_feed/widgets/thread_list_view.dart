@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
@@ -27,14 +28,14 @@ class ThreadListView extends StatelessWidget {
 
     return Stack(
       children: [
-        Selector<ThreadFeedController, List<ThreadFeedModel>>(
+        LocaleAwareSelector<ThreadFeedController, List<ThreadFeedModel>>(
           selector: (_, c) => c.items,
           // NOTE: no custom shouldRebuild — rely on new list identity from controller
           builder: (context, items, _) {
             return Column(
               children: [
                 // Spacer for the “new content” banner height
-                Selector<ThreadFeedController, bool>(
+                LocaleAwareSelector<ThreadFeedController, bool>(
                   selector: (_, c) => c.newFeeds.isNotEmpty,
                   builder: (context, hasNew, _) {
                     return AnimatedContainer(
@@ -88,7 +89,7 @@ class ThreadListView extends StatelessWidget {
           top: 0,
           left: 0,
           right: 0,
-          child: Selector<ThreadFeedController, bool>(
+          child: LocaleAwareSelector<ThreadFeedController, bool>(
             selector: (_, c) => c.newFeeds.isNotEmpty,
             builder: (context, hasNew, _) {
               if (!hasNew) return const SizedBox.shrink();

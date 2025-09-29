@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
+import 'package:waves/core/locales/timeago_localizations.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -23,7 +23,7 @@ class ThreadUserInfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    var timeInString = timeago.format(item.created);
+    var timeInString = formatRelativeTime(context, item.created);
     return Row(
       children: [
         UserProfileImage(

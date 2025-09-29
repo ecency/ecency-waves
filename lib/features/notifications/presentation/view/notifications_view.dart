@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/common/widgets/server_error.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
@@ -50,7 +51,7 @@ class _NotificationsViewState extends State<NotificationsView> {
         ],
       ),
       body: SafeArea(
-        child: Consumer<NotificationsController>(
+        child: LocaleAwareConsumer<NotificationsController>(
           builder: (context, controller, child) {
             if (!controller.isLoggedIn) {
               return Emptystate(

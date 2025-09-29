@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/utilities/enum.dart';
 import 'package:waves/features/explore/presentation/waves/controller/waves_feed_controller.dart';
@@ -48,7 +49,7 @@ class TagFeedView extends StatelessWidget {
             ),
           ),
           body: SafeArea(
-            child: Selector<WavesFeedController, ViewState>(
+            child: LocaleAwareSelector<WavesFeedController, ViewState>(
               selector: (_, c) => c.viewState,
               builder: (context, state, _) {
                 if (state == ViewState.loading) {

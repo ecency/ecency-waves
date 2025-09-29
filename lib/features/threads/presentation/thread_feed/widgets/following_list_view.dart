@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/pagination_loader.dart';
 import 'package:waves/core/common/widgets/scroll_end_listener.dart';
@@ -25,7 +26,7 @@ class FollowingListView extends StatelessWidget {
 
     return Stack(
       children: [
-        Selector<FollowingFeedController, List<ThreadFeedModel>>(
+        LocaleAwareSelector<FollowingFeedController, List<ThreadFeedModel>>(
           selector: (_, c) => c.items,
           builder: (context, items, _) {
             return ScrollEndListener(

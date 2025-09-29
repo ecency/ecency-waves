@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/loading_state.dart';
 import 'package:waves/core/locales/locale_text.dart';
@@ -47,7 +48,7 @@ class MultiAccountDialog extends StatelessWidget {
                       maxWidth: 380,
                       minHeight: 250,
                       maxHeight: 300),
-                  child: Selector<MultiAccountController, ViewState>(
+                  child: LocaleAwareSelector<MultiAccountController, ViewState>(
                       selector: (_, myType) => myType.viewState,
                       builder: (context, state, child) {
                         if (state == ViewState.data) {
@@ -82,7 +83,7 @@ class MultiAccountDialog extends StatelessWidget {
   }
 
   Widget _listView(MultiAccountController controller, String currentUserName) {
-    return Selector<MultiAccountController, int>(
+    return LocaleAwareSelector<MultiAccountController, int>(
       selector: (_, myType) => myType.userAccounts.length,
       builder: (context, items, child) {
         return ListView.builder(

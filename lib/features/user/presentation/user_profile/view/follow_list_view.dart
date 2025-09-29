@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/empty_state.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
@@ -45,7 +46,7 @@ class _FollowListBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FollowListController>(
+    return LocaleAwareConsumer<FollowListController>(
       builder: (context, controller, _) {
         switch (controller.viewState) {
           case ViewState.loading:

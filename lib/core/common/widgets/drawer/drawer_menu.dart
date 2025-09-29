@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/extensions/ui.dart';
 import 'package:waves/core/common/widgets/drawer/drawer_header.dart';
@@ -35,7 +36,7 @@ class DrawerMenu extends StatelessWidget {
               ),
               color: theme.colorScheme.tertiary),
           padding: const EdgeInsets.only(top: 30, bottom: 20),
-          child: Consumer<UserController>(
+          child: LocaleAwareConsumer<UserController>(
               builder: (context, userController, child) {
             final bool isLoggedIn = userController.isUserLoggedIn;
             return Column(
@@ -66,7 +67,7 @@ class DrawerMenu extends StatelessWidget {
                               },
                               text: LocaleText.myWaves,
                               icon: Icons.person),
-                          Consumer<NotificationsController>(
+                          LocaleAwareConsumer<NotificationsController>(
                             builder: (context, notificationsController, child) {
                               Widget? trailing;
                               if (notificationsController.unreadCount > 0) {

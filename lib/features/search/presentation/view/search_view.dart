@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/common/widgets/post_count_badge.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/locales/locale_text.dart';
 import 'package:waves/core/routes/route_keys.dart';
 import 'package:waves/core/routes/routes.dart';
@@ -20,7 +21,7 @@ class SearchView extends StatelessWidget {
       length: 2,
       child: ChangeNotifierProvider(
         create: (_) => SearchViewController(),
-        child: Consumer<SearchViewController>(
+        child: LocaleAwareConsumer<SearchViewController>(
           builder: (context, controller, _) {
             return Scaffold(
               appBar: AppBar(
@@ -85,7 +86,7 @@ class _UsersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SearchViewController>(
+    return LocaleAwareConsumer<SearchViewController>(
       builder: (context, controller, _) {
         if (!controller.hasQuery) {
           return _EmptyPlaceholder(
@@ -150,7 +151,7 @@ class _TagsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SearchViewController>(
+    return LocaleAwareConsumer<SearchViewController>(
       builder: (context, controller, _) {
         if (!controller.hasQuery) {
           return _EmptyPlaceholder(

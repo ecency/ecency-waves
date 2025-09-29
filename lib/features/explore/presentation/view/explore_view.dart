@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waves/core/common/widgets/locale_aware_consumer.dart';
 import 'package:waves/core/common/extensions/platform_navigation.dart';
 import 'package:waves/core/common/widgets/images/user_profile_image.dart';
 import 'package:waves/core/common/widgets/post_count_badge.dart';
@@ -50,7 +51,7 @@ class _ExploreViewState extends State<ExploreView>
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _exploreController,
-      child: Consumer<ExploreController>(
+      child: LocaleAwareConsumer<ExploreController>(
         builder: (context, controller, _) {
           return Scaffold(
             appBar: AppBar(
@@ -95,7 +96,7 @@ class _TagsTab extends StatelessWidget {
     final controller = context.read<ExploreController>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Selector<ExploreController, ViewState>(
+      child: LocaleAwareSelector<ExploreController, ViewState>(
         selector: (_, c) => c.tagsState,
         builder: (context, state, _) {
           if (state == ViewState.loading) {
@@ -139,7 +140,7 @@ class _UsersTab extends StatelessWidget {
     final controller = context.read<ExploreController>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Selector<ExploreController, ViewState>(
+      child: LocaleAwareSelector<ExploreController, ViewState>(
         selector: (_, c) => c.authorsState,
         builder: (context, state, _) {
           if (state == ViewState.loading) {
