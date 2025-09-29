@@ -285,15 +285,23 @@ class ThreadFeedController extends ChangeNotifier
     }
 
     if (filtered.isEmpty) {
+      final didHaveItems = items.isNotEmpty;
       items = [];
-      if (viewState != ViewState.data) {
-        viewState = ViewState.empty;
+      if (didHaveItems) {
+        notifyListeners();
       }
       return;
     }
 
+    final shouldNotify =
+        viewState != ViewState.data || !listEquals(items, filtered);
+
     items = [...filtered];
     viewState = ViewState.data;
+
+    if (shouldNotify) {
+      notifyListeners();
+    }
   }
 
   void loadNewFeeds() {
