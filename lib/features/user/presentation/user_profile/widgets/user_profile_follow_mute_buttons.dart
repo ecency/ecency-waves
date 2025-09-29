@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waves/core/common/widgets/buttons/duo_text_buttons.dart';
@@ -29,9 +31,11 @@ class _UserProfileFollowMuteButtonsState
     extends State<UserProfileFollowMuteButtons> {
   late ThreadFeedController feedController;
   final UserRepository _userRepository = getIt<UserRepository>();
-  bool _isFetchingFollow = false;
+  bool _isLoadingRelationship = false;
   bool _isUpdatingFollow = false;
+  bool _isUpdatingBlock = false;
   bool _isFollowing = false;
+  bool _isBlocked = false;
   String? _viewer;
 
   @override
@@ -43,9 +47,9 @@ class _UserProfileFollowMuteButtonsState
     if (_viewer != nextViewer) {
       _viewer = nextViewer;
       if (nextViewer == null || nextViewer == widget.author) {
-        _setFollowState(false, isFetching: false);
+        _resetRelationshipState();
       } else {
-        _loadFollowState(nextViewer);
+        _loadRelationship(nextViewer);
       }
     }
   }
@@ -57,21 +61,20 @@ class _UserProfileFollowMuteButtonsState
       return const SizedBox.shrink();
     }
 
+    final bool disableBlockButton =
+        _isLoadingRelationship || _isUpdatingBlock || viewer == widget.author;
     final bool disableFollowButton =
-        _isFetchingFollow || _isUpdatingFollow || viewer == widget.author;
+        _isLoadingRelationship || _isUpdatingFollow || _isBlocked || viewer == widget.author;
     final bool isFollowing = _isFollowing;
     final followLabel = isFollowing ? "Unfollow" : "Follow";
+    final blockLabel = _isBlocked ? "Unblock" : "Block";
 
     return DuoTextButtons(
       buttonHeight: widget.buttonHeight,
-      buttonOneText: "Block",
-      buttonOneOnTap: () {
-        BlockUserHelper.blockUser(
-          context,
-          author: widget.author,
-          onSuccess: refreshFeeds,
-        );
-      },
+      buttonOneText: blockLabel,
+      buttonOneOnTap: _onBlockPressed,
+      buttonOneEnabled: !disableBlockButton,
+      buttonOneLoading: _isUpdatingBlock,
       buttonTwoText: followLabel,
       buttonTwoOnTap: disableFollowButton ? null : _onFollowPressed,
       buttonTwoEnabled: !disableFollowButton,
@@ -79,7 +82,7 @@ class _UserProfileFollowMuteButtonsState
     );
   }
 
-  void refreshFeeds() {
+  void _removeAuthorFromFeeds() {
     feedController.removeAuthorContent(widget.author);
 
     try {
@@ -93,39 +96,49 @@ class _UserProfileFollowMuteButtonsState
     } catch (_) {}
   }
 
-  Future<void> _loadFollowState(String viewer) async {
+  void _refreshFollowingFeed() {
+    try {
+      unawaited(context.read<FollowingFeedController>().refresh());
+    } catch (_) {}
+  }
+
+  Future<void> _loadRelationship(String viewer) async {
     setState(() {
-      _isFetchingFollow = true;
+      _isLoadingRelationship = true;
     });
-    final response = await _userRepository.fetchFollowRelationship(
+    final response = await _userRepository.fetchAccountRelationship(
       viewer,
       widget.author,
     );
     if (!mounted) {
       return;
     }
+    final previousBlocked = _isBlocked;
     setState(() {
-      _isFetchingFollow = false;
-      if (response.isSuccess) {
-        _isFollowing = response.data ?? false;
+      _isLoadingRelationship = false;
+      if (response.isSuccess && response.data != null) {
+        _isFollowing = response.data!.isFollowing;
+        _isBlocked = response.data!.isBlocked;
       }
     });
-  }
-
-  void _setFollowState(bool value, {required bool isFetching}) {
-    if (!mounted) return;
-    if (_isFollowing == value && _isFetchingFollow == isFetching) {
-      if (!isFetching) {
-        _isUpdatingFollow = false;
-      }
+    if (!mounted) {
       return;
     }
+    if (_isBlocked) {
+      _removeAuthorFromFeeds();
+    } else if (previousBlocked && !_isBlocked) {
+      feedController.refresh();
+    }
+  }
+
+  void _resetRelationshipState() {
+    if (!mounted) return;
     setState(() {
-      _isFollowing = value;
-      _isFetchingFollow = isFetching;
-      if (!isFetching) {
-        _isUpdatingFollow = false;
-      }
+      _isFollowing = false;
+      _isBlocked = false;
+      _isLoadingRelationship = false;
+      _isUpdatingFollow = false;
+      _isUpdatingBlock = false;
     });
   }
 
@@ -145,7 +158,7 @@ class _UserProfileFollowMuteButtonsState
           _isUpdatingFollow = false;
           _isFollowing = shouldFollow;
         });
-        refreshFeeds();
+        _refreshFollowingFeed();
       },
       onFailure: () {
         if (!mounted) return;
@@ -154,7 +167,50 @@ class _UserProfileFollowMuteButtonsState
         });
         final viewer = _viewer;
         if (viewer != null && viewer != widget.author) {
-          _loadFollowState(viewer);
+          _loadRelationship(viewer);
+        }
+      },
+    );
+  }
+
+  void _onBlockPressed() {
+    final viewer = _viewer;
+    if (viewer == null || viewer == widget.author) {
+      return;
+    }
+
+    final shouldBlock = !_isBlocked;
+    setState(() {
+      _isUpdatingBlock = true;
+    });
+
+    BlockUserHelper.toggleBlock(
+      context,
+      author: widget.author,
+      block: shouldBlock,
+      onSuccess: () {
+        if (!mounted) return;
+        setState(() {
+          _isUpdatingBlock = false;
+          _isBlocked = shouldBlock;
+          if (shouldBlock) {
+            _isFollowing = false;
+          }
+        });
+        if (shouldBlock) {
+          _removeAuthorFromFeeds();
+        } else {
+          feedController.refresh();
+        }
+      },
+      onFailure: () {
+        if (!mounted) return;
+        setState(() {
+          _isUpdatingBlock = false;
+        });
+        final viewerName = _viewer;
+        if (viewerName != null && viewerName != widget.author) {
+          _loadRelationship(viewerName);
         }
       },
     );

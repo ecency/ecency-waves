@@ -19,6 +19,31 @@ class ThreadLocalRepository {
     return await _localService.writeThreads(threads, type);
   }
 
+  Future<void> removeAuthorFromCache(String author) async {
+    final normalizedAuthor = author.toLowerCase();
+
+    for (final type in ThreadFeedType.values) {
+      final threads = _localService.readThreads(type);
+      if (threads == null || threads.isEmpty) {
+        continue;
+      }
+
+      final filtered = threads
+          .where((thread) => thread.author.toLowerCase() != normalizedAuthor)
+          .toList();
+
+      if (filtered.length == threads.length) {
+        continue;
+      }
+
+      if (filtered.isEmpty) {
+        await _localService.removeThreads(type);
+      } else {
+        await _localService.writeThreads(filtered, type);
+      }
+    }
+  }
+
   List<ThreadInfoModel> readReportedThreads() {
     return _localService.readReportedThreads();
   }

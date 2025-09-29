@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:waves/core/dependency_injection/dependency_injection.dart';
 import 'package:waves/core/models/action_response.dart';
@@ -249,10 +251,25 @@ class ThreadFeedController extends ChangeNotifier
 
   void _loadLocalThreads(ThreadFeedType type) {
     final localThreads = _localRepository.readLocalThreads(type);
-    if (localThreads != null && localThreads.isNotEmpty) {
-      items = [...localThreads];
-      viewState = ViewState.data;
+    if (localThreads == null || localThreads.isEmpty) {
+      return;
     }
+
+    final filtered = Thread.filterInvisibleContent(localThreads);
+    if (filtered.length != localThreads.length) {
+      unawaited(_localRepository.writeLocalThreads(filtered, type));
+    }
+
+    if (filtered.isEmpty) {
+      items = [];
+      if (viewState != ViewState.data) {
+        viewState = ViewState.empty;
+      }
+      return;
+    }
+
+    items = [...filtered];
+    viewState = ViewState.data;
   }
 
   void loadNewFeeds() {

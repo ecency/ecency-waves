@@ -21,6 +21,7 @@ import 'package:waves/features/threads/models/thread_feeds/reported/report_repon
 import 'package:waves/features/threads/models/thread_feeds/thread_feed_model.dart';
 import 'package:waves/features/notifications/models/notification_model.dart';
 import 'package:waves/features/user/models/follow_count_model.dart';
+import 'package:waves/features/user/models/account_relationship_model.dart';
 import 'package:waves/features/user/models/follow_user_item_model.dart';
 import 'package:waves/features/user/models/user_model.dart';
 import 'package:waves/features/explore/models/trending_tag_model.dart';
@@ -694,15 +695,22 @@ class ApiService {
   }
 
   Future<ActionSingleDataResponse<String>> muteUser(
-      String username,
-      String author,
-      String? postingKey,
-      String? authKey,
-      String? token,
-      ) async {
+    String username,
+    String author,
+    bool mute,
+    String? postingKey,
+    String? authKey,
+    String? token,
+  ) async {
     try {
       final jsonString = await muteUserFromPlatform(
-          username, author, postingKey, authKey, token);
+        username,
+        author,
+        mute,
+        postingKey,
+        authKey,
+        token,
+      );
       final response = ActionSingleDataResponse<String>.fromJsonString(
         jsonString,
         null,
@@ -779,7 +787,22 @@ class ApiService {
     }
   }
 
-  Future<ActionSingleDataResponse<bool>> _fetchFollowRelationship(
+  bool _parseBridgeBool(dynamic value) {
+    if (value is bool) {
+      return value;
+    }
+    if (value is String) {
+      final normalized = value.toLowerCase();
+      return normalized == 'true' || normalized == '1';
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    return false;
+  }
+
+  Future<ActionSingleDataResponse<AccountRelationshipModel>>
+      _fetchAccountRelationship(
     String follower,
     String following,
   ) async {
@@ -816,21 +839,25 @@ class ApiService {
 
       final result = (decoded is Map) ? decoded['result'] : null;
       if (result is Map) {
-        final follows = result['follows'];
-        final isFollowing = follows is bool
-            ? follows
-            : (follows is String
-                ? (follows.toLowerCase() == 'true' || follows == '1')
-                : (follows is num ? follows != 0 : false));
-        return ActionSingleDataResponse<bool>(
-          data: isFollowing,
+        final follows = _parseBridgeBool(result['follows']);
+        final muted = _parseBridgeBool(result['muted']) ||
+            _parseBridgeBool(result['ignores']) ||
+            _parseBridgeBool(result['blocked']);
+        return ActionSingleDataResponse<AccountRelationshipModel>(
+          data: AccountRelationshipModel(
+            isFollowing: follows,
+            isBlocked: muted,
+          ),
           status: ResponseStatus.success,
           isSuccess: true,
           errorMessage: '',
         );
       } else if (result is bool) {
-        return ActionSingleDataResponse<bool>(
-          data: result,
+        return ActionSingleDataResponse<AccountRelationshipModel>(
+          data: AccountRelationshipModel(
+            isFollowing: result,
+            isBlocked: false,
+          ),
           status: ResponseStatus.success,
           isSuccess: true,
           errorMessage: '',
@@ -847,6 +874,34 @@ class ApiService {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  Future<ActionSingleDataResponse<bool>> _fetchFollowRelationship(
+    String follower,
+    String following,
+  ) async {
+    final response = await _fetchAccountRelationship(follower, following);
+    if (response.isSuccess) {
+      return ActionSingleDataResponse<bool>(
+        data: response.data?.isFollowing ?? false,
+        status: ResponseStatus.success,
+        isSuccess: true,
+        errorMessage: '',
+      );
+    }
+
+    return ActionSingleDataResponse(
+      status: response.status,
+      errorMessage: response.errorMessage,
+    );
+  }
+
+  Future<ActionSingleDataResponse<AccountRelationshipModel>>
+      fetchAccountRelationship(
+    String follower,
+    String following,
+  ) async {
+    return _fetchAccountRelationship(follower, following);
   }
 
   Future<ActionSingleDataResponse<bool>> fetchFollowRelationship(

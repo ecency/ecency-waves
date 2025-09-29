@@ -107,12 +107,19 @@ class ThreadRepository {
   Future<ActionSingleDataResponse<String>> muteUser(
     String username,
     String author,
+    bool mute,
     String? postingKey,
     String? authKey,
     String? token,
   ) async {
     return await _apiService.muteUser(
-        username, author, postingKey, authKey, token);
+      username,
+      author,
+      mute,
+      postingKey,
+      authKey,
+      token,
+    );
   }
 
   Future<ActionSingleDataResponse<String>> setFollowStatus(

@@ -205,14 +205,33 @@ final class AppBridge: NSObject {
                     let author    = args["author"]    as? String,
                     let postingKey = args["postingKey"] as? String,
                     let token     = args["token"]     as? String,
-                    let authKey   = args["authKey"]   as? String
+                    let authKey   = args["authKey"]   as? String,
+                    let mute      = args["mute"]      as? Bool
                 else {
                     debugPrint("bridge.muteUser: missing params")
                     result(FlutterMethodNotImplemented)
                     return
                 }
-                let js = "muteUser('\(jsEscape(id))','\(jsEscape(username))','\(jsEscape(author))','\(jsEscape(postingKey))','\(jsEscape(token))','\(jsEscape(authKey))');"
+                let muteLiteral = mute ? "true" : "false"
+                let js = "muteUser('\(jsEscape(id))','\(jsEscape(username))','\(jsEscape(author))',\(muteLiteral),'\(jsEscape(postingKey))','\(jsEscape(token))','\(jsEscape(authKey))');"
                 webVC.runThisJS(id: id, jsCode: js) { text in result(text) }
+
+            case "followUser":
+                guard
+                    let username  = args["username"]  as? String,
+                    let author    = args["author"]    as? String,
+                    let postingKey = args["postingKey"] as? String,
+                    let token     = args["token"]     as? String,
+                    let authKey   = args["authKey"]   as? String,
+                    let follow    = args["follow"]     as? Bool
+                else {
+                    debugPrint("bridge.followUser: missing params")
+                    result(FlutterMethodNotImplemented)
+                    return
+                }
+                let followLiteral = follow ? "true" : "false"
+                let followJs = "followUser('\(jsEscape(id))','\(jsEscape(username))','\(jsEscape(author))',\(followLiteral),'\(jsEscape(postingKey))','\(jsEscape(token))','\(jsEscape(authKey))');"
+                webVC.runThisJS(id: id, jsCode: followJs) { text in result(text) }
 
             case "getImageUploadProofWithPostingKey":
                 guard

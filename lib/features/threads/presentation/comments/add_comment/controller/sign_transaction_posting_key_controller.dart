@@ -106,6 +106,7 @@ class SignTransactionPostingKeyController {
 
   Future<void> initMuteProcess({
     required String author,
+    required bool block,
     required UserAuthModel<PostingAuthModel> authdata,
     required VoidCallback onSuccess,
     required VoidCallback onFailure,
@@ -113,12 +114,16 @@ class SignTransactionPostingKeyController {
   }) async {
     ActionSingleDataResponse<String> response =
         await _threadRepository.muteUser(
-            authdata.accountName, author, authdata.auth.postingKey, null, null);
+            authdata.accountName, author, block, authdata.auth.postingKey, null, null);
     if (response.isSuccess) {
-      showToast("User has been blocked successfully");
+      showToast(block
+          ? "User has been blocked successfully"
+          : "User has been unblocked successfully");
       onSuccess();
     } else {
-      showToast("Blocking the user failed");
+      showToast(block
+          ? "Blocking the user failed"
+          : "Unblocking the user failed");
       onFailure();
     }
   }

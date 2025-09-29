@@ -68,8 +68,8 @@ class PollVoteBroadcastModel {
       "required_posting_auths": [username],
       "json": json.encode(
         {
-         "poll": pollId, 
-         "action": "vote", 
+         "poll": pollId,
+         "action": "vote",
          "choices": choices
         }
       )
@@ -120,13 +120,16 @@ class CommentBroadCastModel {
 class MuteBroadcastModel {
   final String username;
   final String author;
+  final bool mute;
 
   const MuteBroadcastModel({
     required this.username,
     required this.author,
+    this.mute = true,
   });
 
   Map<String, dynamic> toJson() {
+    final List<String> what = mute ? ["ignore"] : <String>[];
     return {
       "id": "follow",
       "required_posting_auths": [username],
@@ -135,7 +138,7 @@ class MuteBroadcastModel {
         {
           "follower": username,
           "following": author,
-          "what": ["ignore"]
+          "what": what
         }
       ])
     };

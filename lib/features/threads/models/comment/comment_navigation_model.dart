@@ -18,6 +18,7 @@ class SignTransactionNavigationModel {
   final String? metadataApp;
   final String? metadataFormat;
   final bool? follow;
+  final bool? mute;
 
   SignTransactionNavigationModel({
     required this.author,
@@ -37,5 +38,6 @@ class SignTransactionNavigationModel {
     required this.transactionType,
     required this.ishiveKeyChainMethod,
     this.follow,
+    this.mute,
   });
 }

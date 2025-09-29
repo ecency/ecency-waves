@@ -130,6 +130,7 @@ class SignTransactionHiveSignerController {
 
   Future<void> initMuteProcess({
     required String author,
+    required bool block,
     required UserAuthModel<HiveSignerAuthModel> authdata,
     required VoidCallback onSuccess,
     required VoidCallback onFailure,
@@ -143,14 +144,19 @@ class SignTransactionHiveSignerController {
         data: MuteBroadcastModel(
           username: authdata.accountName,
           author: author,
+          mute: block,
         ),
       ),
     );
     if (response.isSuccess) {
-      showToast("User has been blocked successfully");
+      showToast(block
+          ? "User has been blocked successfully"
+          : "User has been unblocked successfully");
       onSuccess();
     } else {
-      showToast("Blocking the user failed");
+      showToast(block
+          ? "Blocking the user failed"
+          : "Unblocking the user failed");
       onFailure();
     }
   }

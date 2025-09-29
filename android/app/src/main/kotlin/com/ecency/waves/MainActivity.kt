@@ -64,6 +64,8 @@ class MainActivity : FlutterActivity() {
             val amount = call.argument<String?>("amount")
             val asset = call.argument<String?>("asset")
             val memo = call.argument<String?>("memo")
+            val follow = call.argument<Boolean?>("follow")
+            val mute = call.argument<Boolean?>("mute")
 
             if (id == null) {
                 result.error(
@@ -146,10 +148,19 @@ class MainActivity : FlutterActivity() {
                     null
                 )
             } else if (call.method == "muteUser" && username != null && author != null
-                && postingKey != null && token != null && authKey != null
+                && postingKey != null && token != null && authKey != null && mute != null
             ) {
+                val muteLiteral = if (mute) "true" else "false"
                 webView?.evaluateJavascript(
-                    "muteUser('${js(id)}','${js(username)}','${js(author)}','${js(postingKey)}','${js(token)}','${js(authKey)}');",
+                    "muteUser('${js(id)}','${js(username)}','${js(author)}',$muteLiteral,'${js(postingKey)}','${js(token)}','${js(authKey)}');",
+                    null
+                )
+            } else if (call.method == "followUser" && username != null && author != null
+                && postingKey != null && token != null && authKey != null && follow != null
+            ) {
+                val followLiteral = if (follow) "true" else "false"
+                webView?.evaluateJavascript(
+                    "followUser('${js(id)}','${js(username)}','${js(author)}',$followLiteral,'${js(postingKey)}','${js(token)}','${js(authKey)}');",
                     null
                 )
             }

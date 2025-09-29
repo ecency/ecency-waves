@@ -17,6 +17,10 @@ class LocalService {
         enumToString(type), ThreadFeedModel.toRawJson(threads));
   }
 
+  Future<void> removeThreads(ThreadFeedType type) async {
+    await _getStorage.remove(enumToString(type));
+  }
+
   List<ThreadFeedModel>? readThreads(ThreadFeedType type) {
     String? data = _getStorage.read(enumToString(type));
     if (data == null) return null;

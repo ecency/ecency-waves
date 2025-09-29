@@ -31,6 +31,7 @@ class SignTransactionHiveController extends HiveTransactionController {
   final String? existingPermlink;
   final List<String>? baseTags;
   final bool? follow;
+  final bool? mute;
 
   SignTransactionHiveController(
       {required this.transactionType,
@@ -51,7 +52,8 @@ class SignTransactionHiveController extends HiveTransactionController {
       this.pollId,
       this.choices,
       this.baseTags,
-      this.follow})
+      this.follow,
+      this.mute})
       : assert(
             !(transactionType == SignTransactionType.comment &&
                 (comment == null || imageLinks == null || permlink == null)),
@@ -93,6 +95,8 @@ class SignTransactionHiveController extends HiveTransactionController {
     });
   }
 
+  bool get shouldBlock => mute ?? true;
+
   String get successMessage {
     switch (transactionType) {
       case SignTransactionType.vote:
@@ -101,7 +105,9 @@ class SignTransactionHiveController extends HiveTransactionController {
       case SignTransactionType.comment:
         return LocaleText.smCommentPublishMessage;
       case SignTransactionType.mute:
-        return "User has been blocked successfully";
+        return shouldBlock
+            ? "User has been blocked successfully"
+            : "User has been unblocked successfully";
       case SignTransactionType.transfer:
         return LocaleText.smTipSuccessMessage;
       case SignTransactionType.follow:
@@ -119,7 +125,9 @@ class SignTransactionHiveController extends HiveTransactionController {
       case SignTransactionType.comment:
         return LocaleText.emCommentDeclineMessage;
       case SignTransactionType.mute:
-        return "Blocking the user failed";
+        return shouldBlock
+            ? "Blocking the user failed"
+            : "Unblocking the user failed";
       case SignTransactionType.transfer:
         return LocaleText.emTipFailureMessage;
       case SignTransactionType.follow:
@@ -205,6 +213,7 @@ class SignTransactionHiveController extends HiveTransactionController {
         return _threadRepository.muteUser(
           authData.accountName,
           author,
+          shouldBlock,
           null,
           authData.auth.authKey,
           authData.auth.token,

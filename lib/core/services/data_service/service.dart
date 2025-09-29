@@ -79,6 +79,7 @@ Future<String> getImageUploadProofWithPostingKeyFromPlatform(
 Future<String> muteUserFromPlatform(
   String username,
   String author,
+  bool mute,
   String? postingKey,
   String? authKey,
   String? token,

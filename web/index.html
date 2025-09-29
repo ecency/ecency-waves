@@ -676,22 +676,38 @@
       id,
       username,
       author,
+      mute,
       postingKey,
       token,
       authKey,
     ) {
       try {
+        if (!username) {
+          return fail(id, "Missing username");
+        }
+        if (!author) {
+          return fail(id, "Missing author");
+        }
+        if (!postingKey) {
+          return fail(id, "Missing postingKey");
+        }
+
+        const muteString = typeof mute === "string" ? mute.toLowerCase() : mute;
+        const shouldMute = muteString === true || muteString === "true";
+        const what = shouldMute ? ["ignore"] : [];
+        const operationLabel = shouldMute ? "mute" : "unmute";
+
         const op = ['custom_json', {
           id: 'follow',
           required_auths: [],
           required_posting_auths: [username],
-          json: JSON.stringify(['follow', { follower: username, following: author, what: ['ignore'] }]),
+          json: JSON.stringify(['follow', { follower: username, following: author, what }]),
         }];
 
         return performOperations(
           id,
           [op],
-          "mute",
+          operationLabel,
           username,
           postingKey,
           token,

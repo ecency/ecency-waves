@@ -34,6 +34,7 @@ class _HiveSignTransactionViewState extends State<HiveSignTransactionView> {
       assetSymbol: widget.data.assetSymbol,
       memo: widget.data.memo,
       follow: widget.data.follow,
+      mute: widget.data.mute,
       showError: (error) => context.showSnackBar(error),
       onSuccess: (data) {
         if (hiveSignTransactionController.transactionType ==
