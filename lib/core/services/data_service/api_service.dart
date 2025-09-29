@@ -949,6 +949,169 @@ class ApiService {
     );
   }
 
+  Future<ActionListDataResponse<String>> getMutedAccounts(
+    String accountName, {
+    int limit = 1000,
+  }) async {
+    final String normalized = accountName.trim();
+    if (normalized.isEmpty) {
+      return ActionListDataResponse<String>(
+        data: const <String>[],
+        status: ResponseStatus.success,
+        isSuccess: true,
+        valid: true,
+        errorMessage: '',
+      );
+    }
+
+    String? errorMessage;
+    final Set<String> muted = <String>{};
+
+    String? _extractAccountFromEntry(Map<String, dynamic> entry) {
+      const List<String> preferredKeys = <String>['following', 'account', 'name', 'username', 'muted', 'target', 'who'];
+      for (final String key in preferredKeys) {
+        final dynamic value = entry[key];
+        if (value is String) {
+          final String candidate = value.trim();
+          if (candidate.isNotEmpty && candidate.toLowerCase() != normalized) {
+            return candidate;
+          }
+        }
+      }
+
+      for (final MapEntry<String, dynamic> mapEntry in entry.entries) {
+        final String lowerKey = mapEntry.key.toLowerCase();
+        if (lowerKey.contains('follower')) {
+          continue;
+        }
+        final dynamic value = mapEntry.value;
+        if (value is String) {
+          final String candidate = value.trim();
+          if (candidate.isNotEmpty && candidate.toLowerCase() != normalized) {
+            return candidate;
+          }
+        }
+      }
+      return null;
+    }
+
+    List<String>? _extractMuted(dynamic payload) {
+      if (payload == null) {
+        return <String>[];
+      }
+      if (payload is List) {
+        final List<String> results = <String>[];
+        for (final dynamic entry in payload) {
+          if (entry is Map<String, dynamic>) {
+            final String? name = _extractAccountFromEntry(entry);
+            if (name != null) results.add(name);
+          } else if (entry is String) {
+            final String candidate = entry.trim();
+            if (candidate.isNotEmpty && candidate.toLowerCase() != normalized) {
+              results.add(candidate);
+            }
+          }
+        }
+        return results;
+      }
+      if (payload is Map<String, dynamic>) {
+        const List<String> listKeys = <String>['results', 'accounts', 'follows', 'following', 'muted'];
+        for (final String key in listKeys) {
+          final dynamic value = payload[key];
+          final List<String>? extracted = _extractMuted(value);
+          if (extracted != null) {
+            return extracted;
+          }
+        }
+        final String? candidate = _extractAccountFromEntry(payload);
+        if (candidate != null) {
+          return <String>[candidate];
+        }
+        return <String>[];
+      }
+      return <String>[];
+    }
+
+    Future<bool> _tryBridge() async {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'bridge.get_follow_list',
+        'params': {
+          'observer': normalized,
+          'follow_type': 'muted',
+        },
+        'id': 1,
+      });
+
+      if (response == null) {
+        errorMessage = 'RPC error: no node responded';
+        return false;
+      }
+
+      final dynamic decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        errorMessage = _rpcErrorMessage(response);
+        return false;
+      }
+
+      final dynamic result = (decoded is Map) ? decoded['result'] : decoded;
+      final List<String>? extracted = _extractMuted(result);
+      if (extracted == null) {
+        return false;
+      }
+      muted.addAll(extracted.map((String name) => name.toLowerCase()));
+      return true;
+    }
+
+    Future<bool> _tryCondenser() async {
+      final response = await _postWithFallback({
+        'jsonrpc': '2.0',
+        'method': 'condenser_api.get_following',
+        'params': [normalized, '', 'ignore', limit],
+        'id': 1,
+      });
+
+      if (response == null) {
+        errorMessage ??= 'RPC error: no node responded';
+        return false;
+      }
+
+      final dynamic decoded = _tryDecode(response.body);
+      if (decoded is Map && decoded['error'] != null) {
+        errorMessage = _rpcErrorMessage(response);
+        return false;
+      }
+
+      final dynamic result = (decoded is Map) ? decoded['result'] : decoded;
+      final List<String>? extracted = _extractMuted(result);
+      if (extracted == null) {
+        return false;
+      }
+      muted.addAll(extracted.map((String name) => name.toLowerCase()));
+      return true;
+    }
+
+    final bool bridgeSuccess = await _tryBridge();
+    if (!bridgeSuccess) {
+      await _tryCondenser();
+    }
+
+    if (errorMessage != null && muted.isEmpty) {
+      return ActionListDataResponse<String>(
+        status: ResponseStatus.failed,
+        errorMessage: errorMessage!,
+      );
+    }
+
+    return ActionListDataResponse<String>(
+      data: muted.toList(),
+      status: ResponseStatus.success,
+      isSuccess: true,
+      valid: true,
+      errorMessage: '',
+    );
+  }
+
   Future<ActionListDataResponse<FollowUserItemModel>> _fetchFollowUsers({
     required String method,
     required String accountName,

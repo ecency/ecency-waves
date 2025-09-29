@@ -65,14 +65,21 @@ class Thread {
   /// Removes any items that should not appear in feed views, such as entries
   /// flagged by curators (`netRshares` threshold), muted content reported by
   /// the API via `stats.gray`, observer-specific hides exposed through
-  /// `stats.hide`, or authors with very low reputation scores. This method is
-  /// used by all thread controllers before presenting data to ensure container
-  /// feeds stay in sync with Hive visibility rules.
+  /// `stats.hide`, authors with very low reputation scores, or accounts the
+  /// logged-in observer muted manually. The optional [mutedAuthors] parameter
+  /// expects a lower-cased set of account names gathered from the observer's
+  /// mute list.
   static List<ThreadFeedModel> filterInvisibleContent(
-      List<ThreadFeedModel> items) {
+    List<ThreadFeedModel> items, {
+    Set<String>? mutedAuthors,
+  }) {
     return items
         .where((e) =>
-            !(isHidden(e) || isMuted(e) || isObserverHidden(e) || isLowReputation(e)))
+            !(isHidden(e) ||
+                isMuted(e) ||
+                isObserverHidden(e) ||
+                isLowReputation(e) ||
+                ((mutedAuthors?.contains(e.author.toLowerCase()) ?? false))))
         .toList();
   }
 
