@@ -40,12 +40,14 @@ class UpvoteDialog extends StatefulWidget {
       required this.author,
       required this.permlink,
       required this.rootContext,
-      required this.onSuccess});
+      required this.onSuccess,
+      this.initialWeight});
 
   final String author;
   final String permlink;
   final BuildContext rootContext;
   final Function(ActiveVoteModel) onSuccess;
+  final double? initialWeight;
 
   @override
   State<UpvoteDialog> createState() => _UpvoteDialogState();
@@ -74,7 +76,11 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     super.initState();
     _userName = context.read<UserController>().userName;
     final storedWeight = _readStoredWeight();
-    if (storedWeight != null) {
+    final providedWeight = widget.initialWeight;
+
+    if (providedWeight != null) {
+      weight = _normalizeWeight(providedWeight);
+    } else if (storedWeight != null) {
       weight = storedWeight;
     }
     _initTransferCallbacks();
@@ -773,8 +779,10 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   }
 
   ActiveVoteModel generateVoteModel(BuildContext context) {
+    final voteWeight = _voteWeightInHiveUnits();
     return ActiveVoteModel(
-        weight: _voteWeightInHiveUnits(),
+        weight: voteWeight,
+        percent: voteWeight,
         voter: context.read<UserController>().userName!);
   }
 

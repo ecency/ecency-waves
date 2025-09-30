@@ -100,30 +100,34 @@ class _VoteIconButtonState extends State<VoteIconButton> {
 
   void _onTap(BuildContext rootContext) {
     rootContext.authenticatedAction(action: () {
-      if (!isVoted) {
-        showModalBottomSheet(
-          context: rootContext,
-          backgroundColor: Colors.transparent,
-          builder: (context) {
-            return UpvoteDialog(
-              onSuccess: (voteModel) {
-                if (mounted) {
-                  setState(() {
-                    items.add(voteModel);
-                    isVoted = true;
-                  });
-                  rootContext
-                      .read<ThreadFeedController>()
-                      .refreshOnUpvote(widget.item.postId, voteModel);
-                }
-              },
-              author: widget.item.author,
-              permlink: widget.item.permlink,
-              rootContext: rootContext,
-            );
-          },
-        );
-      }
+      final userController = rootContext.read<UserController>();
+      final userVote = _findUserVote(userController.userName);
+      showModalBottomSheet(
+        context: rootContext,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          return UpvoteDialog(
+            onSuccess: (voteModel) {
+              if (mounted) {
+                setState(() {
+                  items = [
+                    ...items.where((element) => element.voter != voteModel.voter),
+                    voteModel,
+                  ];
+                  isVoted = true;
+                });
+                rootContext
+                    .read<ThreadFeedController>()
+                    .refreshOnUpvote(widget.item.postId, voteModel);
+              }
+            },
+            author: widget.item.author,
+            permlink: widget.item.permlink,
+            rootContext: rootContext,
+            initialWeight: _normalizedWeightFromVote(userVote),
+          );
+        },
+      );
     });
   }
 
@@ -143,5 +147,28 @@ class _VoteIconButtonState extends State<VoteIconButton> {
           .any((vote) => vote.voter == userController.userName);
     }
     return false;
+  }
+
+  ActiveVoteModel? _findUserVote(String? userName) {
+    if (userName == null) {
+      return null;
+    }
+    for (final vote in items) {
+      if (vote.voter == userName) {
+        return vote;
+      }
+    }
+    return null;
+  }
+
+  double? _normalizedWeightFromVote(ActiveVoteModel? vote) {
+    if (vote == null) {
+      return null;
+    }
+    final int? rawWeight = vote.weight ?? vote.percent;
+    if (rawWeight == null || rawWeight <= 0) {
+      return null;
+    }
+    return rawWeight / 10000;
   }
 }

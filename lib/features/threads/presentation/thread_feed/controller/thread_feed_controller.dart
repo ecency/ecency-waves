@@ -392,10 +392,17 @@ class ThreadFeedController extends ChangeNotifier
   void _updateVoteInItems(
       int feedIndex, ActiveVoteModel newVote, List<ThreadFeedModel> target) {
     final upvotedItem = target[feedIndex];
-    final votes = upvotedItem.activeVotes;
-    final alteredVotes = votes == null ? [newVote] : [...votes, newVote];
+    final votes = upvotedItem.activeVotes ?? [];
+    final updatedVotes = [...votes];
+    final existingIndex =
+        updatedVotes.indexWhere((vote) => vote.voter == newVote.voter);
+    if (existingIndex != -1) {
+      updatedVotes[existingIndex] = newVote;
+    } else {
+      updatedVotes.add(newVote);
+    }
     target.removeAt(feedIndex);
-    target.insert(feedIndex, upvotedItem.copyWith(activeVotes: alteredVotes));
+    target.insert(feedIndex, upvotedItem.copyWith(activeVotes: updatedVotes));
   }
 
   @override
