@@ -9,6 +9,11 @@ from typing import Iterable, Tuple
 
 from PIL import Image
 
+try:
+    RESAMPLE = Image.Resampling.LANCZOS  # Pillow >= 9.1
+except AttributeError:  # pragma: no cover - fallback for older Pillow
+    RESAMPLE = Image.LANCZOS  # type: ignore[attr-defined]
+
 ROOT = Path(__file__).resolve().parent.parent
 
 ANDROID_RES = ROOT / "android" / "app" / "src" / "main" / "res"
@@ -105,7 +110,7 @@ WEB_TARGETS: Tuple[Tuple[Path, int], ...] = (
 
 def _resize_and_save(master: Image.Image, size: int, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    resized = master.resize((size, size), Image.Resampling.LANCZOS)
+    resized = master.resize((size, size), RESAMPLE)
     resized.save(destination, format="PNG")
 
 
