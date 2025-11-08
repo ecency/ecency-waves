@@ -1,5 +1,22 @@
 # Release Notes
 
+## 1.1.3
+
+### Added
+- Floating composer button and a refreshed navigation shell that makes switching between threads and filters easier.
+- Dedicated followers and following lists with direct follow/unfollow controls and updated profile follow information.
+- Wave editing support alongside in-app handling for Hive post links.
+- Refreshed localization updates across supported languages to keep translations current.
+
+### Improved
+- Feed loading reliability with prioritized discussion queries, muted list updates, and moderation tweaks.
+- Explore and following feeds with smoother performance plus tablet-friendly typography, avatar sizing, and polished icons/buttons.
+
+### Fixed
+- Vote dialogs lingering after voting, follow spinners getting stuck, and follow/block counters becoming inconsistent.
+- Locale switching, theme changes, and initial load crashes leading to unexpected restarts.
+- Bookmark opening, GIF previews, and comment detail layout issues affecting headers, footers, and dropdowns.
+
 ## 1.1.2
 
 ### Added
