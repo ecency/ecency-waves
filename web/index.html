@@ -473,7 +473,13 @@
       authKey,
     ) {
       try {
-        if (!postingKey) {
+        const hasPostingKey =
+          typeof postingKey === "string" ? postingKey.length > 0 : !!postingKey;
+        const canSignWithToken =
+          typeof token === "string" && token.length > 0 &&
+          typeof authKey === "string" && authKey.length > 0;
+
+        if (!hasPostingKey && !canSignWithToken) {
           return fail(id, "Missing postingKey");
         }
 
