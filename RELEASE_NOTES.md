@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.1.4
+
+### Fixed
+- Transaction signing with respective login method
+
 ## 1.1.3
 
 ### Added
