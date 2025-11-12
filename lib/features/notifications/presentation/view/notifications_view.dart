@@ -232,7 +232,7 @@ class _NotificationsViewState extends State<NotificationsView> {
           await repository.getcomments(targetAuthor, targetPermlink, observer);
 
       if (dialogContext != null) {
-        Navigator.of(dialogContext!).pop();
+        _dismissProgressDialog(dialogContext);
         dialogContext = null;
       }
 
@@ -255,7 +255,7 @@ class _NotificationsViewState extends State<NotificationsView> {
       }
     } catch (e) {
       if (dialogContext != null) {
-        Navigator.of(dialogContext!).pop();
+        _dismissProgressDialog(dialogContext);
         dialogContext = null;
       }
       if (mounted) {
@@ -263,7 +263,8 @@ class _NotificationsViewState extends State<NotificationsView> {
       }
     } finally {
       if (dialogContext != null) {
-        Navigator.of(dialogContext!).pop();
+        _dismissProgressDialog(dialogContext);
+        dialogContext = null;
       }
       _isNavigating = false;
     }
@@ -293,6 +294,15 @@ class _NotificationsViewState extends State<NotificationsView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(text)),
     );
+  }
+
+  void _dismissProgressDialog(BuildContext? context) {
+    final dialogContext = context;
+    if (dialogContext == null) {
+      return;
+    }
+
+    Navigator.of(dialogContext).pop();
   }
 }
 
