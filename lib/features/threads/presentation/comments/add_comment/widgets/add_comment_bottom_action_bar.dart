@@ -329,17 +329,29 @@ class AddCommentBottomActionBarState extends State<AddCommentBottomActionBar> {
         .uploadAndGetImageUrl(
             file, context.read<UserController>().imageUploadToken)
         .then((response) {
+      if (!mounted) {
+        return;
+      }
+
+      final int index = images.indexWhere((element) => element.id == id);
+
       if (response.isSuccess) {
-        String uploadedImageUrl = response.data!.url;
+        final String uploadedImageUrl = response.data!.url;
+        log(uploadedImageUrl);
+
         setState(() {
           uploadedImageLinks.add(uploadedImageUrl);
+          if (index != -1) {
+            images[index] = images[index]
+                .copyWith(uploadingImage: false, imageLink: uploadedImageUrl);
+          }
         });
-        log(uploadedImageUrl);
-        int index = images.indexWhere((element) => element.id == id);
-        images[index] = images[index]
-            .copyWith(uploadingImage: false, imageLink: uploadedImageUrl);
       } else {
-        int index = images.indexWhere((element) => element.id == id);
+        if (index == -1) {
+          context.showSnackBar(response.errorMessage);
+          return;
+        }
+
         setState(() {
           images.removeAt(index);
         });
