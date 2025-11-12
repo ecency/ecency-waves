@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:waves/core/utilities/enum.dart';
@@ -31,7 +32,7 @@ class UserLocalService {
 
   Future<UserAuthModel?> readCurrentUser() async {
     String? jsonString =
-        await _secureStorage.read(key: _currentUserAccountStorageKey);
+        await _safeRead(_currentUserAccountStorageKey);
     if (jsonString != null) {
       AuthType type = UserAuthModel.authTypeFromJsonString(jsonString);
       if (type == AuthType.hiveAuth || type == AuthType.hiveKeyChain) {
@@ -53,7 +54,7 @@ class UserLocalService {
   Future<List<UserAuthModel>> readAllUserAccounts(
       String? currentUserName) async {
     String? userJsonData =
-        await _secureStorage.read(key: _allUserAccountsStorageKey);
+        await _safeRead(_allUserAccountsStorageKey);
     if (userJsonData != null) {
       List jsonStringList = UserAuthModel.fromRawJsonList(userJsonData);
       List<UserAuthModel> data = jsonStringList.map((element) {
@@ -90,6 +91,18 @@ class UserLocalService {
     await _secureStorage.write(
         key: _allUserAccountsStorageKey,
         value: UserAuthModel.toRawJsonList(accounts));
+  }
+
+  Future<String?> _safeRead(String key) async {
+    try {
+      return await _secureStorage.read(key: key);
+    } on PlatformException catch (error) {
+      if (error.code == 'read') {
+        await _secureStorage.delete(key: key);
+        return null;
+      }
+      rethrow;
+    }
   }
 
   Future<void> logOut() async {
