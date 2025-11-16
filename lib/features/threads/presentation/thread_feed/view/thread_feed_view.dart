@@ -64,8 +64,9 @@ class _ThreadFeedViewState extends State<ThreadFeedView>
         centerTitle: true,
         leading: Builder(
           builder: (context) {
-            if (isLoggedIn) {
-              final userName = context.read<UserController>().userData?.accountName;
+            final userName = context.select<UserController, String?>(
+                (controller) => controller.userData?.accountName);
+            if (isLoggedIn && userName != null) {
               return Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: UserProfileImage(

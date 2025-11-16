@@ -174,10 +174,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
       return;
     }
     if (_tipFeedbackMessage != null) {
-      setState(() {
-        _tipFeedbackMessage = null;
-        _tipFeedbackSuccess = false;
-      });
+      _clearTipFeedback();
     }
     final initialTipToken =
         _readStoredTipToken(userData.accountName);
@@ -496,16 +493,28 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
   void _showTipFeedback(String message, {required bool success}) {
     if (!mounted) return;
-    setState(() {
-      _tipFeedbackMessage = message;
-      _tipFeedbackSuccess = success;
-    });
+    if (success) {
+      if (_tipFeedbackMessage != null) {
+        _clearTipFeedback();
+      }
+    } else {
+      setState(() {
+        _tipFeedbackMessage = message;
+        _tipFeedbackSuccess = success;
+      });
+    }
     widget.rootContext.showSnackBar(message);
   }
 
   void _clearTipFeedback() {
-    _tipFeedbackMessage = null;
-    _tipFeedbackSuccess = false;
+    if (!mounted) return;
+    if (_tipFeedbackMessage == null && !_tipFeedbackSuccess) {
+      return;
+    }
+    setState(() {
+      _tipFeedbackMessage = null;
+      _tipFeedbackSuccess = false;
+    });
   }
 
   Future<void> _initTransferCallbacks() async {
