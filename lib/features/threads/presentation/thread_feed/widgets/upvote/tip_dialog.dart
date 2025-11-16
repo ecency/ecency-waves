@@ -13,10 +13,12 @@ class TipDialog extends StatefulWidget {
     super.key,
     required this.amountOptions,
     required this.tokenOptions,
+    this.initialToken,
   });
 
   final List<double> amountOptions;
   final List<String> tokenOptions;
+  final String? initialToken;
 
   @override
   State<TipDialog> createState() => _TipDialogState();
@@ -30,7 +32,7 @@ class _TipDialogState extends State<TipDialog> {
   void initState() {
     super.initState();
     _selectedAmount = widget.amountOptions.first;
-    _selectedToken = widget.tokenOptions.first;
+    _selectedToken = _resolveInitialToken();
   }
 
   @override
@@ -169,5 +171,13 @@ class _TipDialogState extends State<TipDialog> {
       return amount.toStringAsFixed(0);
     }
     return amount.toStringAsFixed(1);
+  }
+
+  String _resolveInitialToken() {
+    final initialToken = widget.initialToken;
+    if (initialToken != null && widget.tokenOptions.contains(initialToken)) {
+      return initialToken;
+    }
+    return widget.tokenOptions.first;
   }
 }

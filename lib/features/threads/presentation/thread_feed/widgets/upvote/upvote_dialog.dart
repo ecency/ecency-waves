@@ -58,6 +58,7 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
   static const String _voteWeightKeyPrefix = 'last_vote_weight_';
   static const List<double> _tipAmountOptions = [0.1, 0.5, 1, 2, 3, 5, 10, 50];
   static const List<String> _tipTokenOptions = ['HIVE', 'HBD', 'POINTS'];
+  static const String _tipTokenKeyPrefix = 'last_tip_token_';
   static const String _transferCallbackScheme = 'waves';
   static const String _transferCallbackHost = 'transfer';
 
@@ -174,17 +175,23 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
         _tipFeedbackSuccess = false;
       });
     }
+    final initialTipToken =
+        _readStoredTipToken(userData.accountName);
+
     final selection = await showDialog<TipSelection>(
       context: context,
       builder: (dialogContext) => TipDialog(
         amountOptions: _tipAmountOptions,
         tokenOptions: _tipTokenOptions,
+        initialToken: initialTipToken,
       ),
     );
 
     if (!mounted || selection == null) {
       return;
     }
+
+    _storeSelectedTipToken(userData.accountName, selection.tokenSymbol);
 
     final isPointsTransfer = selection.tokenSymbol.toUpperCase() == 'POINTS';
     final availableMethods = isPointsTransfer
@@ -845,7 +852,30 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
     return clamped.toInt();
   }
 
+  String? _readStoredTipToken(String accountName) {
+    final dynamic storedValue =
+        _storage.read(_tipTokenStorageKey(accountName));
+    if (storedValue is String) {
+      final upperCased = storedValue.toUpperCase();
+      if (_tipTokenOptions.contains(upperCased)) {
+        return upperCased;
+      }
+    }
+    return null;
+  }
+
+  void _storeSelectedTipToken(String accountName, String token) {
+    final normalizedToken = token.toUpperCase();
+    if (_tipTokenOptions.contains(normalizedToken)) {
+      _storage.write(_tipTokenStorageKey(accountName), normalizedToken);
+    }
+  }
+
   String _storageKey(String userName) {
     return '$_voteWeightKeyPrefix$userName';
+  }
+
+  String _tipTokenStorageKey(String accountName) {
+    return '$_tipTokenKeyPrefix$accountName';
   }
 }
