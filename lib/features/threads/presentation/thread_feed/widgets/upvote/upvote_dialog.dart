@@ -64,7 +64,11 @@ class _UpvoteDialogState extends State<UpvoteDialog> {
 
   final GetStorage _storage = getIt<GetStorage>();
   final AppLinks _appLinks = AppLinks();
-  final Set<String> _handledTransferCallbacks = <String>{};
+  // Using a static cache prevents previously handled callbacks from being
+  // re-processed when a new dialog instance is opened. Otherwise, the
+  // app_links package replays the last transfer callback which caused the
+  // tip success UI and snackbar to be shown for unrelated dialogs.
+  static final Set<String> _handledTransferCallbacks = <String>{};
   String? _userName;
   double weight = _defaultWeight;
   String? _tipFeedbackMessage;
